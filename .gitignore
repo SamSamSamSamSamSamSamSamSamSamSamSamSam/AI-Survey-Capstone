@@ -1,0 +1,106 @@
+# =============== Project-wide Ignores ===============
+# Operating System Files
+.DS_Store          # macOS specific
+Thumbs.db          # Windows specific
+ehthumbs.db        # Windows specific
+Desktop.ini        # Windows specific
+
+# IDE / Editor Files
+.vscode/           # VS Code settings (optional, but good for shared projects if personal settings)
+.idea/             # JetBrains IDEs (PyCharm, WebStorm, etc.)
+*.sublime-project
+*.sublime-workspace
+
+# Logs & Temporary Files
+*.log
+temp/
+tmp/
+
+# =============== Python / Django Specific Ignores (django_api & training folders) ===============
+# Virtual Environments
+venv/
+.venv/             # Some tools might create .venv
+env/               # Another common name for virtual environments
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Database files (if using SQLite for development)
+*.sqlite3
+db.sqlite3
+
+# User-uploaded media files (if your Django project handles uploads)
+# This might be under django_api/media/ or similar
+media/
+
+# Jupyter Notebook related files
+.ipynb_checkpoints/
+
+# Distribution / packaging
+.eggs/
+*.egg-info/
+dist/
+build/
+
+# =============== Node.js / React Specific Ignores (laravel_frontend or separate react app) ===============
+# Node modules
+node_modules/
+
+# Build output directories
+build/
+dist/
+
+# npm/yarn debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# react-scripts build output
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# =============== PHP / Laravel Specific Ignores (laravel_frontend folder) ===============
+# Composer vendor directory
+/laravel_frontend/vendor/
+
+# Laravel framework cache files
+/laravel_frontend/bootstrap/cache/*.php
+
+# Environment variables file
+/laravel_frontend/.env
+/laravel_frontend/.env.example # You might want to include .env.example if you distribute it
+
+# Laravel storage folder (logs, sessions, views cache, local user uploads)
+# Be specific if you only want to ignore logs and not user uploads if they're in storage
+/laravel_frontend/storage/*.log
+/laravel_frontend/storage/framework/cache/*
+/laravel_frontend/storage/framework/sessions/*
+/laravel_frontend/storage/framework/views/*
+# If your Laravel app handles user uploads, the `storage/app/public` part often IS committed
+# /laravel_frontend/storage/app/public/ # DO NOT IGNORE if it stores files committed to repo
+
+# PhpUnit cache
+/.phpunit.result.cache
+
+# Frontend build files (Mix/Webpack/Vite output)
+/laravel_frontend/public/build/
+/laravel_frontend/public/hot
+
+# Laravel specific test reports
+/laravel_frontend/output.txt
+
+# Laravel Homestead (local development environment)
+/laravel_frontend/Homestead.yaml
+/laravel_frontend/Homestead.json
+/laravel_frontend/Vagrantfile
+
+# =============== Machine Learning / TensorFlow Specific Ignores ===============
+# Large model files if you decide not to commit them directly
+# *.h5             # Uncomment if your my_model.h5 is too big for Git
+# *.tf           # For TensorFlow SavedModel format (folder)
+# my_model/      # If you decide to ignore the entire model folder and handle via Git LFS or external storage
+# Make sure to still commit label_map.json if you ignore the model itself!
