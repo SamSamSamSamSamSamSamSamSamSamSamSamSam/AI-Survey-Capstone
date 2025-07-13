@@ -16,3 +16,18 @@ Route::post('/signup', function (Request $request) {
 
     return redirect()->route('signup')->with('success', 'Signup data submitted!');
 })->name('signup.submit');
+
+Route::get('/login', function () {
+    return view('login');
+})->name('login');
+
+Route::post('/login', function (Request $request) {
+    $validated = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required|min:6',
+    ]);
+
+    // Here you would typically check the credentials and log the user in
+
+    return redirect()->route('login')->with('success', 'Login successful!');
+})->name('login.submit');
