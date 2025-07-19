@@ -1,0 +1,13 @@
+body {
+    background-color: #f0f2f5;
+    font-family: 'Arial', sans-serif;
+}
+.form-label {
+    font-weight: bold;
+    color: #444;
+}
+
+.login-card {
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.1);
+    border-radius: 12px;
+}
