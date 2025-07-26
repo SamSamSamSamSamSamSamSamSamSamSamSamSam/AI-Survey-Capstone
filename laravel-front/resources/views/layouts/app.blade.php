@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
 </head>
 <body class="bg-light">
+ 
     <div class="container mt-5">
         @yield('content')
     </div>
