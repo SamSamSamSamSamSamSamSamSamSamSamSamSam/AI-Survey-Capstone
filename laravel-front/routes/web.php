@@ -56,6 +56,14 @@ Route::get('/admin/dashboard', function () {
     return view('admin.dashboard');
 })->name('admin.dashboard')->middleware(['auth', 'role:admin']);
 
+Route::get('/faculty/dashboard', function () {
+    return view('faculty.dashboard');
+})->name('faculty.dashboard')->middleware(['auth', 'role:faculty']);
+
+Route::get('/student/dashboard', function () {
+    return view('student.dashboard');
+})->name('student.dashboard')->middleware(['auth', 'role:student']);
+
 Route::post('/logout', function (Request $request) {
     Auth::logout();
     $request->session()->invalidate();
