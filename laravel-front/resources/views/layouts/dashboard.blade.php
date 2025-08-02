@@ -30,7 +30,7 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
     <!-- Overlay for when sidebar is open on mobile -->
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden"></div>
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden"></div>
 
     @php
         // Define menu items for different roles
@@ -86,16 +86,16 @@
         {{-- You can pass additional content here if needed --}}
     </x-sidebar>
 
-    <div class="lg:flex flex-1">
-        <!-- Burger Icon for Mobile -->
-        <button id="sidebar-toggle" class="lg:hidden fixed top-4 left-4 z-50 p-2 bg-indigo-600 text-white rounded-md shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-            </svg>
-        </button>
+    <div class="flex flex-1">
+        <!-- Burger Icon for all screens -->
+        <button id="sidebar-toggle" class="block fixed top-4 left-4 z-50 p-2 bg-indigo-600 text-white rounded-md shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
 
         <!-- Main content area -->
-        <div id="main-content" class="flex-1 p-8 transition-all duration-300 ease-in-out lg:ml-64">
+        <div id="main-content" class="flex-1 p-8 mt-16 transition-all duration-300 ease-in-out">
             @yield('content')
         </div>
     </div>
@@ -107,6 +107,7 @@
             const sidebarOverlay = document.getElementById('sidebar-overlay');
             const mainContent = document.getElementById('main-content');
             const body = document.body;
+            const sidebarExit = document.getElementById('sidebar-exit');
 
             // Function to open sidebar
             function openSidebar() {
@@ -114,10 +115,7 @@
                 sidebar.classList.add('translate-x-0');
                 sidebarOverlay.classList.remove('hidden');
                 body.classList.add('overflow-hidden-mobile'); // Prevent body scroll
-                // Adjust main content margin for desktop view only
-                if (window.innerWidth >= 1024) { // Tailwind's 'lg' breakpoint
-                    mainContent.classList.add('lg:ml-64');
-                }
+                sidebarToggle.classList.add('hidden'); // Hide burger icon
             }
 
             // Function to close sidebar
@@ -126,10 +124,7 @@
                 sidebar.classList.add('-translate-x-full');
                 sidebarOverlay.classList.add('hidden');
                 body.classList.remove('overflow-hidden-mobile'); // Allow body scroll
-                // Reset main content margin for desktop view only
-                if (window.innerWidth >= 1024) { // Tailwind's 'lg' breakpoint
-                    mainContent.classList.remove('lg:ml-64');
-                }
+                sidebarToggle.classList.remove('hidden'); // Show burger icon
             }
 
             // Toggle sidebar on button click
@@ -154,23 +149,19 @@
                 });
             });
 
+            // Close sidebar when exit button is clicked
+            if (sidebarExit) {
+                sidebarExit.addEventListener('click', closeSidebar);
+            }
+
             // Handle initial state and resize for responsiveness
             function handleResize() {
-                if (window.innerWidth >= 1024) { // Desktop view
-                    sidebar.classList.remove('-translate-x-full', 'fixed', 'h-screen', 'z-40');
-                    sidebar.classList.add('translate-x-0', 'static', 'h-auto', 'shadow-none');
-                    sidebarOverlay.classList.add('hidden');
-                    body.classList.remove('overflow-hidden-mobile');
-                    mainContent.classList.add('lg:ml-64'); // Ensure content shifts
-                } else { // Mobile view
-                    sidebar.classList.remove('translate-x-0', 'static', 'h-auto', 'shadow-none');
-                    sidebar.classList.add('-translate-x-full', 'fixed', 'h-screen', 'z-40');
-                    // Do not hide overlay if sidebar is open
-                    if (!sidebar.classList.contains('translate-x-0')) {
-                        sidebarOverlay.classList.add('hidden');
-                    }
-                    mainContent.classList.remove('lg:ml-64'); // Remove desktop margin
-                }
+                // Always keep sidebar hidden by default, burger icon visible
+                sidebar.classList.remove('translate-x-0', 'static', 'h-auto', 'shadow-none');
+                sidebar.classList.add('-translate-x-full', 'fixed', 'h-screen', 'z-40');
+                sidebarOverlay.classList.add('hidden');
+                body.classList.remove('overflow-hidden-mobile');
+                sidebarToggle.classList.remove('hidden');
             }
 
             // Initial call

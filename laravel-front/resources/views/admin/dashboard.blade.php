@@ -1,9 +1,10 @@
 
-@extends('layouts.dashboard') {{-- This extends the layout that includes the sidebar --}}
+@extends('layouts.dashboard') 
 
 @section('title', 'Admin Dashboard')
 
 @section('content')
+    
     <h1 class="text-3xl font-bold text-gray-800 mb-6">Welcome, Admin!</h1>
     <p class="text-gray-700">This is your control panel.</p>
     <p class="text-gray-700">Welcome, {{ auth()->user()->name ?? 'Guest' }} ({{ auth()->user()->role ?? 'N/A' }})</p>

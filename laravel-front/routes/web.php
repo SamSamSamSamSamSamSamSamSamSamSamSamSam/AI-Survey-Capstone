@@ -56,6 +56,10 @@ Route::get('/admin/dashboard', function () {
     return view('admin.dashboard');
 })->name('admin.dashboard')->middleware(['auth', 'role:admin']);
 
+Route::get('/admin/users', function () {
+    return view('admin.users');
+})->name('admin.users')->middleware(['auth', 'role:admin']);
+
 Route::get('/faculty/dashboard', function () {
     return view('faculty.dashboard');
 })->name('faculty.dashboard')->middleware(['auth', 'role:faculty']);
