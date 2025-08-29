@@ -1,4 +1,4 @@
-@extends('layouts.admin') 
+@extends('layouts.default') 
 
 @section('header')
 	{{-- Add Bootstrap + FontAwesome and a small custom stylesheet (will be applied even if layout doesn't include head stacks) --}}
@@ -32,11 +32,7 @@
 @section('content')
 	<div class="container-fluid">
 		<div class="row">
-			{{-- Sidebar (left) --}}
-			<div class="col-12 col-md-4 col-lg-3 mb-4 sidebar-placeholder">
-				<x-sidebar />
-			</div>
-
+			
 			{{-- Main content (right) --}}
 			<div class="col-12 col-md-8 col-lg-9">
 				<div class="mb-4">

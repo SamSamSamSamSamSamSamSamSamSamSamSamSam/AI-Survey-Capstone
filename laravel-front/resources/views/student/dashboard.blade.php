@@ -1,13 +1,11 @@
-@extends('layouts.admin')
+@extends('layouts.default')
 
 @section('title', 'Admin Dashboard')
 
 @section('content')
 	<div class="container-fluid">
 		<div class="row">
-			<div class="col-md-4">
-				<x-sidebar />
-			</div>
+			
 			<div class="col-md-8">
 				<h3>Welcome, {{ auth()->user()->name ?? 'Student' }}</h3>
 				<p class="text-muted">Access your surveys and see recent results.</p>

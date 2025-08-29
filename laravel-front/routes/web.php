@@ -74,10 +74,10 @@ Route::middleware(['web','auth'])->prefix('admin')->name('admin.')->group(functi
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // basic admin pages used by the layout
-    Route::get('/users', [UsersController::class, 'index'])->name('users.index');
-    Route::get('/departments', [DepartmentsController::class, 'index'])->name('departments.index');
-    Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
-    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::get('/users', [UsersController::class, 'index'])->name('users');
+    Route::get('/departments', [DepartmentsController::class, 'index'])->name('departments');
+    Route::get('/reports', [ReportsController::class, 'index'])->name('reports');
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
 });
 
 // Teacher routes
@@ -93,6 +93,8 @@ Route::middleware(['web','auth'])->prefix('student')->name('student.')->group(fu
     Route::get('/surveys', [StudentDashboardController::class, 'surveys'])->name('surveys');
     Route::get('/results', [StudentDashboardController::class, 'results'])->name('results');
 });
+
+//Survey routes
 
 
 
