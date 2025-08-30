@@ -1,7 +1,6 @@
-@extends('layouts.admin')
+@extends('layouts.default')
 
 @section('content')
-	<x-sidebar />
 	<div class="ml-4">
 		<h1 class="h4">Student Feedback</h1>
 		<ul class="list-group mt-3">

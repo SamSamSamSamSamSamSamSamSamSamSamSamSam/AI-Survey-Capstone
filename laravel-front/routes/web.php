@@ -34,8 +34,8 @@ Route::post('/login', function (Request $request) {
         $user = Auth::user();
         if ($user->role === 'admin') {
             return redirect()->route('admin.dashboard'); // Redirect to admin dashboard
-        } elseif ($user->role === 'faculty') {
-            return redirect()->route('faculty.dashboard'); // Redirect to faculty dashboard
+        } elseif ($user->role === 'teacher') {
+            return redirect()->route('teacher.dashboard'); // Redirect to faculty dashboard
         } else {
             return redirect()->route('student.dashboard');  // Redirect to student dashboard
         }      
@@ -55,9 +55,9 @@ Route::get('/admin/users', function () {
     return view('admin.users');
 })->name('admin.users')->middleware(['auth', 'role:admin']);
 
-Route::get('/faculty/dashboard', function () {
-    return view('faculty.dashboard');
-})->name('faculty.dashboard')->middleware(['auth', 'role:faculty']);
+Route::get('/teacher/dashboard', function () {
+    return view('teacher.dashboard');
+})->name('teacher.dashboard')->middleware(['auth', 'role:teacher']);
 
 Route::get('/student/dashboard', function () {
     return view('student.dashboard');
@@ -75,15 +75,14 @@ Route::middleware(['web','auth'])->prefix('admin')->name('admin.')->group(functi
 
     // basic admin pages used by the layout
     Route::get('/users', [UsersController::class, 'index'])->name('users');
-    Route::get('/departments', [DepartmentsController::class, 'index'])->name('departments');
-    Route::get('/reports', [ReportsController::class, 'index'])->name('reports');
+    Route::get('/department', [DepartmentsController::class, 'index'])->name('department');
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
 });
 
 // Teacher routes
 Route::middleware(['web','auth'])->prefix('teacher')->name('teacher.')->group(function () {
     Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/classes', [TeacherDashboardController::class, 'classes'])->name('classes');
+    Route::get('/classes', [TeacherDashboardController::class, 'survey'])->name('survey');
     Route::get('/reviews', [TeacherDashboardController::class, 'reviews'])->name('reviews');
 });
 

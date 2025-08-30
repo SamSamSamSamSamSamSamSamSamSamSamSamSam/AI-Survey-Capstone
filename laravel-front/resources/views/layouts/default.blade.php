@@ -26,13 +26,13 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.users') }}" class="nav-link text-white">
-                                    <i class="bi bi-person"></i> <span>Users</span>
+                                <a href="{{ route('admin.department') }}" class="nav-link text-white">
+                                    <i class="bi bi-building"></i> <span>Department</span>
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ route('admin.reports') }}" class="nav-link text-white">
-                                    <i class="bi bi-bar-chart-line"></i> <span>Reports</span>
+                                <a href="{{ route('admin.users') }}" class="nav-link text-white">
+                                    <i class="bi bi-person"></i> <span>Users</span>
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -45,6 +45,16 @@
                             <li class="nav-item">
                                 <a href="{{ route('teacher.dashboard') }}" class="nav-link text-white">
                                     <i class="bi bi-journal-text"></i> <span>Teacher Dashboard</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('teacher.survey') }}" class="nav-link text-white">
+                                    <i class="bi bi-clipboard-check"></i> <span>Survey</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('teacher.reviews') }}" class="nav-link text-white">
+                                    <i class="bi bi-bar-chart-line"></i> <span>Results</span>
                                 </a>
                             </li>
                         @elseif(Auth::user() && Auth::user()->role === 'student')

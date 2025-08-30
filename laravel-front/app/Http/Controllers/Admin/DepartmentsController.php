@@ -9,6 +9,6 @@ class DepartmentsController extends Controller
     public function index()
     {
         // replace with real department data later
-        return view('admin.departments.index');
+        return view('admin.department');
     }
 }

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\User;
+
 
 class DashboardController extends Controller
 {
@@ -25,14 +27,10 @@ class DashboardController extends Controller
         return view('teacher.dashboard', compact('classes','feedbackSummary'));
     }
 
-    public function classes()
+    public function survey()
     {
-        $classes = [
-            ['code'=>'CS101','title'=>'Intro to Programming','students'=>120,'term'=>'2025S1'],
-            ['code'=>'CS201','title'=>'Data Structures','students'=>80,'term'=>'2025S1'],
-        ];
-
-        return view('teacher.classes', compact('classes'));
+        $survey = User::where('role', 'admin')->get();
+        return view('teacher.survey', compact('survey'));
     }
 
     public function reviews()

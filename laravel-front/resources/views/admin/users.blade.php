@@ -1,7 +1,6 @@
 @extends('layouts.default')
 
 @section('content')
-	<x-sidebar />
 	<div class="ml-4">
 		<h1 class="text-2xl font-bold mb-4">Users</h1>
 		<table class="min-w-full bg-white">
