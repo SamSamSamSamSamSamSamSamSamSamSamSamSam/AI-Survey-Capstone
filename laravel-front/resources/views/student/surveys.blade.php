@@ -1,19 +1,19 @@
 @extends('layouts.default')
 
 @section('content')
- <div class="card profile-card p-3" style="width: 300px;">
-    <div class="d-flex align-items-center mb-3">
-      <img src="https://i.pravatar.cc/100?img=12" alt="Avatar" class="me-3">
-      <div>
-        <h5 class="mb-0 fw-bold">Admin Name</h5>
-        <small class="text-muted">Coordinator</small>
-      </div>
-    </div>
-
-    <hr>
-
-    <p class="mb-4">DCISM Coordinator</p>
-
-    <button class="evaluate-btn">Evaluate</button>
-  </div>
+	<div class="ml-4">
+		<h1 class="h4">Surveys</h1>
+		<table class="table mt-3">
+			<thead><tr><th>Course</th><th>Status</th><th>Score</th></tr></thead>
+			<tbody>
+				@foreach($surveys as $s)
+					<tr>
+						<td>{{ $s['course'] }}</td>
+						<td>{{ $s['status'] }}</td>
+						<td>{{ $s['score'] ?? '-' }}</td>
+					</tr>
+				@endforeach
+			</tbody>
+		</table>
+	</div>
 @endsection

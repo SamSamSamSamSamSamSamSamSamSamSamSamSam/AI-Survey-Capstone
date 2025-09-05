@@ -15,11 +15,15 @@
             <!-- Sidebar -->
             <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
                 <div class="d-flex flex-column align-items-sm-start px-3 pt-2 text-white min-vh-100">
-                    <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                        <span class="fs-5 fw-bold">My App</span>
+                    <div style="width: 100%;">
+                    <a href="{{ route('admin.dashboard') }}" class="d-flex align-items-center mb-4 text-white text-decoration-none">
+                            <img src="{{ asset('images/dcismicon.png') }}" alt="dcismicon" id="icon" 
+                                class="me-2" style="height: 32px;">
+                            <span class="fs-5 fw-bold">DCISM</span>
                     </a>
+                    </div>
                     <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-sm-start" id="menu">
-                        @if(Auth::user() && Auth::user()->role === 'admin')
+                        @if(Auth::user() && Auth::user()->hasRole('admin'))
                             <li class="nav-item">
                                 <a href="{{ route('admin.dashboard') }}" class="nav-link text-white">
                                     <i class="bi bi-speedometer2"></i> <span>Admin Dashboard</span>
@@ -41,7 +45,7 @@
                                 </a>
                             </li>
                             
-                        @elseif(Auth::user() && Auth::user()->role === 'teacher')
+                        @elseif(Auth::user() && Auth::user()->hasRole('teacher'))
                             <li class="nav-item">
                                 <a href="{{ route('teacher.dashboard') }}" class="nav-link text-white">
                                     <i class="bi bi-journal-text"></i> <span>Teacher Dashboard</span>
@@ -57,7 +61,7 @@
                                     <i class="bi bi-bar-chart-line"></i> <span>Results</span>
                                 </a>
                             </li>
-                        @elseif(Auth::user() && Auth::user()->role === 'student')
+                        @elseif(Auth::user() && Auth::user()->hasRole('student'))
                             <li class="nav-item">
                                 <a href="{{ route('student.dashboard') }}" class="nav-link text-white">
                                     <i class="bi bi-house"></i> <span>Student Dashboard</span>

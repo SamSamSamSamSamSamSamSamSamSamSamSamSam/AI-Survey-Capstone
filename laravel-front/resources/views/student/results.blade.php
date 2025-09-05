@@ -1,7 +1,6 @@
 @extends('layouts.default')
 
 @section('content')
-	<x-sidebar />
 	<div class="ml-4">
 		<h1 class="h4">Results</h1>
 		@foreach($results as $r)

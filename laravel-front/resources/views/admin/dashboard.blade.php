@@ -40,6 +40,12 @@
 					<p class="text-muted mb-0">Role: <strong>{{ auth()->user()->role ?? 'N/A' }}</strong></p>
 				</div>
 
+				<div class="mb-4">
+					<button class="btn btn-primary me-2" onclick="location.href='{{ route('admin.surveys.create') }}'">
+						<i class="fa-solid fa-plus me-1"></i> Create New Survey
+					</button>
+				</div>
+				
 				{{-- Top summary cards --}}
 				<div class="row g-3 mb-4">
 					<div class="col-12 col-sm-6 col-lg-3">

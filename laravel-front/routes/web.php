@@ -2,6 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\Admin\SurveyController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\ReportsController;
@@ -28,21 +31,19 @@ Route::post('/login', function (Request $request) {
         'password' => 'required|min:6',
     ]);
 
-    if(Auth::attempt($validated)) {
+    if (Auth::attempt($validated)) {
         $request->session()->regenerate();
 
         $user = Auth::user();
-        if ($user->role === 'admin') {
-            return redirect()->route('admin.dashboard'); // Redirect to admin dashboard
-        } elseif ($user->role === 'teacher') {
-            return redirect()->route('teacher.dashboard'); // Redirect to faculty dashboard
+        if ($user->hasRole('admin')) {
+            return redirect()->route('admin.dashboard'); // admin dashboard
+        } elseif ($user->hasRole('teacher')) {
+            return redirect()->route('teacher.dashboard'); // teacher dashboard
         } else {
-            return redirect()->route('student.dashboard');  // Redirect to student dashboard
-        }      
-
+            return redirect()->route('student.dashboard'); // student dashboard
+        }
     }
 
-    // Here you would typically check the credentials and log the user in
     return back()->with('error', 'Invalid credentials. Please try again.');
 })->name('login.submit');
 
@@ -77,6 +78,9 @@ Route::middleware(['web','auth'])->prefix('admin')->name('admin.')->group(functi
     Route::get('/users', [UsersController::class, 'index'])->name('users');
     Route::get('/department', [DepartmentsController::class, 'index'])->name('department');
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+    Route::get('/surveys/create', [SurveyController::class, 'create'])->name('surveys.create');
+    Route::get('/surveys/store', [SurveyController::class, 'view'])->name('surveys.index');
+    Route::post('/surveys', [SurveyController::class, 'store'])->name('surveys.store');
 });
 
 // Teacher routes

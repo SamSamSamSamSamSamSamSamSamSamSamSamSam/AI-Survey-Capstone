@@ -10,7 +10,7 @@ class UsersController extends Controller
     public function index()
     {
         $users = User::select('id','name','email','role')->limit(100)->get();
-        return view('admin.users.index', compact('users'));
+        return view('admin.users', compact('users'));
     }
 }
 
