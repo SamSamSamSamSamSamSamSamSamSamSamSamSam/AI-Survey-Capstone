@@ -9,8 +9,7 @@ class UsersController extends Controller
 {
     public function index()
     {
-        $users = User::select('id','name','email','role')->limit(100)->get();
+        $users = User::with('roles')->paginate(10);
         return view('admin.users', compact('users'));
     }
 }
-

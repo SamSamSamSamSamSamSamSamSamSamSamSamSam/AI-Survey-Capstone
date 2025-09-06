@@ -1,94 +1,96 @@
 @extends('layouts.default')
 
 @section('content')
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Users Management</h2>
-        <a href="#" class="btn btn-primary">
-            <i class="fa fa-user-plus me-1"></i> Add New User
-        </a>
-    </div>
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Manage Users</h5>
+                    <div class="d-flex w-50">
+                        <input 
+                            type="text" 
+                            id="userSearch" 
+                            class="form-control form-control-sm" 
+                            placeholder="Search users by name or email..."
+                        >
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="usersTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 60px;">#</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Roles</th>
+                                    <th class="text-center" style="width: 180px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($users as $user)
+                                    <tr class="user-row">
+                                        <td>{{ $users->firstItem() + $loop->index }}</td>
+                                        <td class="user-name fw-semibold">{{ $user->name }}</td>
+                                        <td class="user-email">{{ $user->email }}</td>
+                                        <td>
+                                            @foreach($user->roles as $role)
+                                                <span class="badge rounded-pill bg-secondary">{{ ucfirst($role->name) }}</span>
+                                            @endforeach
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="#" class="btn btn-sm btn-outline-primary me-1">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                            <form action="#" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">
+                                            No users found.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-    {{-- Flash Messages --}}
-    @if(session('success'))
-        <div class="alert alert-success">
-            <i class="fa fa-check-circle me-1"></i> {{ session('success') }}
-        </div>
-    @endif
-
-    {{-- Users Table --}}
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>#</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{-- Sample rows for UI preview --}}
-                    <tr>
-                        <td>1</td>
-                        <td>Juan Dela Cruz</td>
-                        <td>juan@example.com</td>
-                        <td><span class="badge bg-primary">Admin</span></td>
-                        <td><span class="badge bg-success">Active</span></td>
-                        <td class="text-end">
-                            <a href="#" class="btn btn-sm btn-info text-white">
-                                <i class="fa fa-eye"></i>
-                            </a>
-                            <a href="#" class="btn btn-sm btn-warning">
-                                <i class="fa fa-edit"></i>
-                            </a>
-                            <a href="#" class="btn btn-sm btn-danger">
-                                <i class="fa fa-trash"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>Maria Santos</td>
-                        <td>maria@example.com</td>
-                        <td><span class="badge bg-secondary">Faculty</span></td>
-                        <td><span class="badge bg-danger">Inactive</span></td>
-                        <td class="text-end">
-                            <a href="#" class="btn btn-sm btn-info text-white">
-                                <i class="fa fa-eye"></i>
-                            </a>
-                            <a href="#" class="btn btn-sm btn-warning">
-                                <i class="fa fa-edit"></i>
-                            </a>
-                            <a href="#" class="btn btn-sm btn-danger">
-                                <i class="fa fa-trash"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>Carlos Reyes</td>
-                        <td>carlos@example.com</td>
-                        <td><span class="badge bg-success">Student</span></td>
-                        <td><span class="badge bg-success">Active</span></td>
-                        <td class="text-end">
-                            <a href="#" class="btn btn-sm btn-info text-white">
-                                <i class="fa fa-eye"></i>
-                            </a>
-                            <a href="#" class="btn btn-sm btn-warning">
-                                <i class="fa fa-edit"></i>
-                            </a>
-                            <a href="#" class="btn btn-sm btn-danger">
-                                <i class="fa fa-trash"></i>
-                            </a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                <!-- Pagination -->
+                <div class="card-footer bg-white">
+                    <div class="d-flex justify-content-center mt-2">
+                        {{ $users->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('userSearch');
+    const rows = document.querySelectorAll('#usersTable .user-row');
+
+    searchInput.addEventListener('input', function() {
+        const term = this.value.toLowerCase();
+
+        rows.forEach(row => {
+            const name = row.querySelector('.user-name').textContent.toLowerCase();
+            const email = row.querySelector('.user-email').textContent.toLowerCase();
+            const matches = name.includes(term) || email.includes(term);
+
+            row.style.display = matches ? '' : 'none';
+        });
+    });
+});
+</script>
 @endsection

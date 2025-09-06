@@ -78,10 +78,16 @@ Route::middleware(['web','auth'])->prefix('admin')->name('admin.')->group(functi
     Route::get('/users', [UsersController::class, 'index'])->name('users');
     Route::get('/department', [DepartmentsController::class, 'index'])->name('department');
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+    Route::get('/surveys', [SurveyController::class, 'index'])->name('surveys.index');
     Route::get('/surveys/create', [SurveyController::class, 'create'])->name('surveys.create');
-    Route::get('/surveys/store', [SurveyController::class, 'view'])->name('surveys.index');
     Route::post('/surveys', [SurveyController::class, 'store'])->name('surveys.store');
+    Route::get('/surveys/{survey}', [SurveyController::class, 'show'])->name('surveys.show');
+    Route::get('/surveys/{survey}/edit', [SurveyController::class, 'edit'])->name('surveys.edit'); 
+    Route::put('/surveys/{survey}', [SurveyController::class, 'update'])->name('surveys.update'); 
+    Route::delete('/surveys/{survey}', [SurveyController::class, 'destroy'])->name('surveys.destroy'); 
+    Route::post('/surveys/{survey}/toggle-status', [SurveyController::class, 'toggleStatus'])->name('surveys.toggle-status'); 
 });
+
 
 // Teacher routes
 Route::middleware(['web','auth'])->prefix('teacher')->name('teacher.')->group(function () {
