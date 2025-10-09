@@ -37,6 +37,15 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
+                        <strong>Evaluatee:</strong>
+                        <span class="ms-2">
+                            {{ $survey->evaluatee->name ?? 'N/A' }}
+                            @if($survey->evaluatee && $survey->evaluatee->roles->isNotEmpty())
+                                ({{ ucfirst($survey->evaluatee->roles->first()->name) }})
+                            @endif
+                        </span>
+                    </div>
+                    <div class="mb-3">
                         <strong>Target Audience:</strong>
                         <span class="badge bg-info text-capitalize ms-2">{{ $survey->target_role }}</span>
                     </div>

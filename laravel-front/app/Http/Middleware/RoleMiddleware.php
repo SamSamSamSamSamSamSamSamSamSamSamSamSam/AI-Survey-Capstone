@@ -15,7 +15,10 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (auth()->check() && auth()->user()->role === $role) {
+         $user = auth()->user();
+
+        // Ensure roles are loaded before checking
+        if ($user && $user->roles()->where('name', $role)->exists()) {
             return $next($request);
         }
 

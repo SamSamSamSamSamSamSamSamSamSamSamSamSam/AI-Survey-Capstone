@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class CQIReport extends Model
 {
     use HasFactory;
+    
+    protected $table = 'cqi_reports';
 
     protected $fillable = ['title', 'description', 'survey_id', 'generated_by', 'data', 'file_path'];
 

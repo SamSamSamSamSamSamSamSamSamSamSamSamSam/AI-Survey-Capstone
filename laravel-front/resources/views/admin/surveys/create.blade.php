@@ -1,153 +1,159 @@
 @extends('layouts.default')
 
 @section('content')
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Create New Survey</h2>
-        <a href="{{ route('admin.surveys.index') }}" class="btn btn-outline-secondary">
-            <i class="fa fa-arrow-left me-1"></i> Back to Surveys
-        </a>
-    </div>
-
-    {{-- Validation Errors --}}
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <h6 class="mb-2"><i class="fa fa-exclamation-circle me-1"></i> Please fix the following errors:</h6>
-            <ul class="mb-0 ps-3">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    {{-- Success Message --}}
-    @if(session('success'))
-        <div class="alert alert-success">
-            <i class="fa fa-check-circle me-1"></i> {{ session('success') }}
-        </div>
-    @endif
-
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <form action="{{ route('admin.surveys.store') }}" method="POST">
-                @csrf
-
-                {{-- Survey Title --}}
-                <div class="mb-3">
-                    <label for="title" class="form-label fw-semibold">Survey Title *</label>
-                    <input type="text" name="title" id="title" 
-                           class="form-control" placeholder="Enter survey title" 
-                           value="{{ old('title') }}" required>
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Create New Survey</h5>
+                    <a href="{{ route('admin.dashboard') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fa fa-arrow-left me-1"></i> Back
+                    </a>
                 </div>
 
-                {{-- Survey Description --}}
-                <div class="mb-3">
-                    <label for="description" class="form-label fw-semibold">Survey Description</label>
-                    <textarea name="description" id="description" rows="3" 
-                              class="form-control" placeholder="Enter survey description (optional)">{{ old('description') }}</textarea>
-                </div>
-
-                {{-- Target Role --}}
-                <div class="mb-3">
-                    <label for="target_role" class="form-label fw-semibold">Target Audience *</label>
-                    <select name="target_role" id="target_role" class="form-select" required>
-                        <option value="">-- Select Target Audience --</option>
-                        <option value="admin" {{ old('target_role') == 'admin' ? 'selected' : '' }}>Administrators</option>
-                        <option value="teacher" {{ old('target_role') == 'teacher' ? 'selected' : '' }}>Teachers</option>
-                        <option value="student" {{ old('target_role') == 'student' ? 'selected' : '' }}>Students</option>
-                        <option value="both" {{ old('target_role') == 'both' ? 'selected' : '' }}>Both Teachers and Students</option>
-                    </select>
-                </div>
-
-                {{-- Question Selector --}}
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Add Question</label>
-                    <select id="questionType" class="form-select">
-                        <option value="">-- Select Question Type --</option>
-                        <option value="rating">Rating Scale (1–5)</option>
-                        <option value="text">Open-ended</option>
-                    </select>
-                </div>
-
-                {{-- Dynamic Questions --}}
-                <div id="questionsContainer" class="mb-3">
-                    @if(old('questions'))
-                        @foreach(old('questions') as $oldQuestion)
-                            <div class="card p-3 mb-2 shadow-sm question-card">
-                                <label class="fw-semibold">Question</label>
-                                <input type="text" name="questions[]" class="form-control mb-2" 
-                                       value="{{ $oldQuestion }}" placeholder="Enter your question" required>
-                                <div class="mt-2">
-                                    <button type="button" class="btn btn-sm btn-outline-danger remove-question">
-                                        <i class="fa fa-trash"></i> Remove
-                                    </button>
-                                </div>
-                            </div>
-                        @endforeach
+                <div class="card-body">
+                    {{-- Validation Errors --}}
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <h6 class="fw-semibold mb-2"><i class="fa fa-exclamation-circle me-1"></i> Please correct the following errors:</h6>
+                            <ul class="mb-0 ps-3 small">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
                     @endif
-                </div>
 
-                <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa fa-save me-1"></i> Save Survey
-                    </button>
+                    <form action="{{ route('admin.surveys.store') }}" method="POST">
+                        @csrf
+
+                        {{-- Survey Title --}}
+                        <div class="mb-3">
+                            <label for="title" class="form-label fw-semibold">Survey Title <span class="text-danger">*</span></label>
+                            <input type="text" name="title" id="title" class="form-control form-control-sm"
+                                   placeholder="Enter survey title" value="{{ old('title') }}" required>
+                        </div>
+
+                        {{-- Survey Description --}}
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-semibold">Description</label>
+                            <textarea name="description" id="description" class="form-control form-control-sm" rows="3"
+                                      placeholder="Enter survey description (optional)">{{ old('description') }}</textarea>
+                        </div>
+
+                        <div class="row">
+                            {{-- Person to Evaluate --}}
+                            <div class="col-md-6 mb-3">
+                                <label for="evaluatee_id" class="form-label fw-semibold">Person to Evaluate <span class="text-danger">*</span></label>
+                                <select name="evaluatee_id" id="evaluatee_id" class="form-select form-select-sm" required>
+                                    <option value="">-- Select Faculty or Admin --</option>
+                                    @foreach($faculty as $member)
+                                        <option value="{{ $member->id }}" {{ old('evaluatee_id') == $member->id ? 'selected' : '' }}>
+                                            {{ $member->name }} 
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- Target Audience --}}
+                            <div class="col-md-6 mb-3">
+                                <label for="target_role" class="form-label fw-semibold">Target Audience <span class="text-danger">*</span></label>
+                                <select name="target_role" id="target_role" class="form-select form-select-sm" required>
+                                    <option value="">-- Select Audience --</option>
+                                    <option value="admin" {{ old('target_role') == 'admin' ? 'selected' : '' }}>Administrators</option>
+                                    <option value="teacher" {{ old('target_role') == 'teacher' ? 'selected' : '' }}>Teachers</option>
+                                    <option value="student" {{ old('target_role') == 'student' ? 'selected' : '' }}>Students</option>
+                                    <option value="both" {{ old('target_role') == 'both' ? 'selected' : '' }}>Both Teachers and Students</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        {{-- Add Questions --}}
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0 fw-semibold">Add Questions</h6>
+                            <select id="questionType" class="form-select form-select-sm w-auto">
+                                <option value="">Add Question Type</option>
+                                <option value="rating">Rating Scale (1–5)</option>
+                                <option value="text">Open-ended</option>
+                            </select>
+                        </div>
+
+                        {{-- Dynamic Questions --}}
+                        <div id="questionsContainer" class="mb-3"></div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="fa fa-save me-1"></i> Save Survey
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>
 
-{{-- Script for dynamic question handling --}}
+<style>
+.question-card {
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+.question-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+}
+.remove-question {
+    font-size: 0.8rem;
+}
+</style>
+
 <script>
 document.getElementById('questionType').addEventListener('change', function () {
-    let container = document.getElementById('questionsContainer');
-    let type = this.value;
+    const container = document.getElementById('questionsContainer');
+    const type = this.value;
+    if (!type) return;
+
+    const card = document.createElement('div');
+    card.classList.add('question-card', 'p-3', 'mb-3');
 
     if (type === 'rating') {
-        let card = document.createElement('div');
-        card.classList.add('card', 'p-3', 'mb-2', 'shadow-sm', 'question-card');
         card.innerHTML = `
-            <label class="fw-semibold">Rating Question</label>
-            <input type="text" name="questions[]" class="form-control mb-2" placeholder="Enter your question (e.g., Rate the instructor's knowledge on a scale of 1-5)" required>
-            <small class="text-muted">Scale: 1 = Strongly Disagree, 5 = Strongly Agree</small>
-            <div class="mt-2">
-                <button type="button" class="btn btn-sm btn-outline-danger remove-question">
-                    <i class="fa fa-trash"></i> Remove
-                </button>
+            <label class="form-label fw-semibold">Rating Question</label>
+            <input type="hidden" name="question_types[]" value="rating">
+            <input type="text" name="questions[]" class="form-control form-control-sm mb-2"
+                   placeholder="e.g., Rate the instructor’s clarity (1-5)" required>
+            <div class="small text-muted">
+                <span>Scale Preview: </span>
+                ${[1,2,3,4,5].map(n => `<label class="me-2"><input type="radio" disabled> ${n}</label>`).join('')}
             </div>
+            <button type="button" class="btn btn-outline-danger btn-sm mt-2 remove-question">
+                <i class="fa fa-trash me-1"></i> Remove
+            </button>
         `;
-        container.appendChild(card);
     } else if (type === 'text') {
-        let card = document.createElement('div');
-        card.classList.add('card', 'p-3', 'mb-2', 'shadow-sm', 'question-card');
         card.innerHTML = `
-            <label class="fw-semibold">Open-ended Question</label>
-            <input type="text" name="questions[]" class="form-control mb-2" placeholder="Enter your question" required>
-            <div>
-                <button type="button" class="btn btn-sm btn-outline-danger remove-question">
-                    <i class="fa fa-trash"></i> Remove
-                </button>
-            </div>
+            <label class="form-label fw-semibold">Open-ended Question</label>
+            <input type="hidden" name="question_types[]" value="text">
+            <input type="text" name="questions[]" class="form-control form-control-sm mb-2"
+                   placeholder="e.g., What did you like most about this course?" required>
+            <button type="button" class="btn btn-outline-danger btn-sm remove-question">
+                <i class="fa fa-trash me-1"></i> Remove
+            </button>
         `;
-        container.appendChild(card);
     }
-    this.value = ""; // reset dropdown
+
+    container.appendChild(card);
+    this.value = '';
 });
 
-// Remove Question Event
 document.getElementById('questionsContainer').addEventListener('click', function(e) {
-    if (e.target.classList.contains('remove-question') || e.target.closest('.remove-question')) {
+    if (e.target.closest('.remove-question')) {
         e.target.closest('.question-card').remove();
-    }
-});
-
-// Validate at least one question exists before form submission
-document.querySelector('form').addEventListener('submit', function(e) {
-    const questionCards = document.querySelectorAll('.question-card');
-    if (questionCards.length === 0) {
-        e.preventDefault();
-        alert('Please add at least one question to the survey.');
     }
 });
 </script>

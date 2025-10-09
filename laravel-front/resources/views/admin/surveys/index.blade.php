@@ -2,13 +2,18 @@
 
 @section('content')
 <div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">Survey Management</h2>
-        <a href="{{ route('admin.surveys.create') }}" class="btn btn-primary shadow-sm">
-            <i class="fa fa-plus me-1"></i> Create New Survey
-        </a>
-    </div>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{{ route('admin.dashboard') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fa fa-arrow-left me-1"></i> Back
+            </a>
 
+            <h2 class="fw-bold">Survey Management</h2>
+
+            <a href="{{ route('admin.surveys.create') }}" class="btn btn-primary me-2">
+                <i class="bi bi-plus-circle me-1"></i> Create Survey
+            </a>
+        </div>
+    
     {{-- Flash Messages --}}
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
@@ -30,6 +35,7 @@
                             <tr>
                                 <th class="py-3 ps-4">#</th>
                                 <th class="py-3">Title</th>
+                                <th class="py-3">Evaluatee</th>
                                 <th class="py-3">Target</th>
                                 <th class="py-3">Questions</th>
                                 <th class="py-3">Status</th>
@@ -42,6 +48,7 @@
                                 <tr>
                                     <td class="align-middle ps-4">{{ $index + 1 }}</td>
                                     <td class="align-middle fw-semibold">{{ $survey->title }}</td>
+                                    <td class="align-middle fw-semibold">{{ $survey->evaluatee->name }}</td>
                                     <td class="align-middle">
                                         <span class="badge rounded-pill bg-info text-capitalize">{{ $survey->target_role }}</span>
                                     </td>

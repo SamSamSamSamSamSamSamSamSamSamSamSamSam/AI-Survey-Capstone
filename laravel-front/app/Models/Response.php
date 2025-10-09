@@ -9,7 +9,12 @@ class Response extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['survey_id', 'question_id', 'evaluator_id', 'evaluatee_id', 'subject_id', 'response'];
+    protected $fillable = ['survey_id', 'question_id', 'evaluator_id', 'evaluatee_id', 'subject_id', 'response', 'sentiment_label',
+        'sentiment_score'];
+    
+    protected $casts = [
+        'sentiment_score' => 'float',
+    ];
 
     public function survey()
     {

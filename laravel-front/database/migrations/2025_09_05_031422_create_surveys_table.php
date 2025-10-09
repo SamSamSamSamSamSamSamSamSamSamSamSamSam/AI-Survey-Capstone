@@ -14,7 +14,8 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
-            $table->string('target_role'); // admin, teacher, or both
+            $table->foreignId('evaluatee_id')->constrained('users')->onDelete('cascade');
+            $table->string('target_role');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
@@ -23,7 +24,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('survey_id')->constrained()->onDelete('cascade');
             $table->text('question_text');
-            $table->enum('type', ['multiple_choice', 'rating', 'text'])->default('rating');
+            $table->enum('type', ['rating', 'text'])->default('rating');
             $table->json('options')->nullable(); // For multiple choice questions
             $table->integer('order')->default(0);
             $table->timestamps();
@@ -33,13 +34,13 @@ return new class extends Migration
             $table->id();
             $table->foreignId('survey_id')->constrained()->onDelete('cascade');
             $table->foreignId('question_id')->constrained()->onDelete('cascade');
-            $table->foreignId('evaluator_id')->constrained('users')->onDelete('cascade'); // Who is evaluating
-            $table->foreignId('evaluatee_id')->constrained('users')->onDelete('cascade'); // Who is being evaluated
+            $table->foreignId('evaluator_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('evaluatee_id')->constrained('users')->onDelete('cascade'); 
             $table->foreignId('subject_id')->nullable()->constrained()->onDelete('cascade');
             $table->text('response');
             $table->timestamps();
             
-            $table->unique(['evaluator_id', 'question_id', 'evaluatee_id', 'subject_id'], 'response_unique');
+            $table->unique(['survey_id', 'evaluator_id', 'question_id', 'evaluatee_id', 'subject_id'], 'response_unique');
         });
     }
 

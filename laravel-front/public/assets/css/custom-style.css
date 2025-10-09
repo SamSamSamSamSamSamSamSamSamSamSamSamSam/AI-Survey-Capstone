@@ -1,0 +1,222 @@
+* {
+  font-family: "Inter", sans-serif;
+}
+
+/* SAM Blue: #0b1175 */
+/* SAM Green: #0e4707 */
+
+
+.btn-success {
+    background-color: #0e4707 !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.btn-success:hover {
+    background-color: #0b1175 !important;
+    color: #FFFFFF !important;
+}
+
+.btn-success:active {
+    background-color: #0b1175 !important;
+    color: #FFFFFF !important;
+}
+
+
+.btn-primary {
+    background-color: #0b1175 !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.btn-primary:hover {
+    background-color: #0e4707 !important;
+    color: #FFFFFF !important;
+}
+
+.btn-primary:active {
+    background-color: #0e4707 !important;
+    color: #FFFFFF !important;
+}
+
+
+.btn-secondary {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+
+.btn-danger {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Hide sorting icons */
+table.dataTable thead .sorting:before,
+table.dataTable thead .sorting:after,
+table.dataTable thead .sorting_asc:before,
+table.dataTable thead .sorting_asc:after,
+table.dataTable thead .sorting_desc:before,
+table.dataTable thead .sorting_desc:after {
+    display: none !important;
+}
+
+
+.profile-pg-border {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(26, 71, 214, 0.6) 0%, rgba(25, 199, 131, 0.6) 72%);
+    border-radius: 50%;
+    padding: 3px;
+    box-sizing: border-box;
+}
+
+.mdi-icon-right {
+    font-size: 3.5rem;
+    background: rgb(26, 71, 214);
+    background: linear-gradient(90deg, rgba(26, 71, 214, 0.6) 0%, rgba(25, 199, 131, 0.6) 72%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+}
+
+.card-shadow {
+    position: relative;
+    z-index: 1;
+    border-radius: 4px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table-card-shadow {
+    position: relative;
+    z-index: 1;
+    border-radius: 4px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-picture-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-picture-wrapper::before {
+    content: "";
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 50%;
+    background: linear-gradient(90deg, rgba(26, 71, 214, 0.6) 0%, rgba(25, 199, 131, 0.6) 72%);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.header-profile-user {
+    border-radius: 50%;
+    background-color: transparent;
+    padding: 0px;
+    position: relative;
+    z-index: 2;
+}
+
+.profile-pg-pos {
+    position: relative;
+    width: 90px;
+    height: 90px;
+}
+
+.txt-greetings {
+    font-family: "Jost", sans-serif;
+}
+
+.card-h-100 {
+    position: relative;
+    z-index: 1;
+    border-radius: 4px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.badge-meal-break {
+    font-size: 13px;
+    padding: 5px 10px;
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border-radius: 5px;
+    font-weight: 500;
+}
+
+.badge-work-hours {
+    font-size: 13px;
+    padding: 5px 10px;
+    background-color: rgba(0, 123, 255, 0.2);
+    color: #0d6efd;
+    border-radius: 5px;
+    font-weight: 500;
+}
+
+.badge-circle {
+    display: inline-block;
+    background-color: #4ba6ef; /* Background color of the badge */
+    color: white; /* Text color */
+    font-weight: bold; /* Make the number bold */
+    text-align: center; /* Center the number */
+    vertical-align: middle; /* Center vertically */
+    border-radius: 50%; /* Make the element circular */
+    width: 22px; /* Smaller width of the badge */
+    height: 22px; /* Smaller height of the badge */
+    line-height: 24px; /* Align the number vertically within the circle */
+    font-size: 11px; /* Slightly smaller font size */
+}
+
+.badge-position {
+    background-color: #1E504F;
+}
+
+.badge-position {
+    background-color: #1E504F;
+}
+
+.dataTables_length {
+    display: none;
+}
+
+.divider {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 80%; /* Increase this value to make it longer */
+    width: 1px;
+    background-color: #ccc;
+    transform: translateY(10%); /* Adjust centering */
+}
+.col:not(:last-child) .divider {
+    display: block;
+}
+
+/* Black & White filter */
+.bw-image {
+    filter: grayscale(100%);
+}
+
+.bg-sam-custom {
+    background-color: #1A6448;
+}
+
+.award-gradient-text {
+    background: #59B183;
+    background: linear-gradient(to right, #59B183 45%, #1F7A83 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.custom-text-bold {
+    font-weight: bolder;
+}

@@ -1,0 +1,170 @@
+body {
+    background: rgb(26, 71, 214);
+    background: linear-gradient(90deg, rgba(26, 71, 214, 0.6) 0%, rgba(25, 199, 131, 0.6) 72%);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+
+.animated-background {
+    background: linear-gradient(270deg, rgba(26, 71, 214, 0.5), rgba(25, 199, 131, 0.5));
+    background-size: 400% 400%;
+
+    -webkit-animation: AnimatedBg 10s ease infinite;
+    -moz-animation: AnimatedBg 10s ease infinite;
+    animation: AnimatedBg 10s ease infinite;
+}
+
+    @-webkit-keyframes AnimatedBg {
+        0%{background-position:0% 50%}
+        50%{background-position:100% 50%}
+        100%{background-position:0% 50%}
+    }
+    @-moz-keyframes AnimatedBg {
+        0%{background-position:0% 50%}
+        50%{background-position:100% 50%}
+        100%{background-position:0% 50%}
+    }
+    @keyframes AnimatedBg {
+        0%{background-position:0% 50%}
+        50%{background-position:100% 50%}
+        100%{background-position:0% 50%}
+    }
+
+.auth-card {
+    max-width: 900px;
+    margin: 0 auto;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+.auth-card .left-side {
+    background-image: url('../images/sam-bg-v1.jpg');
+    background-size: cover;
+    background-position: center;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    width: 375px;
+}
+
+.auth-card .right-side {
+    padding: 1rem;
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+    position: relative;
+    overflow: hidden;
+}
+
+.form-container {
+    display: flex;
+    width: 200%;
+    transition: transform 0.6s ease;
+    overflow: hidden;
+}
+
+.form {
+    width: 50%;
+    padding: 0 1rem;
+    box-sizing: border-box;
+}
+
+.slide-left {
+    transform: translateX(0%);
+}
+
+.slide-right {
+    transform: translateX(-50%);
+}
+
+.btn-switch {
+    border: 1px solid #ced4da;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    background-color: #ffffff;
+    width: 200px;
+    margin: 0 auto;
+}
+
+.switch-button {
+    flex: 1;
+    padding: 0.5rem;
+    text-align: center;
+    border-radius: 20px;
+    transition: background-color 0.3s, color 0.3s;
+    cursor: pointer;
+}
+
+.switch-button.active {
+    background-color: #0b1175;
+    color: #ffffff;
+}
+
+.datetime-container {
+    text-align: center;
+    margin: 10px;
+}
+
+.time-style {
+    font-size: 3.3em;
+    font-weight: bold;
+    /* color: #206e15; */
+    color: #333333;
+}
+
+.btn-sign-in {
+    background-color: #0b1175;
+    color: #FFFFFF;
+}
+
+.btn-sign-in:hover {
+    background-color: #0e4707;
+    color: #FFFFFF;
+}
+
+.btn-sign-in:active {
+    background-color: #0e4707 !important;
+    color: #FFFFFF !important;
+}
+
+.date-style {
+    font-size: 1.2em;
+    color: #333333;
+}
+
+.btn-spacing {
+    margin-right: 1em;
+}
+
+.left-side-text {
+    color: #ffffff;
+}
+
+.welcome-msg {
+    color: #FFFFFF;
+    font-weight: 700;
+}
+
+/* Media queries */
+@media (max-width: 768px) {
+    .auth-card {
+        border-radius: 15px;
+    }
+
+    .auth-card .left-side {
+        display: none;
+    }
+
+    .auth-card .right-side {
+        border-radius: 15px;
+    }
+
+    .time-style {
+        font-size: 2.1em;
+    }
+}

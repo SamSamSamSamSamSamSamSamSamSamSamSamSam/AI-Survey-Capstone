@@ -6,13 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Survey;
 use App\Models\Question;
 use Illuminate\Http\Request;
+use App\Models\User;
 
 class SurveyController extends Controller
 {
+
     public function index()
     {
         $surveys = Survey::with(['questions', 'creator'])
-                        ->withCount('questions') // ADDED THIS LINE
+                        ->withCount('questions')
                         ->orderBy('created_at', 'desc')
                         ->get();
                         
@@ -21,7 +23,13 @@ class SurveyController extends Controller
 
     public function create()
     {
-        return view('admin.surveys.create');
+        $faculty = User::whereHas('roles', function ($query) {
+                        $query->whereIn('name', ['teacher', 'admin']);
+                    })
+                    ->orderBy('name')
+                    ->get();
+
+        return view('admin.surveys.create', compact('faculty'));
     }
 
     public function store(Request $request)
@@ -29,33 +37,30 @@ class SurveyController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'evaluatee_id' => 'required|exists:users,id', 
             'questions' => 'required|array|min:1',
             'questions.*' => 'required|string',
+            'question_types' => 'required|array|min:1',
+            'question_types.*' => 'required|string|in:rating,text,multiple_choice',
             'target_role' => 'required|in:admin,teacher,student,both'
         ]);
 
-        // Create the survey
+   
         $survey = Survey::create([
             'title' => $request->title,
             'description' => $request->description,
+            'evaluatee_id' => $request->evaluatee_id,
             'created_by' => auth()->id(),
             'target_role' => $request->target_role,
             'is_active' => true
         ]);
 
-        // Add questions
+
         foreach ($request->questions as $index => $questionText) {
-            // Determine question type based on content or separate field
-            $type = 'text'; // Default type
-            if (strpos(strtolower($questionText), 'scale') !== false || 
-                strpos(strtolower($questionText), 'rate') !== false) {
-                $type = 'rating';
-            }
-            
             Question::create([
                 'survey_id' => $survey->id,
                 'question_text' => $questionText,
-                'type' => $type,
+                'type' => $request->question_types[$index],
                 'order' => $index
             ]);
         }
@@ -64,64 +69,13 @@ class SurveyController extends Controller
                          ->with('success', 'Survey created successfully!');
     }
 
-    public function show(Survey $survey)
-    {
-        $survey->load(['questions', 'creator', 'responses']);
-        return view('admin.surveys.show', compact('survey'));
-    }
-
-    public function edit(Survey $survey)
-    {
-        $survey->load('questions');
-        return view('admin.surveys.edit', compact('survey'));
-    }
-
-    public function update(Request $request, Survey $survey)
-    {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'questions' => 'required|array|min:1',
-            'questions.*' => 'required|string',
-            'target_role' => 'required|in:admin,teacher,student,both'
-        ]);
-
-        // Update the survey
-        $survey->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'target_role' => $request->target_role
-        ]);
-
-        // Remove existing questions
-        $survey->questions()->delete();
-
-        // Add updated questions
-        foreach ($request->questions as $index => $questionText) {
-            $type = 'text';
-            if (strpos(strtolower($questionText), 'scale') !== false || 
-                strpos(strtolower($questionText), 'rate') !== false) {
-                $type = 'rating';
-            }
-            
-            Question::create([
-                'survey_id' => $survey->id,
-                'question_text' => $questionText,
-                'type' => $type,
-                'order' => $index
-            ]);
-        }
-
-        return redirect()->route('admin.surveys.index')
-                         ->with('success', 'Survey updated successfully!');
-    }
 
     public function destroy(Survey $survey)
     {
-        // Delete related questions first
+       
         $survey->questions()->delete();
         
-        // Then delete the survey
+ 
         $survey->delete();
 
         return redirect()->route('admin.surveys.index')
@@ -138,4 +92,64 @@ class SurveyController extends Controller
         return redirect()->back()
                          ->with('success', "Survey {$status} successfully!");
     }
+
+    public function show($id)
+    {
+
+        $survey = Survey::with(['creator', 'questions', 'evaluatee'])->findOrFail($id);
+
+        return view('admin.surveys.show', compact('survey'));
+    }
+
+    public function edit($id)
+    {
+        $survey = Survey::with('questions')->findOrFail($id);
+
+     
+        $evaluatees = User::whereHas('roles', function ($q) {
+            $q->whereIn('name', ['teacher', 'admin']);
+        })->get();
+
+        return view('admin.surveys.edit', compact('survey', 'evaluatees'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $survey = Survey::findOrFail($id);
+
+
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'target_role' => 'required|string|in:admin,teacher,student,both',
+            'evaluatee_id' => 'nullable|exists:users,id',
+            'questions' => 'required|array',
+            'questions.*' => 'required|string',
+            'question_types' => 'required|array',
+            'question_types.*' => 'in:rating,text',
+        ]);
+
+
+        $survey->update([
+            'title' => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'target_role' => $validated['target_role'],
+            'evaluatee_id' => $validated['evaluatee_id'] ?? null,
+        ]);
+
+        $survey->questions()->delete();
+
+        foreach ($validated['questions'] as $index => $text) {
+            $survey->questions()->create([
+                'question_text' => $text,
+                'type' => $validated['question_types'][$index],
+            ]);
+        }
+
+        return redirect()
+            ->route('admin.surveys.index', $survey->id)
+            ->with('success', 'Survey updated successfully!');
+    }
+
+
 }

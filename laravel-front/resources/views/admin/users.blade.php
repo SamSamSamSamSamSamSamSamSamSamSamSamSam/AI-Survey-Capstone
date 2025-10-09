@@ -7,7 +7,15 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Manage Users</h5>
-                    <div class="d-flex w-50">
+                    <div class="d-flex align-items-center w-50">
+                        <div class="col-4 me-3">
+                            <select id="roleFilter" class="form-select form-select-sm me-2">
+                                <option value="all">All Roles</option>
+                                @foreach($roles as $role)
+                                    <option value="{{ $role->name }}">{{ ucfirst($role->name) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <input 
                             type="text" 
                             id="userSearch" 
@@ -34,7 +42,7 @@
                                         <td>{{ $users->firstItem() + $loop->index }}</td>
                                         <td class="user-name fw-semibold">{{ $user->name }}</td>
                                         <td class="user-email">{{ $user->email }}</td>
-                                        <td>
+                                        <td class="user-roles" data-roles="{{ $user->roles->pluck('name')->toJson() }}">
                                             @foreach($user->roles as $role)
                                                 <span class="badge rounded-pill bg-secondary">{{ ucfirst($role->name) }}</span>
                                             @endforeach
@@ -64,7 +72,6 @@
                     </div>
                 </div>
 
-                <!-- Pagination -->
                 <div class="card-footer bg-white">
                     <div class="d-flex justify-content-center mt-2">
                         {{ $users->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
@@ -78,19 +85,28 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('userSearch');
+    const roleFilter = document.getElementById('roleFilter');
     const rows = document.querySelectorAll('#usersTable .user-row');
 
-    searchInput.addEventListener('input', function() {
-        const term = this.value.toLowerCase();
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedRole = roleFilter.value;
 
         rows.forEach(row => {
             const name = row.querySelector('.user-name').textContent.toLowerCase();
             const email = row.querySelector('.user-email').textContent.toLowerCase();
-            const matches = name.includes(term) || email.includes(term);
+            const rolesJson = row.querySelector('.user-roles').dataset.roles;
+            const userRoles = JSON.parse(rolesJson);
 
-            row.style.display = matches ? '' : 'none';
+            const matchesSearch = name.includes(searchTerm) || email.includes(searchTerm);
+            const matchesRole = selectedRole === 'all' || userRoles.includes(selectedRole);
+            
+            row.style.display = matchesSearch && matchesRole ? '' : 'none';
         });
-    });
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    roleFilter.addEventListener('change', filterTable);
 });
 </script>
 @endsection
