@@ -3,112 +3,134 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Survey;
-use App\Models\User;
 use App\Models\Response;
-use App\Models\CqiReport;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // --- Summary Metrics ---
-        $totalSurveys = Survey::count();
-        $facultyCount = User::whereHas('roles', fn($q) => $q->where('name', 'faculty'))->count();
-        $studentCount = User::whereHas('roles', fn($q) => $q->where('name', 'student'))->count();
-        $avgRating    = round(Response::avg('response'), 2) ?: 0;
-        $cqiReports   = CqiReport::count();
+        $surveyId = $request->query('survey_id');
 
-        // --- Chart Data ---
-        $departmentPerformance = Response::selectRaw('subject_id, AVG(response) as avg_rating')
-            ->groupBy('subject_id')
-            ->pluck('avg_rating', 'subject_id')
-            ->toArray();
+        // Cache results for short time to avoid heavy recalcs on every page load
+        $cacheKey = 'admin_dashboard_' . ($surveyId ?? 'all');
+        $data = Cache::remember($cacheKey, 60, function () use ($surveyId) {
 
-        if (empty($departmentPerformance)) {
-            $departmentPerformance = ['Math' => 4.2, 'Science' => 3.8, 'English' => 4.5];
-        }
+            // Rating responses only (questions.type = 'rating')
+            $ratingQuery = Response::whereHas('question', fn($q) => $q->where('type', 'rating'))
+                ->when($surveyId, fn($q) => $q->where('survey_id', $surveyId));
 
-        $participation = Survey::selectRaw('title, (SELECT COUNT(*) FROM responses WHERE responses.survey_id = surveys.id) as participant_count')
-            ->pluck('participant_count', 'title')
-            ->toArray();
+            // Pull numeric responses as collection of floats
+            $ratingValues = $ratingQuery->pluck('response')
+                ->map(fn($v) => is_numeric($v) ? (float) $v : null)
+                ->filter();
 
-        if (empty($participation)) {
-            $participation = ['Midterm Survey' => 45, 'Finals Survey' => 52, 'Course Eval' => 38];
-        }
+            $count = $ratingValues->count();
+            $mean = $count ? round($ratingValues->avg(), 3) : null;
 
-        $sentimentCounts = Response::selectRaw('response, COUNT(*) as count')
-            ->groupBy('response')
-            ->pluck('count', 'response')
-            ->toArray();
+            // median
+            $median = null;
+            if ($count) {
+                $sorted = $ratingValues->sort()->values();
+                $mid = (int) floor(($count - 1) / 2);
+                $median = ($count % 2) ? $sorted[$mid] : round((($sorted[$mid] + $sorted[$mid + 1]) / 2), 3);
+            }
 
-        if (empty($sentimentCounts)) {
-            $sentimentCounts = ['Positive' => 60, 'Neutral' => 25, 'Negative' => 15];
-        }
+            // mode
+            $mode = null;
+            if ($count) {
+                $freq = $ratingValues->countBy()->sortDesc();
+                $mode = $freq->keys()->first();
+            }
 
-        $facultyPerformance = Response::selectRaw('subject_id, AVG(response) as avg_rating')
-            ->groupBy('subject_id')
-            ->pluck('avg_rating', 'subject_id')
-            ->toArray();
+            // population standard deviation
+            $stddev = null;
+            if ($count) {
+                $avg = $mean;
+                $variance = $ratingValues->reduce(fn($carry, $x) => $carry + pow($x - $avg, 2), 0) / $count;
+                $stddev = round(sqrt($variance), 3);
+            }
 
-        if (empty($facultyPerformance)) {
-            $facultyPerformance = ['Prof. A' => 4.3, 'Prof. B' => 3.9, 'Prof. C' => 4.6];
-        }
+            // Sentiment aggregates per evaluatee
+            $sentimentRows = Response::select('evaluatee_id', 'sentiment_label', DB::raw('count(*) as cnt'))
+                ->when($surveyId, fn($q) => $q->where('survey_id', $surveyId))
+                ->groupBy('evaluatee_id', 'sentiment_label')
+                ->get()
+                ->groupBy('evaluatee_id');
 
-        $topFaculty = User::whereHas('roles', fn($q) => $q->where('name', 'faculty'))
-            ->withAvg('evaluationsReceived as avg_rating', 'response')
-            ->orderByDesc('avg_rating')
-            ->take(5)
-            ->pluck('avg_rating', 'name')
-            ->toArray();
+            $sentimentPerPerson = [];
+            foreach ($sentimentRows as $evaluateeId => $group) {
+                $total = $group->sum('cnt');
+                $labels = $group->pluck('cnt', 'sentiment_label')->toArray();
+                $positive = $labels['positive'] ?? 0;
+                $negative = $labels['negative'] ?? 0;
+                $neutral = $labels['neutral'] ?? 0;
+                $user = User::find($evaluateeId);
+                $sentimentPerPerson[] = [
+                    'evaluatee_id' => $evaluateeId,
+                    'name' => $user?->name ?? "User {$evaluateeId}",
+                    'total' => $total,
+                    'positive' => $positive,
+                    'negative' => $negative,
+                    'neutral' => $neutral,
+                    'positive_pct' => $total ? round($positive / $total * 100, 1) : 0,
+                    'negative_pct' => $total ? round($negative / $total * 100, 1) : 0,
+                    'neutral_pct' => $total ? round($neutral / $total * 100, 1) : 0,
+                ];
+            }
 
-        if (empty($topFaculty)) {
-            $topFaculty = ['Prof. Reyes' => 4.7, 'Prof. Santos' => 4.6, 'Prof. Cruz' => 4.4];
-        }
+            // Top performing faculty by average rating (require at least 3 ratings)
+            $topPerformersQuery = DB::table('responses')
+                ->join('questions', 'responses.question_id', '=', 'questions.id')
+                ->select('responses.evaluatee_id', DB::raw('avg(CAST(responses.response AS DECIMAL(8,3))) as avg_rating'), DB::raw('count(*) as cnt'))
+                ->where('questions.type', 'rating')
+                ->when($surveyId, fn($q) => $q->where('responses.survey_id', $surveyId))
+                ->groupBy('responses.evaluatee_id')
+                ->having('cnt', '>=', 3)
+                ->orderByDesc('avg_rating')
+                ->limit(10)
+                ->get();
 
-        $sentimentTrend = Response::selectRaw('survey_id, 
-                SUM(response >= 4)*100/COUNT(*) as positive,
-                SUM(response <= 2)*100/COUNT(*) as negative')
-            ->groupBy('survey_id')
-            ->orderBy('survey_id')
-            ->get()
-            ->map(fn($item) => [
-                'semester' => 'Survey '.$item->survey_id,
-                'positive' => round($item->positive, 2),
-                'negative' => round($item->negative, 2)
-            ])
-            ->toArray();
+            $topPerformers = $topPerformersQuery->map(function ($row) {
+                $user = User::find($row->evaluatee_id);
+                return [
+                    'evaluatee_id' => $row->evaluatee_id,
+                    'name' => $user?->name ?? "User {$row->evaluatee_id}",
+                    'avg_rating' => round((float)$row->avg_rating, 3),
+                    'count' => $row->cnt,
+                ];
+            })->toArray();
 
-        if (empty($sentimentTrend)) {
-            $sentimentTrend = [
-                ['semester' => 'Midterm 2025', 'positive' => 72, 'negative' => 15],
-                ['semester' => 'Finals 2025', 'positive' => 68, 'negative' => 20],
-                ['semester' => '1st Sem 2026', 'positive' => 80, 'negative' => 10],
+            // Monthly average rating time series (YYYY-MM)
+            $monthly = DB::table('responses')
+                ->join('questions', 'responses.question_id', '=', 'questions.id')
+                ->select(DB::raw("DATE_FORMAT(responses.created_at, '%Y-%m') as month"), DB::raw('avg(CAST(responses.response AS DECIMAL(8,3))) as avg_rating'))
+                ->where('questions.type', 'rating')
+                ->when($surveyId, fn($q) => $q->where('responses.survey_id', $surveyId))
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get();
+
+            $monthlyLabels = $monthly->pluck('month')->toArray();
+            $monthlyAvg = $monthly->pluck('avg_rating')->map(fn($v) => round((float)$v, 3))->toArray();
+
+            return [
+                'mean' => $mean,
+                'median' => $median,
+                'mode' => $mode,
+                'stddev' => $stddev,
+                'rating_count' => $count,
+                'sentimentPerPerson' => $sentimentPerPerson,
+                'topPerformers' => $topPerformers,
+                'monthlyLabels' => $monthlyLabels,
+                'monthlyAvg' => $monthlyAvg,
             ];
-        }
+        });
 
-        $cqiReportsList = CqiReport::latest()->take(5)->get()->toArray();
-        if (empty($cqiReportsList)) {
-            $cqiReportsList = [
-                ['title' => 'Q1 Faculty Evaluation', 'survey' => 'Midterm 2025', 'author' => 'Admin', 'date' => '2025-05-15'],
-                ['title' => 'Engineering Dept Review', 'survey' => 'Finals 2025', 'author' => 'QA Office', 'date' => '2025-06-05'],
-            ];
-        }
-
-        $comments = Response::latest()->take(6)->get(['evaluator_id', 'response'])->toArray();
-        if (empty($comments)) {
-            $comments = [
-                ['author' => 'Student A', 'text' => 'The instructor provides detailed feedback.'],
-                ['author' => 'Student B', 'text' => 'Lectures are engaging and well-prepared.'],
-                ['author' => 'Student C', 'text' => 'Would appreciate faster grading turnaround.'],
-            ];
-        }
-
-        return view('admin.dashboard', compact(
-            'totalSurveys', 'facultyCount', 'studentCount', 'avgRating', 'cqiReports',
-            'departmentPerformance', 'participation', 'sentimentCounts',
-            'facultyPerformance', 'topFaculty', 'sentimentTrend', 'cqiReportsList', 'comments'
-        ));
+        // Pass to view
+        return view('admin.dashboard', $data);
     }
 }

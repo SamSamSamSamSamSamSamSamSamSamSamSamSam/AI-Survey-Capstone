@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use App\Models\Survey;
 use App\Models\Response;
+use App\Jobs\RunSentimentAnalysis;
 use Illuminate\Http\Request;
 
 class TeacherSurveyController extends Controller
@@ -70,6 +71,8 @@ class TeacherSurveyController extends Controller
                 ]
             );
         }
+        
+        RunSentimentAnalysis::dispatch();
 
         return redirect()->route('teacher.survey')
             ->with('success', 'Survey submitted successfully!');

@@ -1,73 +1,137 @@
 @extends('layouts.default')
 
-@section('header')
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-@endsection
-
 @section('content')
-<div class="container-fluid py-4">
+<div class="container py-4">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h4 fw-semibold">Admin Dashboard</h1>
-        <div>
+        <h2 class="mb-0">Faculty Improvement Dashboard</h2>
+        <div class="admin-controls">
             <a href="{{ route('admin.surveys.create') }}" class="btn btn-primary me-2">
                 <i class="bi bi-plus-circle me-1"></i> Create Survey
             </a>
             <a href="{{ route('admin.surveys.index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-eye me-1"></i> View Surveys
+                <i class="bi bi-eye me-1 bi bi-eye"></i> View Surveys
             </a>
         </div>
     </div>
 
-    {{-- Summary Cards --}}
     <div class="row g-3 mb-4">
-        <x-admin.metric icon="fa-list" color="primary" value="{{ $totalSurveys }}" label="Total Surveys" />
-        <x-admin.metric icon="fa-user-tie" color="success" value="{{ $facultyCount }}" label="Faculty Evaluated" />
-        <x-admin.metric icon="fa-users" color="info" value="{{ $studentCount }}" label="Student Respondents" />
-        <x-admin.metric icon="fa-star" color="warning" value="{{ $avgRating }}" label="Average Rating" />
-        <x-admin.metric icon="fa-file-lines" color="danger" value="{{ $cqiReports }}" label="CQI Reports" />
+        <div class="col-md-3">
+            <div class="card p-3">
+                <h6>Mean Rating</h6>
+                <h3>{{ $mean !== null ? number_format($mean, 2) : 'N/A' }}</h3>
+                <small class="text-muted">Average score across rating questions</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3">
+                <h6>Median Rating</h6>
+                <h3>{{ $median !== null ? number_format($median, 2) : 'N/A' }}</h3>
+                <small class="text-muted">Middle score (less sensitive to outliers)</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3">
+                <h6>Mode Rating</h6>
+                <h3>{{ $mode !== null ? $mode : 'N/A' }}</h3>
+                <small class="text-muted">Most frequent rating</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3">
+                <h6>Std. Deviation</h6>
+                <h3>{{ $stddev !== null ? number_format($stddev, 2) : 'N/A' }}</h3>
+                <small class="text-muted">Spread of ratings (lower = consistent)</small>
+            </div>
+        </div>
     </div>
 
-    {{-- Charts --}}
-    <div class="row g-4 mb-4">
-        <div class="col-lg-8">
+    <div class="row mb-4">
+        <div class="col-md-8">
             <div class="card p-3">
-                <h6 class="fw-semibold mb-2">Department Performance</h6>
-                <canvas id="deptPerformanceChart"></canvas>
+                <h5>Monthly Average Rating</h5>
+                <canvas id="monthlyChart" height="120"></canvas>
+                <p class="mt-2 text-muted small">
+                    Interpretation:
+                    @if($monthlyAvg && count($monthlyAvg))
+                        If the line trends upward, departmental ratings are improving; downward = decline; flat = stable.
+                    @else
+                        Not enough rating data to show a trend yet.
+                    @endif
+                </p>
             </div>
         </div>
-        <div class="col-lg-4">
-            <div class="card p-3 mb-3">
-                <h6 class="fw-semibold mb-2">Survey Participation</h6>
-                <canvas id="participationChart"></canvas>
-            </div>
-            <div class="card p-3">
-                <h6 class="fw-semibold mb-2">Feedback Sentiment</h6>
-                <canvas id="sentimentChart"></canvas>
-            </div>
-        </div>
-    </div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-lg-6">
+        <div class="col-md-4">
             <div class="card p-3">
-                <h6 class="fw-semibold mb-2">Faculty Performance</h6>
-                <canvas id="facultyPerformanceChart"></canvas>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="card p-3">
-                <h6 class="fw-semibold mb-2">Top Performing Faculty</h6>
-                <canvas id="topFacultyChart"></canvas>
+                <h5>Top Performing Faculty</h5>
+                <table class="table table-sm mt-2">
+                    <thead>
+                        <tr><th>Name</th><th>Avg</th><th>Responses</th></tr>
+                    </thead>
+                    <tbody>
+                        @forelse($topPerformers as $p)
+                            <tr>
+                                <td>{{ $p['name'] }}</td>
+                                <td>{{ number_format($p['avg_rating'], 2) }}</td>
+                                <td>{{ $p['count'] }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="3">No top performers (need at least 3 rating responses)</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+                <p class="small text-muted">Top performers are sorted by average rating (min 3 responses).</p>
             </div>
         </div>
     </div>
 
     <div class="card p-3 mb-4">
-        <h6 class="fw-semibold mb-2">Sentiment Trend</h6>
-        <canvas id="sentimentTrendChart"></canvas>
+        <h5>Sentiment Distribution by Person</h5>
+        <table class="table table-striped mt-2">
+            <thead><tr><th>Person</th><th>Total</th><th>Positive %</th><th>Negative %</th><th>Neutral %</th></tr></thead>
+            <tbody>
+                @foreach($sentimentPerPerson as $row)
+                    <tr>
+                        <td>{{ $row['name'] }}</td>
+                        <td>{{ $row['total'] }}</td>
+                        <td>{{ $row['positive_pct'] }}%</td>
+                        <td>{{ $row['negative_pct'] }}%</td>
+                        <td>{{ $row['neutral_pct'] }}%</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
 
 </div>
+
+<!-- Chart.js from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const monthlyLabels = @json($monthlyLabels ?? []);
+    const monthlyAvg = @json($monthlyAvg ?? []);
+
+    const ctx = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: monthlyLabels,
+            datasets: [{
+                label: 'Average Rating',
+                data: monthlyAvg,
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13,110,253,0.05)',
+                tension: 0.2,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, suggestedMax: 5 }
+            }
+        }
+    });
+</script>
 @endsection
