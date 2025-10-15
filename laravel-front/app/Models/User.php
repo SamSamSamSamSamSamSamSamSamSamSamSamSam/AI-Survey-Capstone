@@ -11,20 +11,18 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'name', 'email', 'password',
     ];
 
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password', 'remember_token',
     ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
 
+    // === Roles ===
     public function roles()
     {
         return $this->belongsToMany(Role::class);
@@ -39,24 +37,22 @@ class User extends Authenticatable
         return !!$role->intersect($this->roles)->count();
     }
 
-    public function assignedSubjects()
+    // === Subjects ===
+    // Subjects this user teaches
+    public function teachingSubjects()
     {
-        return $this->belongsToMany(Subject::class, 'subject_teacher', 'teacher_id');
+        return $this->belongsToMany(Subject::class, 'subject_teacher', 'teacher_id', 'subject_id')
+                    ->withPivot('group');
     }
 
-    public function studyLoads()
+    // Subjects this user is enrolled in (as a student)
+    public function enrolledSubjects()
     {
-        return $this->hasMany(StudyLoad::class, 'student_id');
+        return $this->belongsToMany(Subject::class, 'subject_student', 'student_id', 'subject_id')
+                    ->withPivot('group');
     }
 
-    public function currentSubjects()
-    {
-        return $this->belongsToMany(Subject::class, 'study_loads', 'student_id', 'subject_id')
-                    ->withPivot('semester', 'academic_year')
-                    ->wherePivot('semester', $this->currentSemester())
-                    ->wherePivot('academic_year', $this->currentAcademicYear());
-    }
-
+    // === Surveys and Responses ===
     public function createdSurveys()
     {
         return $this->hasMany(Survey::class, 'created_by');
@@ -75,17 +71,5 @@ class User extends Authenticatable
     public function generatedReports()
     {
         return $this->hasMany(CQIReport::class, 'generated_by');
-    }
-
-    private function currentSemester()
-    {
-        // Implement logic to determine current semester
-        return 'First'; // Example
-    }
-
-    private function currentAcademicYear()
-    {
-        // Implement logic to determine current academic year
-        return date('Y'); // Example
     }
 }

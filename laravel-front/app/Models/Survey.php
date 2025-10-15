@@ -9,7 +9,16 @@ class Survey extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'description', 'created_by', 'evaluatee_id', 'target_role', 'is_active'];
+    protected $fillable = [
+        'title',
+        'description',
+        'created_by',
+        'evaluatee_id',
+        'subject_id',
+        'target_role',
+        'is_active',
+        'group'
+    ];
 
     public function creator()
     {
@@ -19,6 +28,11 @@ class Survey extends Model
     public function evaluatee()
     {
         return $this->belongsTo(User::class, 'evaluatee_id');
+    }
+
+    public function subject()
+    {
+        return $this->belongsTo(Subject::class, 'subject_id');
     }
 
     public function questions()
@@ -35,6 +49,4 @@ class Survey extends Model
     {
         return $this->hasMany(CQIReport::class);
     }
-
-    
 }

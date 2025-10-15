@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Survey;
 use App\Models\Question;
+use App\Models\Subject;
 use Illuminate\Http\Request;
 use App\Models\User;
 
@@ -38,6 +39,8 @@ class SurveyController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'evaluatee_id' => 'required|exists:users,id', 
+            'subject_id' => 'required|exists:subjects,id',
+            'group' => 'nullable|string',
             'questions' => 'required|array|min:1',
             'questions.*' => 'required|string',
             'question_types' => 'required|array|min:1',
@@ -50,6 +53,8 @@ class SurveyController extends Controller
             'title' => $request->title,
             'description' => $request->description,
             'evaluatee_id' => $request->evaluatee_id,
+            'subject_id' => $request->subject_id,
+            'group' => $request->group,
             'created_by' => auth()->id(),
             'target_role' => $request->target_role,
             'is_active' => true
@@ -67,6 +72,27 @@ class SurveyController extends Controller
 
         return redirect()->route('admin.surveys.index')
                          ->with('success', 'Survey created successfully!');
+    }
+    
+    public function getSubjectsByTeacher($teacherId)
+    {
+        $subjects = Subject::whereHas('teachers', function ($query) use ($teacherId) {
+            $query->where('users.id', $teacherId);
+            })
+            ->with(['teachers' => function ($q) use ($teacherId) {
+                    $q->where('users.id', $teacherId);
+            }])
+            ->get()
+            ->map(function ($subject) use ($teacherId) {
+                $teacher = $subject->teachers->firstWhere('id', $teacherId);
+                return [
+                    'id' => $subject->id,
+                    'name' => "{$teacher->pivot->group} - {$subject->name}",
+                    'group' => $teacher->pivot->group, 
+                ];
+        });
+
+        return response()->json($subjects);
     }
 
 
@@ -103,15 +129,34 @@ class SurveyController extends Controller
 
     public function edit($id)
     {
-        $survey = Survey::with('questions')->findOrFail($id);
+        $survey = Survey::with(['questions', 'evaluatee.teachingSubjects'])->findOrFail($id);
 
-     
         $evaluatees = User::whereHas('roles', function ($q) {
             $q->whereIn('name', ['teacher', 'admin']);
         })->get();
 
-        return view('admin.surveys.edit', compact('survey', 'evaluatees'));
+        $subjects = [];
+        if ($survey->evaluatee) {
+            $subjects = Subject::whereHas('teachers', function ($query) use ($survey) {
+                $query->where('users.id', $survey->evaluatee_id);
+            })
+            ->with(['teachers' => function ($q) use ($survey) {
+                $q->where('users.id', $survey->evaluatee_id);
+            }])
+            ->get()
+            ->map(function ($subject) use ($survey) {
+                $teacher = $subject->teachers->firstWhere('id', $survey->evaluatee_id);
+                return [
+                    'id' => $subject->id,
+                    'name' => "{$teacher->pivot->group} - {$subject->name}",
+                    'group' => $teacher->pivot->group,
+                ];
+            });
+        }   
+
+        return view('admin.surveys.edit', compact('survey', 'evaluatees', 'subjects'));
     }
+    
 
     public function update(Request $request, $id)
     {
@@ -123,6 +168,7 @@ class SurveyController extends Controller
             'description' => 'nullable|string',
             'target_role' => 'required|string|in:admin,teacher,student,both',
             'evaluatee_id' => 'nullable|exists:users,id',
+            'subject_id' => 'required|exists:subjects,id',
             'questions' => 'required|array',
             'questions.*' => 'required|string',
             'question_types' => 'required|array',
@@ -135,6 +181,7 @@ class SurveyController extends Controller
             'description' => $validated['description'] ?? null,
             'target_role' => $validated['target_role'],
             'evaluatee_id' => $validated['evaluatee_id'] ?? null,
+            'subject_id' => $validated['subject_id'],
         ]);
 
         $survey->questions()->delete();

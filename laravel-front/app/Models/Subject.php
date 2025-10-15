@@ -11,27 +11,27 @@ class Subject extends Model
 
     protected $fillable = ['course_code', 'name', 'description'];
 
+
     public function teachers()
     {
-        return $this->belongsToMany(User::class, 'subject_teacher', 'subject_id', 'teacher_id');
+        return $this->belongsToMany(User::class, 'subject_teacher', 'subject_id', 'teacher_id')
+                    ->withPivot('group');
     }
+
 
     public function students()
     {
-        return $this->belongsToMany(User::class, 'study_loads', 'subject_id', 'student_id')
-                    ->withPivot('semester', 'academic_year');
+        return $this->belongsToMany(User::class, 'subject_student', 'subject_id', 'student_id')
+                    ->withPivot('group');
     }
 
-    public function studyLoads()
-    {
-        return $this->hasMany(StudyLoad::class);
-    }
 
     public function surveys()
     {
-        return $this->hasMany(Survey::class);
+        return $this->hasMany(Survey::class, 'subject_id');
     }
 
+ 
     public function responses()
     {
         return $this->hasMany(Response::class);

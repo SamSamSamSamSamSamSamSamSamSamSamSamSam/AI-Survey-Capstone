@@ -55,6 +55,14 @@
                                     @endforeach
                                 </select>
                             </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="subject_id" class="form-label fw-semibold">Course</label>
+                                <select name="subject_id" id="subject_id" class="form-select form-select-sm" required>
+                                    <option value="">-- Select Course --</option>
+                                </select>
+                            </div>
+                            <input type="hidden" name="group" id="group_field">
 
                             {{-- Target Audience --}}
                             <div class="col-md-6 mb-3">
@@ -155,6 +163,43 @@ document.getElementById('questionsContainer').addEventListener('click', function
     if (e.target.closest('.remove-question')) {
         e.target.closest('.question-card').remove();
     }
+});
+
+document.getElementById('evaluatee_id').addEventListener('change', function () {
+    const teacherId = this.value;
+    const subjectSelect = document.getElementById('subject_id');
+    subjectSelect.innerHTML = '<option value="">-- Loading subjects... --</option>';
+
+    if (!teacherId) {
+        subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
+        return;
+    }
+
+    fetch(`/admin/teachers/${teacherId}/subjects`)
+        .then(response => response.json())
+        .then(subjects => {
+            subjectSelect.innerHTML = '<option value="">-- Select Subject --</option>';
+            if (subjects.length === 0) {
+                subjectSelect.innerHTML = '<option value="">No subjects found for this teacher</option>';
+            } else {
+                subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject.id;
+                    option.dataset.group = subject.group;
+                    option.textContent = subject.name;
+                    subjectSelect.appendChild(option);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching subjects:', error);
+            subjectSelect.innerHTML = '<option value="">Error loading subjects</option>';
+        });
+});
+
+document.getElementById('subject_id').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    document.getElementById('group_field').value = selectedOption.dataset.group || '';
 });
 </script>
 @endsection

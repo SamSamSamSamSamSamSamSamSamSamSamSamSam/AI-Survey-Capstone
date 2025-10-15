@@ -66,7 +66,8 @@ Route::middleware(['web','auth', 'role:admin'])->prefix('admin')->name('admin.')
     Route::resource('surveys', SurveyController::class); 
 
     // Custom Route (Keep this one, as it's not a standard REST action)
-    Route::post('/surveys/{survey}/toggle-status', [SurveyController::class, 'toggleStatus'])->name('surveys.toggle-status'); 
+    Route::post('/surveys/{survey}/toggle-status', [SurveyController::class, 'toggleStatus'])->name('surveys.toggle-status');
+    Route::get('/teachers/{teacherId}/subjects', [SurveyController::class, 'getSubjectsByTeacher'])->name('teachers.subjects');
 });
 
 
@@ -93,7 +94,7 @@ Route::middleware(['web','auth', 'role:student'])->prefix('student')->name('stud
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
 
         // Surveys
-        Route::get('/surveys', [StudentSurveyController::class, 'index'])->name('surveys');
+        Route::get('/surveys', [StudentSurveyController::class, 'index'])->name('survey');
         Route::get('/surveys/{survey}', [StudentSurveyController::class, 'show'])->name('survey_take');
         Route::post('/surveys/{survey}/submit', [StudentSurveyController::class, 'submit'])->name('surveys.submit');
 

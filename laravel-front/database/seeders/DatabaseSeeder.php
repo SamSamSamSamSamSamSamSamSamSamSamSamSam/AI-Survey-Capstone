@@ -17,7 +17,8 @@ class DatabaseSeeder extends Seeder
             // RoleSeeder::class,
             // UserSeeder::class,
             // SubjectSeeder::class,
-            DashboardDemoSeeder::class
+            DashboardDemoSeeder::class,
+            SubjectRelationsSeeder::class
             // ResponseSeeder::class
             // Add other seeders here
         ]);

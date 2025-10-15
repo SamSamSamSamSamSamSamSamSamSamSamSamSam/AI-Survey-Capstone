@@ -15,6 +15,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
             $table->foreignId('evaluatee_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('subject_id')->nullable()->constrained('subjects')->onDelete('cascade');
+            $table->string('group')->nullable();
             $table->string('target_role');
             $table->boolean('is_active')->default(true);
             $table->timestamps();

@@ -290,7 +290,7 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a href="{{ route('student.surveys') }}" class="nav-link text-white {{ request()->routeIs('student.surveys') ? 'active' : '' }}">
+                                    <a href="{{ route('student.survey') }}" class="nav-link text-white {{ request()->routeIs('student.survey') ? 'active' : '' }}">
                                         <i class="bi bi-clipboard-check"></i> <span>Surveys</span>
                                     </a>
                                 </li>
