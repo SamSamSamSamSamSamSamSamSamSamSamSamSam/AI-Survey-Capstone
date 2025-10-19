@@ -47,16 +47,13 @@
                                                 <span class="badge rounded-pill bg-secondary">{{ ucfirst($role->name) }}</span>
                                             @endforeach
                                         </td>
-                                        <td class="text-center">
-                                            <a href="#" class="btn btn-sm btn-outline-primary me-1">
-                                                <i class="fa fa-edit"></i>
-                                            </a>
-                                            <form action="#" method="POST" class="d-inline">
+                                        <td>
+                                            <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+
+                                            <form action="{{ route('admin.users.destroy', $user) }}" method="post" style="display:inline" onsubmit="return confirm('Delete user?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                    <i class="fa fa-trash"></i>
-                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger">Delete</button>
                                             </form>
                                         </td>
                                     </tr>

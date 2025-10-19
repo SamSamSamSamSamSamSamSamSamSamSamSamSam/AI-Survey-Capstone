@@ -1,86 +1,106 @@
-from transformers import pipeline
 import sys
 import json
 import logging
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Literal
 
-# Configure basic logging
+from pydantic import BaseModel, Field, RootModel
+
+from google import genai
+from google.genai import types
+from google.genai.errors import APIError
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# --- CONFIGURATION ---
-MODEL_NAME = "lxyuan/distilbert-base-multilingual-cased-sentiments-student"
+MODEL_NAME = "gemini-2.5-flash" 
+
+class SentimentResult(BaseModel):
+    id: int = Field(description="The original response ID.")
+    sentiment_label: Literal["positive", "negative", "neutral"] = Field(
+        description="The determined sentiment: positive, negative, or neutral."
+    )
+    sentiment_score: float = Field(
+        description="Fixed score of 1.0 for a definitive label.",
+        default=1.0
+    )
+
+
+class SentimentBatch(RootModel):
+    root: List[SentimentResult]
 
 try:
-    # Note: Use "sentiment-analysis" for the pipeline type, not "text-classification" 
-    # if you want standard sentiment output structure.
-    sentiment_pipeline = pipeline("sentiment-analysis", model=MODEL_NAME)
-    logging.info(f"Pipeline loaded with model: {MODEL_NAME}")
+    client = genai.Client()
+    logging.info(f"Gemini Client initialized with model: {MODEL_NAME}")
 except Exception as e:
-    logging.error(f"Failed to load pipeline: {e}")
+    logging.error(f"Failed to initialize Gemini Client. Check GEMINI_API_KEY environment variable: {e}")
     sys.exit(1)
 
+RESPONSE_SCHEMA = SentimentBatch.model_json_schema()
+
+SYSTEM_INSTRUCTION = (
+    "You are an expert sentiment analysis engine. Your task is to analyze a list of user responses "
+    "and classify the sentiment of each one as either 'positive', 'negative', or 'neutral'. "
+    "You MUST return the output as a single JSON array object that strictly adheres to the provided schema. "
+    "Set the 'sentiment_score' to 1.0 for every result."
+)
 
 def analyze_responses(responses: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """
-    Analyzes a list of responses efficiently using batch processing.
-    """
     if not responses:
         return []
 
-    # 1. Extract all text inputs
-    texts = [r.get("text", "") for r in responses]
+    responses_for_prompt = [{"id": r.get("id", i), "text": r.get("text", "")} 
+                            for i, r in enumerate(responses)]
+    
+    user_prompt = (
+        "Analyze the sentiment for the following list of text responses:\n\n"
+        f"{json.dumps(responses_for_prompt, indent=2)}"
+    )
 
-    # 2. Process the entire batch at once
+    logging.info(f"Sending {len(responses)} responses for analysis to {MODEL_NAME}...")
+
     try:
-        outputs = sentiment_pipeline(texts)
-    except Exception as e:
-        logging.error(f"Batch sentiment analysis failed: {e}")
+        response = client.models.generate_content(
+            model=MODEL_NAME,
+            contents=[user_prompt],
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_INSTRUCTION,
+                response_mime_type="application/json", 
+                response_schema=RESPONSE_SCHEMA,
+            )
+        )
+        
+        raw_json = response.text
+        
+        parsed_data = SentimentBatch.model_validate_json(raw_json)
+        
+        results_list = parsed_data.root 
+        analyzed_results = [item.model_dump() for item in results_list]
+        
+        logging.info("Analysis complete and structured JSON received.")
+        
+        return analyzed_results 
+
+    except APIError as e:
+        logging.error(f"Gemini API call failed: {e}")
         return [
-            {"id": r.get("id", "unknown"), "sentiment_label": "error", "sentiment_score": 0}
-            for r in responses
+            {"id": r.get("id", i), "sentiment_label": "api_error", "sentiment_score": 0.0}
+            for i, r in enumerate(responses)
+        ]
+    except Exception as e:
+        raw_output = getattr(locals().get('response'), 'text', 'N/A')
+        logging.error(f"Pydantic validation or JSON decode failed: {e}. Raw output: {raw_output}")
+        return [
+            {"id": r.get("id", i), "sentiment_label": "parse_error", "sentiment_score": 0.0}
+            for i, r in enumerate(responses)
         ]
 
-    # 3. Combine results with original IDs
-    results = []
-    for i, output in enumerate(outputs):
-        r = responses[i]
-
-        response_id = r.get("id", f"missing_id_{i}")
-
-        # The output structure is typically a list of one dict: [{'label': 'neutral', 'score': 0.99}]
-        sentiment_info = output[0] if isinstance(output, list) else output
-
-        # Ensure label is lowercase for database consistency
-        sentiment_label = sentiment_info.get("label", "unknown").lower()
-        sentiment_score = sentiment_info.get("score", 0.0)
-
-        results.append({
-            "id": response_id,
-            "sentiment_label": sentiment_label,
-            "sentiment_score": sentiment_score
-        })
-
-    return results
-
-
 if __name__ == "__main__":
-    # Read JSON input from stdin (e.g., from Laravel)
+    raw = sys.stdin.read() # Read from stdin when run by Laravel
     
-    # --- TEMPORARY TEST MODE ACTIVATION ---
-    # FOR TESTING: Set raw="" to immediately run the 'else' block with test data.
-    # When ready for Laravel, change this line to: raw = sys.stdin.read()
-    raw = sys.stdin.read()
-    # -------------------------------------
-    
-    # Uncomment this when integrating with Laravel:
-    # raw = sys.stdin.read() 
-
     if raw and raw.strip():
-        # --- Handle Stdin Input (Laravel Execution) ---
         try:
             input_data = json.loads(raw)
             if not isinstance(input_data, list):
-                 raise TypeError("JSON input must be a list of objects.")
+                raise TypeError("JSON input must be a list of objects.")
 
         except json.JSONDecodeError:
             logging.error("Failed to decode JSON from stdin.")
@@ -93,15 +113,14 @@ if __name__ == "__main__":
             sys.stdout.flush()
             sys.exit(1)
 
-        # Process the valid input data
         analyzed = analyze_responses(input_data)
         print(json.dumps(analyzed))
         sys.stdout.flush()
         sys.exit(0)
 
     else:
-        # --- Handle No Stdin (Direct Execution / Test Data) ---
         logging.info("No stdin data provided. Using test data.")
+
         test_data = [
             {"id": 1, "text": "I love this course and would take it again!"},
             {"id": 2, "text": "The teacher is boring and the material is old."},

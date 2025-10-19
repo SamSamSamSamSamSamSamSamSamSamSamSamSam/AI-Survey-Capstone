@@ -261,12 +261,6 @@
                                         <i class="bi bi-people"></i> <span>Users</span>
                                     </a>
                                 </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('admin.settings') }}" class="nav-link text-white {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
-                                        <i class="bi bi-gear"></i> <span>Settings</span>
-                                    </a>
-                                </li>
-                                
                             @elseif(Auth::user() && Auth::user()->hasRole('teacher'))
                                 <li class="nav-item">
                                     <a href="{{ route('teacher.dashboard') }}" class="nav-link text-white {{ request()->routeIs('teacher.dashboard') ? 'active' : '' }}">

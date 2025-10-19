@@ -14,7 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         //
          $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'check.onboarding' => \App\Http\Middleware\CheckOnboarding::class,
         ]);
+        
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

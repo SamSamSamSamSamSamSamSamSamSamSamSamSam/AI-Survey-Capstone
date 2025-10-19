@@ -35,26 +35,30 @@ class SurveyController extends Controller
 
     public function store(Request $request)
     {
+        // MODIFIED: 'subject_id' validation
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'evaluatee_id' => 'required|exists:users,id', 
-            'subject_id' => 'required|exists:subjects,id',
+            'target_role' => 'required|in:admin,teacher,student,both',
+            'subject_id' => 'required_unless:target_role,teacher|nullable|exists:subjects,id', // <-- CHANGED
             'group' => 'nullable|string',
             'questions' => 'required|array|min:1',
             'questions.*' => 'required|string',
             'question_types' => 'required|array|min:1',
             'question_types.*' => 'required|string|in:rating,text,multiple_choice',
-            'target_role' => 'required|in:admin,teacher,student,both'
         ]);
 
-   
+        // MODIFIED: Set subject_id and group to null if target is 'teacher'
+        $subjectId = $request->target_role === 'teacher' ? null : $request->subject_id;
+        $group = $request->target_role === 'teacher' ? null : $request->group;
+
         $survey = Survey::create([
             'title' => $request->title,
             'description' => $request->description,
             'evaluatee_id' => $request->evaluatee_id,
-            'subject_id' => $request->subject_id,
-            'group' => $request->group,
+            'subject_id' => $subjectId, // <-- CHANGED
+            'group' => $group,           // <-- CHANGED
             'created_by' => auth()->id(),
             'target_role' => $request->target_role,
             'is_active' => true
@@ -69,7 +73,7 @@ class SurveyController extends Controller
                 'order' => $index
             ]);
         }
-
+        
         return redirect()->route('admin.surveys.index')
                          ->with('success', 'Survey created successfully!');
     }
@@ -77,20 +81,22 @@ class SurveyController extends Controller
     public function getSubjectsByTeacher($teacherId)
     {
         $subjects = Subject::whereHas('teachers', function ($query) use ($teacherId) {
-            $query->where('users.id', $teacherId);
+                $query->where('users.id', $teacherId);
             })
             ->with(['teachers' => function ($q) use ($teacherId) {
-                    $q->where('users.id', $teacherId);
+                $q->where('users.id', $teacherId);
             }])
             ->get()
             ->map(function ($subject) use ($teacherId) {
                 $teacher = $subject->teachers->firstWhere('id', $teacherId);
                 return [
                     'id' => $subject->id,
-                    'name' => "{$teacher->pivot->group} - {$subject->name}",
-                    'group' => $teacher->pivot->group, 
+                    'name' => "{$teacher->pivot->group} - {$subject->course_code}", 
+                    'group' => $teacher->pivot->group,
+                    'course_code' => $subject->course_code, 
+                    'subject_name' => $subject->name, 
                 ];
-        });
+            }); 
 
         return response()->json($subjects);
     }
@@ -162,26 +168,31 @@ class SurveyController extends Controller
     {
         $survey = Survey::findOrFail($id);
 
-
+        // MODIFIED: 'subject_id' validation and added 'group'
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'target_role' => 'required|string|in:admin,teacher,student,both',
             'evaluatee_id' => 'nullable|exists:users,id',
-            'subject_id' => 'required|exists:subjects,id',
+            'subject_id' => 'required_unless:target_role,teacher|nullable|exists:subjects,id', // <-- CHANGED
+            'group' => 'nullable|string', // <-- ADDED
             'questions' => 'required|array',
             'questions.*' => 'required|string',
             'question_types' => 'required|array',
             'question_types.*' => 'in:rating,text',
         ]);
 
+        // MODIFIED: Handle null subject/group if target is 'teacher'
+        $subjectId = $validated['target_role'] === 'teacher' ? null : ($validated['subject_id'] ?? null);
+        $group = $validated['target_role'] === 'teacher' ? null : ($validated['group'] ?? null);
 
         $survey->update([
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
             'target_role' => $validated['target_role'],
             'evaluatee_id' => $validated['evaluatee_id'] ?? null,
-            'subject_id' => $validated['subject_id'],
+            'subject_id' => $subjectId, // <-- CHANGED
+            'group' => $group, // <-- ADDED
         ]);
 
         $survey->questions()->delete();
@@ -197,6 +208,4 @@ class SurveyController extends Controller
             ->route('admin.surveys.index', $survey->id)
             ->with('success', 'Survey updated successfully!');
     }
-
-
 }

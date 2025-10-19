@@ -16,7 +16,7 @@ class DashboardDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        // 🚫 Clear old data
+
         \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         Response::truncate();
         Question::truncate();
@@ -25,7 +25,10 @@ class DashboardDemoSeeder extends Seeder
         User::truncate();
         Role::truncate();
         CQIReport::truncate();
+        \DB::table('subject_student')->truncate();
+        \DB::table('subject_teacher')->truncate();
         \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
 
         // 👤 Roles
         $adminRole = Role::create(['name' => 'admin']);
@@ -129,6 +132,41 @@ class DashboardDemoSeeder extends Seeder
         // 🧮 Compute CQI Report
         $averageRating = Response::avg('response');
 
+        // 👨‍🏫 Extra Teacher with Group Assignments
+        $teacher = User::create([
+            'name' => 'Dr. Garcia',
+            'email' => 'garcia@example.com',
+            'password' => Hash::make('password'),
+        ]);
+        $teacher->roles()->attach($teacherRole);
+
+        // Define the teacher's group and course mappings
+        $teacherCourses = [
+            ['group' => 4, 'course_code' => 'IT 3101N'],
+            ['group' => 1, 'course_code' => 'IT 3104A'],
+            ['group' => 1, 'course_code' => 'IT 4101'],
+            ['group' => 1, 'course_code' => 'IT 4201'],
+            ['group' => 1, 'course_code' => 'IT 5107'],
+            ['group' => 89, 'course_code' => 'ΤΡΕ 2103'],
+        ];
+
+        // Loop through and attach courses to teacher
+        foreach ($teacherCourses as $tc) {
+            // Check if subject already exists by course_code
+            $subject = Subject::firstOrCreate(
+                ['course_code' => $tc['course_code']],
+                ['name' => null] // name can be null since we don't use it for now
+            );
+
+            // Attach teacher to subject with group in pivot
+            $teacher->teachingSubjects()->syncWithoutDetaching([
+                $subject->id => ['group' => $tc['group']]
+            ]);
+        }
+
+        $this->command->info('👨‍🏫 Extra teacher Dr. Garcia with groups and subjects created successfully.');
+
+
         CQIReport::create([
             'title' => 'Demo CQI Report',
             'description' => 'Sample CQI Report generated from demo data.',
@@ -141,5 +179,16 @@ class DashboardDemoSeeder extends Seeder
         ]);
 
         $this->command->info('✅ Dashboard demo data seeded successfully (hardcoded responses)!');
+
+        $unassignedStudent = User::create([
+            'name' => 'NoSubject Student',
+            'email' => 'nosubject@example.com',
+            'password' => Hash::make('password'),
+        ]);
+        $unassignedStudent->roles()->attach($studentRole);
+
+        \DB::table('subject_student')->where('student_id', $unassignedStudent->id)->delete();
+
+        $this->command->info('🧩 Test student with no subjects created: nosubject@example.com / password');
     }
 }

@@ -24,9 +24,9 @@ class AnalyzeSentiment extends Command
      */
     public function handle()
     {
+        $geminiApiKey = env('GEMINI_API_KEY');
         $this->info('Fetching responses to analyze...');
 
-        // 1️⃣ Fetch pending responses (those without sentiment_label)
         $query = Response::whereNull('sentiment_label')
             ->whereNotNull('response');
 
@@ -41,13 +41,13 @@ class AnalyzeSentiment extends Command
             return Command::SUCCESS;
         }
 
-        // 2️⃣ Prepare input JSON for Python
+       
         $inputData = $responses->map(fn($r) => [
             'id'   => $r->id,
             'text' => $r->response,
         ])->toJson();
 
-        // 3️⃣ Define paths for Python and the analyzer script
+    
         $pythonPath = (PHP_OS_FAMILY === 'Windows')
             ? base_path('myvenv/Scripts/python.exe')
             : base_path('myvenv/bin/python');
@@ -56,10 +56,14 @@ class AnalyzeSentiment extends Command
 
         $this->comment(sprintf('Analyzing %d responses via Python...', $responses->count()));
 
-        // 4️⃣ Run Python process
-        $process = new Process([$pythonPath, $scriptPath]);
+
+        $process = new Process(
+            [$pythonPath, $scriptPath],
+            null, 
+            ['GEMINI_API_KEY' => $geminiApiKey] 
+        );
         $process->setInput($inputData);
-        $process->setTimeout(3600); // 1 hour timeout (model loading can be slow)
+        $process->setTimeout(3600); 
 
         try {
             $process->mustRun();
@@ -67,13 +71,17 @@ class AnalyzeSentiment extends Command
             $output = trim($process->getOutput());
             $errorOutput = trim($process->getErrorOutput());
 
-            // Debug info — helpful for troubleshooting
-            $this->line("Python STDOUT: " . substr($output, 0, 300));
-            if ($errorOutput) {
-                $this->line("Python STDERR: " . substr($errorOutput, 0, 300));
-            }
+            $this->info("--- Python Analysis Process Output ---");
 
-            // 5️⃣ Decode JSON results
+            if ($errorOutput) {
+                $this->warn("Python STDERR (Client Logs/Errors):");
+                $this->warn(substr($errorOutput, 0, 1000)); 
+            }
+            
+            $this->line("Python STDOUT (JSON Payload): " . substr($output, 0, 300) . '...');
+            $this->info("------------------------------------");
+
+
             $results = json_decode($output, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
@@ -82,7 +90,6 @@ class AnalyzeSentiment extends Command
                 return Command::FAILURE;
             }
 
-            // 6️⃣ Update sentiment data in database
             $updatedCount = 0;
 
             foreach ($results as $res) {

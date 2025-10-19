@@ -13,7 +13,7 @@ class DepartmentsController extends Controller
         // Get all faculty members (teachers)
         $faculty = User::whereHas('roles', function($query) {
             $query->where('name', 'teacher');
-        })->with(['assignedSubjects', 'roles'])->get();
+        })->with(['teachingSubjects', 'roles'])->get();
 
         // Get all subjects for the filter dropdown
         $subjects = Subject::orderBy('name')->get();

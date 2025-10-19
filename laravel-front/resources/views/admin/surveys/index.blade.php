@@ -3,14 +3,12 @@
 @section('content')
 <div class="container py-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <a href="{{ route('admin.dashboard') }}" class="btn btn-sm btn-outline-secondary">
-                <i class="fa fa-arrow-left me-1"></i> Back
-            </a>
-
-            <h2 class="fw-bold">Survey Management</h2>
-
             <a href="{{ route('admin.surveys.create') }}" class="btn btn-primary me-2">
                 <i class="bi bi-plus-circle me-1"></i> Create Survey
+            </a>
+            <h2 class="fw-bold">Survey Management</h2>
+            <a href="{{ route('admin.dashboard') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fa fa-arrow-left me-1"></i> Back
             </a>
         </div>
     

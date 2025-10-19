@@ -37,7 +37,9 @@ class SubjectRelationsSeeder extends Seeder
 
                 // Assign students to group
                 $students = User::whereHas('roles', fn($q) => $q->where('name', 'student'))
-                    ->inRandomOrder()->take(10)->pluck('id');
+                    ->where('email', '!=', 'nosubject@example.com') 
+                    ->take(10)
+                    ->pluck('id');
 
                 foreach ($students as $studentId) {
                     $subject->students()->attach($studentId, ['group' => $group]);

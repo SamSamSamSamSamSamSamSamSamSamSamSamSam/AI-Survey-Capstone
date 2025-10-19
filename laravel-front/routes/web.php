@@ -15,12 +15,15 @@ use App\Http\Controllers\Teacher\TeacherSurveyController as TeacherSurveyControl
 use App\Http\Controllers\Student\StudentDashboardController as StudentDashboardController;
 use App\Http\Controllers\Student\StudentSurveyController as StudentSurveyController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\OnboardingController;
+
+// Auth routes
 
 Route::get('/login', function () {
     return view('auth.login');
-})->name('login'); // This route is now '/login'
+})->name('login'); 
 
-// The root path '/' can redirect to the login page
+
 Route::get('/', function () {
     return redirect()->route('login');
 });
@@ -34,6 +37,12 @@ Route::get('/signup', function () {
 })->name('signup');
 
 Route::post('/signup', [UserController::class, 'signup'])->name('signup.submit');
+
+// Onboarding routes (shared by teacher and student)
+Route::middleware(['web','auth'])->prefix('onboarding')->name('onboarding.')->group(function () {
+    Route::get('/upload', [OnboardingController::class, 'showUploadForm'])->name('upload');
+    Route::post('/upload', [OnboardingController::class, 'processUpload'])->name('process');
+});
 
 
 
@@ -58,21 +67,28 @@ Route::get('/student/dashboard', function () {
 Route::middleware(['web','auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     // Basic Admin Pages
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/analysis/surveys', [DashboardController::class, 'questionAnalysisList'])->name('analysis.surveys');
+    Route::get('/analysis/questions', [DashboardController::class, 'questionAnalysis'])->name('analysis.questionAnalysis');
+    Route::get('/analysis/wordcloud', [DashboardController::class, 'wordCloud'])->name('analysis.wordCloud');
+    Route::get('/evaluatee/{id}', [DashboardController::class, 'evaluateeDetails'])->name('evaluatee.evaluateeDetails');
     Route::get('/users', [UsersController::class, 'index'])->name('users');
+    Route::get('/users/{user}/edit', [UsersController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [UsersController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy');
     Route::get('/department', [DepartmentsController::class, 'index'])->name('department');
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
 
-    // Surveys (Resource Routes)
+
     Route::resource('surveys', SurveyController::class); 
 
-    // Custom Route (Keep this one, as it's not a standard REST action)
+
     Route::post('/surveys/{survey}/toggle-status', [SurveyController::class, 'toggleStatus'])->name('surveys.toggle-status');
     Route::get('/teachers/{teacherId}/subjects', [SurveyController::class, 'getSubjectsByTeacher'])->name('teachers.subjects');
 });
 
 
 // Teacher routes
-Route::middleware(['web','auth', 'role:teacher'])->prefix('teacher')->name('teacher.')->group(function () {
+Route::middleware(['web','auth', 'role:teacher', 'check.onboarding'])->prefix('teacher')->name('teacher.')->group(function () {
         // Dashboard
         Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
 
@@ -89,7 +105,7 @@ Route::middleware(['web','auth', 'role:teacher'])->prefix('teacher')->name('teac
 
 
 // Student routes
-Route::middleware(['web','auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
+Route::middleware(['web','auth', 'role:student', 'check.onboarding'])->prefix('student')->name('student.')->group(function () {
         // Dashboard
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
 

@@ -10,7 +10,7 @@
                     <div class="d-flex">
                         <input type="text" id="facultySearch" class="form-control form-control-sm me-2" placeholder="Search faculty...">
                         <select id="subjectFilter" class="form-select form-select-sm">
-                            <option value="">All Subjects</option>
+                            <option value="">All Courses</option>
                             @foreach($subjects as $subject)
                                 <option value="{{ $subject->id }}">{{ $subject->course_code }} - {{ $subject->name }}</option>
                             @endforeach
@@ -20,7 +20,7 @@
                 <div class="card-body">
                     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4" id="facultyContainer">
                         @forelse($faculty as $member)
-                            <div class="col faculty-card" data-subjects="{{ $member->assignedSubjects->pluck('id')->implode(',') }}">
+                            <div class="col faculty-card" data-subjects="{{ $member->teachingSubjects->pluck('id')->implode(',') }}">
                                 <div class="card h-100 shadow-sm faculty-member">
                                     <div class="card-body text-center p-3">
                                         <div class="position-relative">
@@ -36,11 +36,11 @@
                                         <h5 class="card-title mb-1">{{ $member->name }}</h5>
                                         <p class="text-muted small mb-2">{{ $member->email }}</p>
                                         
-                                        @if($member->assignedSubjects->count() > 0)
+                                        @if($member->teachingSubjects->count() > 0)
                                             <div class="border-top pt-2 mt-2">
-                                                <h6 class="text-muted small mb-1">Subjects:</h6>
+                                                <h6 class="text-muted small mb-1">Courses:</h6>
                                                 <div class="d-flex flex-wrap justify-content-center gap-1">
-                                                    @foreach($member->assignedSubjects as $subject)
+                                                    @foreach($member->teachingSubjects as $subject)
                                                         <span class="badge bg-light text-dark border">{{ $subject->course_code }}</span>
                                                     @endforeach
                                                 </div>
@@ -51,7 +51,6 @@
                                     </div>
                                     <div class="card-footer bg-transparent d-flex justify-content-between">
                                         <button class="btn btn-sm btn-outline-primary">View Profile</button>
-                                        <button class="btn btn-sm btn-outline-secondary">Contact</button>
                                     </div>
                                 </div>
                             </div>
