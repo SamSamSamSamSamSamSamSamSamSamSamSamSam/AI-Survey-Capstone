@@ -1,0 +1,13 @@
+.question-card {
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+.question-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+}
+.remove-question {
+    font-size: 0.8rem;
+}

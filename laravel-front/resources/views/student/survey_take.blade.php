@@ -21,14 +21,14 @@
                         {{ $survey->description }}
                     </p>
                     <h7><strong>Evaluatee:</strong> {{ $survey->evaluatee->name }}</h7><br>
-                    <h7><strong>Course:</strong> {{ $survey->subject->name ?? 'N/A' }} (Group {{ $survey->group ?? 'N/A' }})</h7>
+                    <h7><strong>Course:</strong> {{ $survey->subject->course_code ?? 'N/A' }} (Group {{ $survey->group ?? 'N/A' }})</h7>
                 </div>
             </div>
             
             <form action="{{ route('student.surveys.submit', $survey->id) }}" method="POST">
                 @csrf
                     <input type="hidden" name="evaluatee_id" value="{{ $survey->evaluatee_id }}">
-                    <input type="hidden" name="subject_id" value="{{ $subject->id ?? '' }}">
+                    <input type="hidden" name="subject_id" value="{{ $survey->subject->id ?? '' }}">
 
                 @foreach ($survey->questions as $index => $question)
                     <div class="card shadow-sm mb-4">

@@ -17,14 +17,12 @@ class UserController extends Controller
             'password' => 'required|min:6',
         ]);
 
-        // create user (idempotent behavior not implemented here; keep simple)
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
         ]);
 
-        // attach the 'student' role using the pivot table
         $studentRole = Role::firstOrCreate(['name' => 'student']);
         if ($user && method_exists($user, 'roles')) {
             $user->roles()->syncWithoutDetaching([$studentRole->id]);

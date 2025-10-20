@@ -314,7 +314,9 @@
             <!-- Main content area -->
             <div class="col main-content">
                 <div class="page-content">
+                    @stack('styles')
                     @yield('content')
+                    @stack('scripts')
                 </div>
             </div>
 

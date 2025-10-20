@@ -27,13 +27,22 @@ class AnalyzeSentiment extends Command
         $geminiApiKey = env('GEMINI_API_KEY');
         $this->info('Fetching responses to analyze...');
 
+        // Set sentiment to null for rating questions
+        Response::whereHas('question', fn($q) => $q->where('type', 'rating'))
+            ->update([
+                'sentiment_label' => null,
+                'sentiment_score' => null,
+            ]);
+
+        // Fetch text responses that need analysis
         $query = Response::whereNull('sentiment_label')
-            ->whereNotNull('response');
+            ->whereNotNull('response')
+            ->whereHas('question', fn($q) => $q->where('type', 'text'));
 
+        // Apply limit if specified
         if ($limit = $this->option('limit')) {
-            $query->limit((int) $limit);
+            $query = $query->take((int) $limit);
         }
-
         $responses = $query->get();
 
         if ($responses->isEmpty()) {
@@ -41,13 +50,13 @@ class AnalyzeSentiment extends Command
             return Command::SUCCESS;
         }
 
-       
+        // Prepare input JSON for Python
         $inputData = $responses->map(fn($r) => [
-            'id'   => $r->id,
+            'id' => $r->id,
             'text' => $r->response,
         ])->toJson();
 
-    
+        // Determine Python path
         $pythonPath = (PHP_OS_FAMILY === 'Windows')
             ? base_path('myvenv/Scripts/python.exe')
             : base_path('myvenv/bin/python');
@@ -56,14 +65,13 @@ class AnalyzeSentiment extends Command
 
         $this->comment(sprintf('Analyzing %d responses via Python...', $responses->count()));
 
-
         $process = new Process(
             [$pythonPath, $scriptPath],
-            null, 
-            ['GEMINI_API_KEY' => $geminiApiKey] 
+            null,
+            ['GEMINI_API_KEY' => $geminiApiKey]
         );
         $process->setInput($inputData);
-        $process->setTimeout(3600); 
+        $process->setTimeout(3600);
 
         try {
             $process->mustRun();
@@ -75,12 +83,11 @@ class AnalyzeSentiment extends Command
 
             if ($errorOutput) {
                 $this->warn("Python STDERR (Client Logs/Errors):");
-                $this->warn(substr($errorOutput, 0, 1000)); 
+                $this->warn(substr($errorOutput, 0, 1000));
             }
-            
+
             $this->line("Python STDOUT (JSON Payload): " . substr($output, 0, 300) . '...');
             $this->info("------------------------------------");
-
 
             $results = json_decode($output, true);
 

@@ -126,6 +126,14 @@
                                                     Sign In
                                                 </button>
                                             </div>
+                                            <div class="text-center mt-3">
+                                                <p class="mb-0">
+                                                    Don't have an account?
+                                                    <a href="{{ route('signup') }}" class="text-primary fw-semibold">
+                                                        Sign Up
+                                                    </a>
+                                                </p>
+                                            </div>
                                         </form>
                                     </div>
                                 </div> 

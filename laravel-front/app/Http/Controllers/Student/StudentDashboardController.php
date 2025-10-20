@@ -2,32 +2,47 @@
 
 namespace App\Http\Controllers\Student;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Survey;
+use App\Models\Response;
+use App\Models\User;
+use App\Http\Controllers\Controller;
 
 class StudentDashboardController extends Controller
 {
     public function index()
     {
-        $surveys = [
-            ['course'=>'CS101','status'=>'completed','score'=>4.5],
-            ['course'=>'CS201','status'=>'pending','score'=>null],
-        ];
+        $user = Auth::user();
 
-        $recentResults = [
-            ['course'=>'CS101','score'=>4.5,'instructor'=>'Dr. Alice'],
-        ];
+        // Enrolled subjects
+        $subjects = $user->enrolledSubjects()->with('teachers')->get();
 
-        return view('student.dashboard', compact('surveys','recentResults'));
-    }
+        // Active surveys assigned to this student 
+        $activeSurveys = Survey::where('is_active', true)
+            ->where('target_role', 'student')
+            ->whereIn('subject_id', $subjects->pluck('id'))
+            ->with('subject', 'evaluatee')
+            ->get();
 
-    public function results()
-    {
-        $results = [
-            ['course'=>'CS101','score'=>4.5,'comments'=>['Great course.']],
-            ['course'=>'CS201','score'=>3.9,'comments'=>[]],
-        ];
+        // Surveys already answered
+        $answeredSurveyIds = Response::where('evaluator_id', $user->id)
+            ->pluck('survey_id')
+            ->unique();
 
-        return view('student.results', compact('results'));
+        // Recent results 
+        $recentResponses = Response::with('survey.subject')
+            ->where('evaluator_id', $user->id)
+            ->latest()
+            ->take(5)
+            ->get();
+    
+
+        return view('student.dashboard', [
+            'subjects' => $subjects,
+            'activeSurveys' => $activeSurveys,
+            'answeredSurveyIds' => $answeredSurveyIds,
+            'recentResponses' => $recentResponses,
+        ]);
     }
 }

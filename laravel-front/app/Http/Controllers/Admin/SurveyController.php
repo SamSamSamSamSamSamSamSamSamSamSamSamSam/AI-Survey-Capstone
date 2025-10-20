@@ -154,7 +154,7 @@ class SurveyController extends Controller
                 $teacher = $subject->teachers->firstWhere('id', $survey->evaluatee_id);
                 return [
                     'id' => $subject->id,
-                    'name' => "{$teacher->pivot->group} - {$subject->name}",
+                    'name' => "{$teacher->pivot->group} - {$subject->code}",
                     'group' => $teacher->pivot->group,
                 ];
             });
@@ -174,15 +174,14 @@ class SurveyController extends Controller
             'description' => 'nullable|string',
             'target_role' => 'required|string|in:admin,teacher,student,both',
             'evaluatee_id' => 'nullable|exists:users,id',
-            'subject_id' => 'required_unless:target_role,teacher|nullable|exists:subjects,id', // <-- CHANGED
-            'group' => 'nullable|string', // <-- ADDED
+            'subject_id' => 'required_unless:target_role,teacher|nullable|exists:subjects,id', 
+            'group' => 'nullable|string', 
             'questions' => 'required|array',
             'questions.*' => 'required|string',
             'question_types' => 'required|array',
             'question_types.*' => 'in:rating,text',
         ]);
 
-        // MODIFIED: Handle null subject/group if target is 'teacher'
         $subjectId = $validated['target_role'] === 'teacher' ? null : ($validated['subject_id'] ?? null);
         $group = $validated['target_role'] === 'teacher' ? null : ($validated['group'] ?? null);
 
@@ -191,8 +190,8 @@ class SurveyController extends Controller
             'description' => $validated['description'] ?? null,
             'target_role' => $validated['target_role'],
             'evaluatee_id' => $validated['evaluatee_id'] ?? null,
-            'subject_id' => $subjectId, // <-- CHANGED
-            'group' => $group, // <-- ADDED
+            'subject_id' => $subjectId, 
+            'group' => $group, 
         ]);
 
         $survey->questions()->delete();

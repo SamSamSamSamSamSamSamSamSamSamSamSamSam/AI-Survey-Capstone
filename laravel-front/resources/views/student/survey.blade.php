@@ -32,7 +32,7 @@
                                     <span class="text-danger">Inactive</span>
                                 @endif
                             </li>
-                            <li><strong>Subject:</strong> {{ $item->subject->name ?? 'N/A' }} {{ $item->group ?? 'N/A' }}</li>
+                            <li><strong>Course:</strong> {{ $item->group ?? 'N/A' }} - {{ $item->subject->course_code ?? 'N/A' }} </li>
                             <li><strong>Created:</strong> {{ $item->created_at->format('M d, Y') }}</li>
                         </ul>
 

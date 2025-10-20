@@ -4,6 +4,8 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Faculty Improvement Dashboard</h2>
+        <p class="text-muted mb-4"><strong>Role:</strong> {{ auth()->user()->roles->first()?->name ?? 'N/A' }}</p>
+        
         <small class="text-muted">Last updated: {{ now()->toDateTimeString() }}</small>
            <div class="admin-controls">
             <a href="{{ route('admin.surveys.create') }}" class="btn btn-primary me-2">
