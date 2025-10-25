@@ -50,6 +50,10 @@
                         <span class="badge bg-info text-capitalize ms-2">{{ $survey->target_role }}</span>
                     </div>
                     <div class="mb-3">
+                        <strong>Course:</strong>
+                        <span class="badge bg-info text-capitalize ms-2">{{ $survey->subject->course_code ?? 'N/A'}}</span>
+                    </div>
+                    <div class="mb-3">
                         <strong>Status:</strong>
                         @if($survey->is_active)
                             <span class="badge bg-success ms-2">Active</span>

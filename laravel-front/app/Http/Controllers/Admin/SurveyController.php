@@ -14,7 +14,7 @@ class SurveyController extends Controller
 
     public function index()
     {
-        $surveys = Survey::with(['questions', 'creator'])
+        $surveys = Survey::with(['questions', 'creator', 'subject'])
                         ->withCount('questions')
                         ->orderBy('created_at', 'desc')
                         ->get();
@@ -128,7 +128,7 @@ class SurveyController extends Controller
     public function show($id)
     {
 
-        $survey = Survey::with(['creator', 'questions', 'evaluatee'])->findOrFail($id);
+        $survey = Survey::with(['creator', 'questions', 'evaluatee', 'subject'])->findOrFail($id);
 
         return view('admin.surveys.show', compact('survey'));
     }

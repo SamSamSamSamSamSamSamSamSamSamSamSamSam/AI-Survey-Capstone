@@ -1,8 +1,7 @@
 @extends('layouts.default')
 
 @push('styles')
-    <!-- External CSS -->
-    <link rel="stylesheet" href="{{ asset('css/surveys/faculty.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/surveys/faculty.css') }}">
 @endpush
 
 @section('content')
@@ -116,5 +115,5 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('js/surveys/create.js') }}"></script>
+    <script src="{{ asset('js/admin/surveys/create.js') }}"></script>
 @endpush

@@ -154,5 +154,5 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('js/surveys/edit.js') }}"></script>
+    <script src="{{ asset('js/admin/surveys/edit.js') }}"></script>
 @endpush

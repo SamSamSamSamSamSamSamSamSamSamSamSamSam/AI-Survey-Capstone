@@ -43,7 +43,6 @@ class UsersController extends Controller
 
         $user->save();
 
-        // sync roles if provided; otherwise detach all roles
         $user->roles()->sync($data['roles'] ?? []);
 
         return redirect()->route('admin.users')->with('success', 'User updated.');

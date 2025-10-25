@@ -35,7 +35,7 @@
                                 <th class="py-3">Title</th>
                                 <th class="py-3">Evaluatee</th>
                                 <th class="py-3">Target</th>
-                                <th class="py-3">Questions</th>
+                                <th class="py-3">Courses</th>
                                 <th class="py-3">Status</th>
                                 <th class="py-3">Created</th>
                                 <th class="py-3 text-end pe-4">Actions</th>
@@ -51,7 +51,11 @@
                                         <span class="badge rounded-pill bg-info text-capitalize">{{ $survey->target_role }}</span>
                                     </td>
                                     <td class="align-middle">
-                                        <span class="badge rounded-pill bg-secondary">{{ $survey->questions_count }}</span>
+                                        @if($survey->subject)
+                                            <span class="badge rounded-pill bg-secondary">{{ $survey->subject->course_code }}</span>
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
                                     </td>
                                     <td class="align-middle">
                                         @if($survey->is_active)
@@ -116,14 +120,8 @@
         </div>
     </div>
 </div>
-
-{{-- Enable tooltips --}}
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        })
-    });
-</script>
 @endsection
+
+@push('scripts')
+    <script src="{{ asset('js/admin/surveys/index.js') }}"></script>
+@endpush

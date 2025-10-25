@@ -1,5 +1,9 @@
 @extends('layouts.default')
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/admin/department.css') }}">
+@endpush
+
 @section('content')
 <div class="container-fluid py-4">
     <div class="row">
@@ -68,53 +72,8 @@
     </div>
 </div>
 
-<style>
-.avatar-placeholder {
-    transition: transform 0.3s ease;
-}
-.faculty-member:hover .avatar-placeholder {
-    transform: scale(1.1);
-}
-.faculty-member {
-    transition: all 0.3s ease;
-}
-.faculty-member:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-}
-.badge.bg-light {
-    font-size: 0.7rem;
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('facultySearch');
-    const subjectFilter = document.getElementById('subjectFilter');
-    const facultyCards = document.querySelectorAll('.faculty-card');
-    
-    function filterFaculty() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const subjectId = subjectFilter.value;
-        
-        facultyCards.forEach(card => {
-            const name = card.querySelector('.card-title').textContent.toLowerCase();
-            const email = card.querySelector('.text-muted').textContent.toLowerCase();
-            const subjects = card.getAttribute('data-subjects').split(',');
-            
-            const matchesSearch = name.includes(searchTerm) || email.includes(searchTerm);
-            const matchesSubject = subjectId === '' || subjects.includes(subjectId);
-            
-            if (matchesSearch && matchesSubject) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    }
-    
-    searchInput.addEventListener('input', filterFaculty);
-    subjectFilter.addEventListener('change', filterFaculty);
-});
-</script>
 @endsection
+
+@push('scripts')
+    <script src="{{ asset('js/admin/department.js') }}"></script>
+@endpush

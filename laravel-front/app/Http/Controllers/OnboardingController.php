@@ -32,8 +32,8 @@ class OnboardingController extends Controller
 
     Return strictly a valid JSON array like:
     [
-    {"course_code": "CS101", "group": "BSCS-3A"},
-    {"course_code": "MATH202", "group": "BSIT-2B"}
+    {"course_code": "CS101", "group": "1"},
+    {"course_code": "MATH202", "group": "2"}
     ]
     No explanations, no markdown, no text outside JSON.
     PROMPT;

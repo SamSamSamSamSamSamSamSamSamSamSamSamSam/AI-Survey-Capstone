@@ -1,0 +1,17 @@
+
+.avatar-placeholder {
+    transition: transform 0.3s ease;
+}
+.faculty-member:hover .avatar-placeholder {
+    transform: scale(1.1);
+}
+.faculty-member {
+    transition: all 0.3s ease;
+}
+.faculty-member:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+.badge.bg-light {
+    font-size: 0.7rem;
+}
