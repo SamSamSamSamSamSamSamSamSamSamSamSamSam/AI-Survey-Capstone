@@ -23,7 +23,12 @@
                             placeholder="Search users by name or email..."
                         >
                     </div>
+
+                    <a href="{{ route('admin.subjects.index') }}" class="btn btn-outline-success btn-sm ms-3">
+                        <i class="bi bi-journal-text me-1"></i> Manage Courses
+                    </a>
                 </div>
+
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0" id="usersTable">

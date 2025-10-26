@@ -9,13 +9,14 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\DepartmentsController;
-use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\SubjectsController;
 use App\Http\Controllers\Teacher\TeacherDashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\TeacherSurveyController as TeacherSurveyController;
 use App\Http\Controllers\Student\StudentDashboardController as StudentDashboardController;
 use App\Http\Controllers\Student\StudentSurveyController as StudentSurveyController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\OnboardingController;
+
 
 // Auth routes
 
@@ -65,26 +66,38 @@ Route::get('/student/dashboard', function () {
 })->name('student.dashboard')->middleware(['auth', 'role:student']);
 
 Route::middleware(['web','auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    // Basic Admin Pages
+
+    // Dashboard & Analysis
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/analysis/surveys', [DashboardController::class, 'questionAnalysisList'])->name('analysis.surveys');
     Route::get('/analysis/questions', [DashboardController::class, 'questionAnalysis'])->name('analysis.questionAnalysis');
     Route::get('/analysis/wordcloud', [DashboardController::class, 'wordCloud'])->name('analysis.wordCloud');
     Route::get('/evaluatee/{id}', [DashboardController::class, 'evaluateeDetails'])->name('evaluatee.evaluateeDetails');
+
+    // Users (with Subjects / Groups handled in UsersController)
     Route::get('/users', [UsersController::class, 'index'])->name('users');
     Route::get('/users/{user}/edit', [UsersController::class, 'edit'])->name('users.edit');
     Route::put('/users/{user}', [UsersController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UsersController::class, 'destroy'])->name('users.destroy');
+
+    // Departments
     Route::get('/department', [DepartmentsController::class, 'index'])->name('department');
-    Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
 
-
+    // Surveys
+    Route::get('/surveys/use-official', [SurveyController::class, 'useOfficialQuestionnaire'])->name('surveys.useOfficial');
     Route::resource('surveys', SurveyController::class); 
-
-
     Route::post('/surveys/{survey}/toggle-status', [SurveyController::class, 'toggleStatus'])->name('surveys.toggle-status');
+
+    // Teacher-specific subjects
     Route::get('/teachers/{teacherId}/subjects', [SurveyController::class, 'getSubjectsByTeacher'])->name('teachers.subjects');
+
+    // Subjects Management
+    Route::get('/subjects', [SubjectsController::class, 'index'])->name('subjects.index');
+    Route::post('/subjects', [SubjectsController::class, 'store'])->name('subjects.store');
+    Route::delete('/subjects/{subject}', [SubjectsController::class, 'destroy'])->name('subjects.destroy');
+
 });
+
 
 
 // Teacher routes

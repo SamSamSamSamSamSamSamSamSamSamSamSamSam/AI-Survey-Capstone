@@ -7,6 +7,7 @@ use App\Models\Survey;
 use App\Models\Response;
 use App\Jobs\RunSentimentAnalysis;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class StudentSurveyController extends Controller
 {
@@ -67,45 +68,56 @@ class StudentSurveyController extends Controller
     /**
      * Handle survey submission.
      */
-    public function submit(Request $request, Survey $survey)
+     public function submit(Request $request, Survey $survey)
     {
-        // Prevent double submission
-        $alreadySubmitted = Response::where('survey_id', $survey->id)
-            ->where('evaluator_id', auth()->id())
+        $student = auth()->user();
+
+        // Ensure student is enrolled in this subject and group
+        $isEnrolled = $student->enrolledSubjects()
+            ->where('subjects.id', $survey->subject_id)
+            ->wherePivot('group', $survey->group)
             ->exists();
 
-        if ($alreadySubmitted) {
-            return redirect()->route('student.survey')
-                ->with('error', 'You have already submitted this survey.');
+        if (!$isEnrolled) {
+            abort(403, 'Unauthorized submission.');
         }
 
+        // Validate input
         $request->validate([
-            'responses' => 'required|array',
+            'responses' => 'required|array|max:100', // adjust max to your question count
+            'responses.*' => 'required|string|max:500',
+            'evaluatee_id' => 'required|integer',
+            'subject_id' => 'required|integer',
         ]);
 
         $evaluateeId = $request->input('evaluatee_id', $survey->evaluatee_id);
         $subjectId = $request->input('subject_id', $survey->subject_id);
 
-        // Save each response
-        foreach ($request->responses as $questionId => $answer) {
-            Response::updateOrCreate(
-                [
-                    'survey_id' => $survey->id,
-                    'question_id' => $questionId,
-                    'evaluator_id' => auth()->id(),
-                    'evaluatee_id' => $evaluateeId,
-                    'subject_id' => $subjectId,
-                ],
-                [
-                    'response' => $answer,
-                ]
-            );
-        }
+        // Use DB transaction to prevent partial saves
+        DB::transaction(function () use ($survey, $request, $evaluateeId, $subjectId, $student) {
 
-        // Dispatch background sentiment analysis
-        RunSentimentAnalysis::dispatch();
+            foreach ($request->responses as $questionId => $answer) {
+                Response::updateOrCreate(
+                    [
+                        'survey_id' => $survey->id,
+                        'question_id' => $questionId,
+                        'evaluator_id' => $student->id,
+                        'evaluatee_id' => $evaluateeId,
+                        'subject_id' => $subjectId,
+                    ],
+                    [
+                        'response' => strip_tags($answer),
+                    ]
+                );
+            }
+
+            // Dispatch sentiment analysis in the background
+            RunSentimentAnalysis::dispatch();
+        });
 
         return redirect()->route('student.survey')
             ->with('success', 'Survey submitted successfully!');
     }
+
+
 }

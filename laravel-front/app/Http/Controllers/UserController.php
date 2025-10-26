@@ -14,7 +14,8 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email',
-            'password' => 'required|min:6',
+            'password' => 'required|min:6|confirmed',
+            'role' => 'required|in:student,teacher,admin',
         ]);
 
         $user = User::create([
@@ -23,10 +24,8 @@ class UserController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        $studentRole = Role::firstOrCreate(['name' => 'student']);
-        if ($user && method_exists($user, 'roles')) {
-            $user->roles()->syncWithoutDetaching([$studentRole->id]);
-        }
+        $role = Role::firstOrCreate(['name' => $validated['role']]);
+        $user->roles()->syncWithoutDetaching([$role->id]);
 
         return redirect()->route('login')->with('success', 'Account created. Please login.');
     }

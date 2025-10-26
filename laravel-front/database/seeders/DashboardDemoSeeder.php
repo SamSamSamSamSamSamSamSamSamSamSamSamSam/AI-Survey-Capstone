@@ -82,11 +82,13 @@ class DashboardDemoSeeder extends Seeder
             'survey_id' => $survey->id,
             'question_text' => 'The instructor communicates clearly.',
             'type' => 'rating',
+            'category' => 'Teaching and Learning'
         ]);
         $q2 = Question::create([
             'survey_id' => $survey->id,
             'question_text' => 'The instructor provides helpful feedback.',
             'type' => 'rating',
+            'category' => 'Assessment',
         ]);
 
         // 🗳️ Hardcoded Responses (unique per student and teacher)

@@ -1,7 +1,7 @@
 @extends('layouts.default')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/admin/surveys/faculty.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/surveys/create.css') }}">
 @endpush
 
 @section('content')
@@ -46,8 +46,8 @@
                                       placeholder="Enter survey description (optional)">{{ old('description') }}</textarea>
                         </div>
 
+
                         <div class="row">
-                            {{-- Person to Evaluate --}}
                             <div class="col-md-6 mb-3">
                                 <label for="evaluatee_id" class="form-label fw-semibold">Person to Evaluate <span class="text-danger">*</span></label>
                                 <select name="evaluatee_id" id="evaluatee_id" class="form-select form-select-sm" required>
@@ -60,8 +60,6 @@
                                 </select>
                             </div>
                             
-                            {{-- Target Audience --}}
-                            {{-- MOVED this field up to control the subject field --}}
                             <div class="col-md-6 mb-3">
                                 <label for="target_role" class="form-label fw-semibold">Target Audience <span class="text-danger">*</span></label>
                                 <select name="target_role" id="target_role" class="form-select form-select-sm" required>
@@ -74,9 +72,7 @@
                             </div>
 
                             <div class="col-md-6 mb-3" id="subject-field-container">
-                                {{-- MODIFIED: Added id="subject-label" --}}
                                 <label for="subject_id" class="form-label fw-semibold" id="subject-label">Course</label>
-                                {{-- MODIFIED: Removed 'required' attribute --}}
                                 <select name="subject_id" id="subject_id" class="form-select form-select-sm">
                                     <option value="">-- Select Course --</option>
                                 </select>
@@ -87,20 +83,34 @@
 
                         <hr class="my-4">
 
-                        {{-- Add Questions --}}
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="mb-0 fw-semibold">Add Questions</h6>
-                            <select id="questionType" class="form-select form-select-sm w-auto">
-                                <option value="">Add Question Type</option>
-                                <option value="rating">Rating Scale (1–5)</option>
-                                <option value="text">Open-ended</option>
-                            </select>
+                        <div class="mb-3">
+                            <button type="button" id="useOfficialBtn" class="btn btn-success btn-sm">
+                                <i class="fa fa-file-alt me-1"></i> Use Official University Questionnaire
+                            </button>
                         </div>
 
-                        {{-- Dynamic Questions --}}
-                        <div id="questionsContainer" class="mb-3"></div>
+                        {{-- Add Category --}}
+                        <div class="mb-3 d-flex align-items-center gap-2">
+                            <label for="categorySelect" class="form-label fw-semibold mb-0">Select Category:</label>
+                            <select id="categorySelect" class="form-select form-select-sm w-auto">
+                                <option value="">-- Select Category --</option>
+                                <option value="Classroom Management">Classroom Management</option>
+                                <option value="Teaching and Learning">Teaching and Learning</option>
+                                <option value="Assessment">Assessment</option>
+                                <option value="General Open-Ended Questions">General Open-Ended Questions</option>
+                            </select>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="addCategoryBtn">
+                                <i class="fa fa-plus me-1"></i> Add Category
+                            </button>
+                        </div>
 
-                        <div class="text-end">
+                        {{-- Categories Container --}}
+                        <div id="selectedCategories" class="mb-3"></div>
+
+                        {{-- Questions Container --}}
+                        <div id="questionsContainer"></div>
+
+                        <div class="text-end mt-4">
                             <button type="submit" class="btn btn-primary btn-sm">
                                 <i class="fa fa-save me-1"></i> Save Survey
                             </button>
@@ -111,7 +121,6 @@
         </div>
     </div>
 </div>
-
 @endsection
 
 @push('scripts')

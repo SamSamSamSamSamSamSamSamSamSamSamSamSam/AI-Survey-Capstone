@@ -26,8 +26,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('survey_id')->constrained()->onDelete('cascade');
             $table->text('question_text');
+            $table->string('category');
             $table->enum('type', ['rating', 'text'])->default('rating');
-            $table->json('options')->nullable(); // For multiple choice questions
+            $table->json('options')->nullable();
             $table->integer('order')->default(0);
             $table->timestamps();
         });

@@ -17,7 +17,7 @@ class Survey extends Model
         'subject_id',
         'target_role',
         'is_active',
-        'group'
+        'group',
     ];
 
     public function creator()

@@ -316,7 +316,7 @@
                 <div class="page-content">
                     @stack('styles')
                     @yield('content')
-                    @yield('scripts')
+                    @stack('scripts')
                 </div>
             </div>
 

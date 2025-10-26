@@ -1,30 +1,29 @@
 document.addEventListener('DOMContentLoaded', function() {
-
-    // === DOM Elements ===
     const targetRoleSelect = document.getElementById('target_role');
     const subjectContainer = document.getElementById('subject-field-container');
     const subjectSelect = document.getElementById('subject_id');
     const subjectLabel = document.getElementById('subject-label');
     const groupField = document.getElementById('group_field');
-    const questionTypeSelect = document.getElementById('questionType');
-    const questionsContainer = document.getElementById('questionsContainer');
     const evaluateeSelect = document.getElementById('evaluatee_id');
-    const form = document.querySelector('form');
+    const categorySelect = document.getElementById('categorySelect');
+    const addCategoryBtn = document.getElementById('addCategoryBtn');
+    const selectedCategories = document.getElementById('selectedCategories');
+    const questionsContainer = document.getElementById('questionsContainer');
+    let categories = [];
 
-    // Blade-provided selected values
     const selectedSubject = subjectSelect.dataset.selected;
     const selectedTeacher = evaluateeSelect.value;
 
-    // === Toggle subject field based on role ===
+    // Toggle subject field based on target role
     function toggleSubjectField() {
         const selectedRole = targetRoleSelect.value;
         if (selectedRole === 'teacher') {
             subjectContainer.style.display = 'none';
             subjectSelect.required = false;
             subjectSelect.disabled = true;
-            subjectLabel.innerHTML = 'Course';
             subjectSelect.value = '';
             groupField.value = '';
+            subjectLabel.innerHTML = 'Course';
         } else {
             subjectContainer.style.display = 'block';
             subjectSelect.required = true;
@@ -33,109 +32,127 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // === Add question card ===
-    function addQuestionCard(type, questionText = '') {
-        if (!type) return;
+    targetRoleSelect.addEventListener('change', toggleSubjectField);
+    toggleSubjectField();
 
-        const card = document.createElement('div');
-        card.classList.add('card', 'p-3', 'mb-3', 'shadow-sm', 'question-card');
-
-        if (type === 'rating') {
-            card.innerHTML = `
-                <label class="fw-semibold">Rating Question</label>
-                <input type="hidden" name="question_types[]" value="rating">
-                <input type="text" name="questions[]" class="form-control mb-2" placeholder="e.g., Rate the instructor’s clarity (1-5)" value="${questionText}" required>
-                <div class="mt-2 small text-muted">
-                    Scale preview:
-                    <div>${[1,2,3,4,5].map(n => `<label class='me-2'><input type='radio' disabled> ${n}</label>`).join('')}</div>
-                </div>
-                <button type="button" class="btn btn-sm btn-outline-danger mt-2 remove-question">
-                    <i class="fa fa-trash"></i> Remove
-                </button>
-            `;
-        } else if (type === 'text') {
-            card.innerHTML = `
-                <label class="fw-semibold">Open-ended Question</label>
-                <input type="hidden" name="question_types[]" value="text">
-                <input type="text" name="questions[]" class="form-control mb-2" placeholder="e.g., What did you like most about this course?" value="${questionText}" required>
-                <button type="button" class="btn btn-sm btn-outline-danger remove-question">
-                    <i class="fa fa-trash"></i> Remove
-                </button>
-            `;
-        }
-
-        questionsContainer.appendChild(card);
-    }
-
-    // === Update group field ===
-    function updateGroupField() {
-        const selectedOption = subjectSelect.options[subjectSelect.selectedIndex];
-        groupField.value = selectedOption?.dataset.group || '';
-    }
-
-    // === Load teacher's subjects dynamically ===
+    // Load teacher subjects and pre-select subject if editing
     function loadTeacherSubjects(teacherId) {
         subjectSelect.innerHTML = '<option value="">-- Loading courses... --</option>';
-
-        if (!teacherId) {
-            subjectSelect.innerHTML = '<option value="">-- Select Course --</option>';
-            groupField.value = '';
-            return;
+        if (!teacherId) { 
+            subjectSelect.innerHTML = '<option value="">-- Select Course --</option>'; 
+            groupField.value = ''; 
+            return; 
         }
-
         fetch(`/admin/teachers/${teacherId}/subjects`)
             .then(res => res.json())
             .then(subjects => {
                 subjectSelect.innerHTML = '<option value="">-- Select Course --</option>';
-
-                subjects.forEach(subject => {
-                    const option = document.createElement('option');
-                    option.value = subject.id;
-                    option.dataset.group = subject.group;
-                    option.textContent = `${subject.group} - ${subject.course_code}`;
-
-                    if (subject.id == selectedSubject) {
-                        option.selected = true;
-                        groupField.value = subject.group || '';
+                subjects.forEach(sub => {
+                    const opt = document.createElement('option');
+                    opt.value = sub.id;
+                    opt.dataset.group = sub.group;
+                    opt.textContent = sub.name;
+                    if(sub.id == selectedSubject) { 
+                        opt.selected = true; 
+                        groupField.value = sub.group;
                     }
-
-                    subjectSelect.appendChild(option);
+                    subjectSelect.appendChild(opt);
                 });
-
-                updateGroupField();
             })
-            .catch(err => {
-                console.error('Error fetching subjects:', err);
-                subjectSelect.innerHTML = '<option value="">Error loading courses</option>';
+            .catch(() => { 
+                subjectSelect.innerHTML = '<option value="">Error loading courses</option>'; 
                 groupField.value = '';
             });
     }
 
-    // === Event listeners ===
-    targetRoleSelect.addEventListener('change', toggleSubjectField);
-    questionTypeSelect.addEventListener('change', function() {
-        addQuestionCard(this.value);
-        this.value = '';
-    });
-    questionsContainer.addEventListener('click', e => {
-        const removeBtn = e.target.closest('.remove-question');
-        if (removeBtn) removeBtn.closest('.question-card').remove();
-    });
-    form.addEventListener('submit', e => {
-        if (!questionsContainer.querySelector('.question-card')) {
-            e.preventDefault();
-            alert('Please add at least one question.');
-        }
-    });
+    if (selectedTeacher) loadTeacherSubjects(selectedTeacher);
     evaluateeSelect.addEventListener('change', function() {
         loadTeacherSubjects(this.value);
     });
-    subjectSelect.addEventListener('change', updateGroupField);
 
-    // === Initial setup ===
-    toggleSubjectField();
-    if (selectedTeacher) {
-        loadTeacherSubjects(selectedTeacher);
-    }
-    updateGroupField();
+    // Update group field when subject changes
+    subjectSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        groupField.value = selectedOption.dataset.group || '';
+    });
+
+    // CATEGORY + QUESTIONS LOGIC
+    addCategoryBtn.addEventListener('click', () => {
+        const category = categorySelect.value;
+        if (!category) return alert('Please select a category');
+        if (categories.includes(category)) return alert('Category already added');
+
+        categories.push(category);
+
+        const catCard = document.createElement('div');
+        catCard.classList.add('card-category');
+        catCard.dataset.category = category;
+
+        catCard.innerHTML = `
+            <div class="card-category-header">
+                <span>${category}</span>
+                <button type="button" class="btn btn-sm btn-outline-danger remove-category">Remove</button>
+            </div>
+            <div class="card-category-body">
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Add Question:</label>
+                    <select class="form-select form-select-sm questionTypeSelect">
+                        <option value="">Select Type</option>
+                        <option value="rating">Rating (1–5)</option>
+                        <option value="text">Open-ended</option>
+                    </select>
+                </div>
+                <div class="category-questions"></div>
+            </div>
+        `;
+        selectedCategories.appendChild(catCard);
+    });
+
+    // Remove category
+    selectedCategories.addEventListener('click', function(e){
+        if(e.target.classList.contains('remove-category')){
+            const card = e.target.closest('.card-category');
+            const category = card.dataset.category;
+            categories = categories.filter(c => c !== category);
+            card.remove();
+        }
+    });
+
+    // Add question inside category
+    selectedCategories.addEventListener('change', function(e){
+        if(!e.target.classList.contains('questionTypeSelect')) return;
+        const type = e.target.value;
+        if(!type) return;
+
+        const card = e.target.closest('.card-category');
+        const category = card.dataset.category;
+        const questionDiv = card.querySelector('.category-questions');
+
+        const qCard = document.createElement('div');
+        qCard.classList.add('card-question');
+
+        if(type === 'rating'){
+            qCard.innerHTML = `
+                <input type="hidden" name="question_types[${category}][]" value="rating">
+                <input type="text" name="questions[${category}][]" class="form-control form-control-sm mb-2" placeholder="e.g., Rate clarity (1-5)" required>
+                <div class="small text-muted mb-1">Scale Preview: ${[1,2,3,4,5].map(n=>`<label class="me-2"><input type="radio" disabled> ${n}</label>`).join('')}</div>
+                <button type="button" class="btn btn-outline-danger btn-sm remove-question">Remove</button>
+            `;
+        } else {
+            qCard.innerHTML = `
+                <input type="hidden" name="question_types[${category}][]" value="text">
+                <input type="text" name="questions[${category}][]" class="form-control form-control-sm mb-2" placeholder="Enter open-ended question" required>
+                <button type="button" class="btn btn-outline-danger btn-sm remove-question">Remove</button>
+            `;
+        }
+        questionDiv.appendChild(qCard);
+        e.target.value = '';
+    });
+
+    // Remove question
+    selectedCategories.addEventListener('click', function(e){
+        if(e.target.classList.contains('remove-question')){
+            e.target.closest('.card-question').remove();
+        }
+    });
 });

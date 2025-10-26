@@ -25,6 +25,7 @@
         <div class="card-header bg-white py-3">
             <h5 class="mb-0 fw-bold text-muted">All Surveys</h5>
         </div>
+        
         <div class="card-body p-0">
             @if($surveys->count() > 0)
                 <div class="table-responsive">
@@ -51,8 +52,18 @@
                                         <span class="badge rounded-pill bg-info text-capitalize">{{ $survey->target_role }}</span>
                                     </td>
                                     <td class="align-middle">
+                                        {{-- Check if the survey is assigned to a specific Subject --}}
                                         @if($survey->subject)
-                                            <span class="badge rounded-pill bg-secondary">{{ $survey->subject->course_code }}</span>
+                                            <span class="badge rounded-pill bg-secondary">
+                                                {{-- Display the Group first, followed by the Course Code --}}
+                                                @if($survey->group)
+                                                    {{ $survey->group }} - 
+                                                @endif
+                                                {{ $survey->subject->course_code }}
+                                            </span>
+                                        {{-- Also check if a group is assigned even if the subject is N/A --}}
+                                        @elseif($survey->group)
+                                            <span class="badge rounded-pill bg-info">{{ $survey->group }}</span>
                                         @else
                                             <span class="text-muted">N/A</span>
                                         @endif
