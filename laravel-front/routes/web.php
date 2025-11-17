@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Admin\SurveyController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\UsersController;
-use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\DepartmentsController;
 use App\Http\Controllers\Admin\SubjectsController;
 use App\Http\Controllers\Teacher\TeacherDashboardController as TeacherDashboardController;
@@ -73,6 +73,10 @@ Route::middleware(['web','auth', 'role:admin'])->prefix('admin')->name('admin.')
     Route::get('/analysis/questions', [DashboardController::class, 'questionAnalysis'])->name('analysis.questionAnalysis');
     Route::get('/analysis/wordcloud', [DashboardController::class, 'wordCloud'])->name('analysis.wordCloud');
     Route::get('/evaluatee/{id}', [DashboardController::class, 'evaluateeDetails'])->name('evaluatee.evaluateeDetails');
+    Route::get('/cqi/filter', function () {return view('admin.reports.filter'); })->name('reports.filter');
+    Route::get('/reports/cqi/generate/{surveyId?}', [ReportController::class, 'generateCQIReport'])->name('reports.cqi');
+
+
 
     // Users (with Subjects / Groups handled in UsersController)
     Route::get('/users', [UsersController::class, 'index'])->name('users');

@@ -11,7 +11,7 @@ class CQIReport extends Model
     
     protected $table = 'cqi_reports';
 
-    protected $fillable = ['title', 'description', 'survey_id', 'generated_by', 'data', 'file_path'];
+    protected $fillable = ['title', 'description', 'survey_id', 'generated_by', 'data', 'file_path', 'data'];
 
     protected $casts = [
         'data' => 'array'
