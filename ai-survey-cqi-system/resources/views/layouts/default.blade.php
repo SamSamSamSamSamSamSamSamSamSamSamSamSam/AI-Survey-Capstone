@@ -3,358 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>DCISM Admin Portal</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #4e73df;
-            --secondary-color: #1cc88a;
-            --dark-bg: #1a1c23;
-            --sidebar-bg: #2a3042;
-            --sidebar-hover: #3a4052;
-            --text-light: #f8f9fc;
-            --text-muted: #b7b9cc;
-            --card-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fc;
-            color: #333;
-            overflow-x: hidden;
-        }
-        
-        .fixed-sidebar {
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            z-index: 100;
-            overflow-y: auto;
-            width: 250px;
-            background: var(--sidebar-bg);
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
-        }
-        
-        .main-content {
-            margin-left: 250px;
-            transition: all 0.3s;
-        }
-        
-        .sidebar-header {
-            padding: 20px 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .sidebar-brand {
-            display: flex;
-            align-items: center;
-            color: var(--text-light);
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.2rem;
-        }
-        
-        .sidebar-brand img {
-            height: 36px;
-            margin-right: 10px;
-        }
-        
-        .nav-pills .nav-link {
-            color: var(--text-muted);
-            border-radius: 0.35rem;
-            margin-bottom: 5px;
-            padding: 12px 15px;
-            transition: all 0.2s;
-        }
-        
-        .nav-pills .nav-link:hover {
-            color: var(--text-light);
-            background-color: var(--sidebar-hover);
-        }
-        
-        .nav-pills .nav-link.active {
-            color: var(--text-light);
-            background-color: var(--primary-color);
-        }
-        
-        .nav-pills .nav-link i {
-            margin-right: 10px;
-            font-size: 1.1rem;
-        }
-        
-        .sidebar-footer {
-            padding: 15px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .btn-logout {
-            width: 100%;
-            background-color: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: var(--text-muted);
-            transition: all 0.3s;
-        }
-        
-        .btn-logout:hover {
-            background-color: rgba(220, 53, 69, 0.2);
-            border-color: rgba(220, 53, 69, 0.5);
-            color: #fff;
-        }
-        
-        .page-content {
-            padding: 30px;
-            min-height: calc(100vh - 70px);
-        }
-        
-        footer {
-            background-color: var(--dark-bg);
-            color: var(--text-muted);
-            padding: 15px 0;
-            margin-left: 250px;
-            transition: all 0.3s;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .fixed-sidebar {
-                width: 70px;
-                overflow: visible;
-            }
-            
-            .fixed-sidebar .sidebar-brand span,
-            .fixed-sidebar .nav-link span {
-                display: none;
-            }
-            
-            .fixed-sidebar .sidebar-brand {
-                justify-content: center;
-            }
-            
-            .fixed-sidebar .sidebar-brand img {
-                margin-right: 0;
-            }
-            
-            .main-content, footer {
-                margin-left: 70px;
-            }
-            
-            .nav-pills .nav-link {
-                padding: 12px;
-                text-align: center;
-            }
-            
-            .nav-pills .nav-link i {
-                margin-right: 0;
-                font-size: 1.3rem;
-            }
-        }
-        
-        /* User info section */
-        .user-info {
-            padding: 15px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .user-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
-            color: white;
-            font-weight: bold;
-            font-size: 1.5rem;
-        }
-        
-        .user-name {
-            color: var(--text-light);
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        
-        .user-role {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-        
-        /* Animation for menu items */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
-        .nav-item {
-            animation: fadeIn 0.3s ease-out;
-        }
-        
-        /* Scrollbar styling */
-        .fixed-sidebar::-webkit-scrollbar {
-            width: 5px;
-        }
-        
-        .fixed-sidebar::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .fixed-sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-        }
-    </style>
+
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    @stack('styles')
 </head>
-<body class="bg-light">
+<body>
 
-    <div class="container-fluid p-0">
-        <div class="row flex-nowrap">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-            <!-- Sidebar -->
-            <div class="fixed-sidebar">
-                <div class="d-flex flex-column h-100">
-                    <!-- Sidebar header with logo -->
-                    <div class="sidebar-header">
-                        <a href="{{ route('admin.dashboard') }}" class="sidebar-brand">
-                            <img src="{{ asset('images/dcismicon.png') }}" alt="DCISM Icon">
-                            <span>DCISM</span>
-                        </a>
+    <div class="layout-wrapper">
+
+        {{-- ======================================================
+             SIDEBAR
+        ====================================================== --}}
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-inner">
+
+                {{-- Brand --}}
+                <div class="sidebar-brand-wrap">
+                    <a href="{{ route('admin.dashboard') }}" class="sidebar-brand">
+                        <img src="{{ asset('images/dcismicon.png') }}" alt="DCISM Icon" class="sidebar-brand-logo">
+                        <span class="sidebar-brand-text">DCISM</span>
+                    </a>
+                </div>
+
+                {{-- User Info --}}
+                <div class="sidebar-user">
+                    <div class="sidebar-user-avatar">
+                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                     </div>
-                    
-                    <!-- User info section -->
-                    <div class="user-info">
-                        <div class="user-avatar">
-                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                        </div>
-                        <div class="user-name">{{ Auth::user()->name }}</div>
-                        <div class="user-role">
+                    <div class="sidebar-user-details">
+                        <div class="sidebar-user-name">{{ Auth::user()->name }}</div>
+                        <div class="sidebar-user-role">
                             @if(Auth::user()->hasRole('admin'))
-                                Administrator
+                                <span class="role-badge role-badge--admin">Administrator</span>
                             @elseif(Auth::user()->hasRole('teacher'))
-                                Faculty
+                                <span class="role-badge role-badge--teacher">Faculty</span>
                             @else
-                                Student
+                                <span class="role-badge role-badge--student">Student</span>
                             @endif
                         </div>
                     </div>
-                    
-                    <!-- Navigation menu -->
-                    <div class="flex-grow-1 px-3 pt-3">
-                        <ul class="nav nav-pills flex-column mb-auto" id="menu">
-                            @if(Auth::user() && Auth::user()->hasRole('admin'))
-                                <li class="nav-item">
-                                    <a href="{{ route('admin.dashboard') }}" class="nav-link text-white {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                                        <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('admin.department') }}" class="nav-link text-white {{ request()->routeIs('admin.department') ? 'active' : '' }}">
-                                        <i class="bi bi-building"></i> <span>Department</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('admin.users') }}" class="nav-link text-white {{ request()->routeIs('admin.users') ? 'active' : '' }}">
-                                        <i class="bi bi-people"></i> <span>Users</span>
-                                    </a>
-                                </li>
-                            @elseif(Auth::user() && Auth::user()->hasRole('teacher'))
-                                <li class="nav-item">
-                                    <a href="{{ route('teacher.dashboard') }}" class="nav-link text-white {{ request()->routeIs('teacher.dashboard') ? 'active' : '' }}">
-                                        <i class="bi bi-journal-text"></i> <span>Dashboard</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('teacher.survey') }}" class="nav-link text-white {{ request()->routeIs('teacher.survey') ? 'active' : '' }}">
-                                        <i class="bi bi-clipboard-check"></i> <span>Survey</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('teacher.reviews') }}" class="nav-link text-white {{ request()->routeIs('teacher.reviews') ? 'active' : '' }}">
-                                        <i class="bi bi-bar-chart-line"></i> <span>Results</span>
-                                    </a>
-                                </li>
-                            @elseif(Auth::user() && Auth::user()->hasRole('student'))
-                                <li class="nav-item">
-                                    <a href="{{ route('student.dashboard') }}" class="nav-link text-white {{ request()->routeIs('student.dashboard') ? 'active' : '' }}">
-                                        <i class="bi bi-house"></i> <span>Dashboard</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('student.survey') }}" class="nav-link text-white {{ request()->routeIs('student.survey') ? 'active' : '' }}">
-                                        <i class="bi bi-clipboard-check"></i> <span>Surveys</span>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{{ route('student.results') }}" class="nav-link text-white {{ request()->routeIs('student.results') ? 'active' : '' }}">
-                                        <i class="bi bi-bar-chart-line"></i> <span>Results</span>
-                                    </a>
-                                </li>
-                            @endif
-                        </ul>
-                    </div>
-                    
-                    <!-- Sidebar footer with logout -->
-                    <div class="sidebar-footer mt-auto">
-                        <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" 
-                        class="btn btn-logout">
-                            <i class="bi bi-box-arrow-right me-2"></i> Logout
-                        </a>
-                        
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                            @csrf
-                        </form>
-                    </div>
                 </div>
-            </div>
 
-            <!-- Main content area -->
-            <div class="col main-content">
-                <div class="page-content">
-                    @stack('styles')
-                    @yield('content')
-                    @stack('scripts')
+                {{-- Navigation — role-specific nav items live in their own partials --}}
+                <nav class="sidebar-nav">
+                    <ul class="sidebar-menu" id="sidebarMenu">
+                        @if(Auth::user()->hasRole('admin'))
+                            @include('partials.nav-admin')
+                        @elseif(Auth::user()->hasRole('teacher'))
+                            @include('partials.nav-teacher')
+                        @else
+                            @include('partials.nav-student')
+                        @endif
+                    </ul>
+                </nav>
+
+                {{-- Logout --}}
+                <div class="sidebar-footer">
+                    <a href="#"
+                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                       class="sidebar-logout-btn">
+                        <i class="bi bi-box-arrow-right sidebar-menu-icon"></i>
+                        <span class="sidebar-menu-label">Logout</span>
+                    </a>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                        @csrf
+                    </form>
                 </div>
+
             </div>
+        </aside>
+
+        {{-- ======================================================
+             MAIN AREA
+        ====================================================== --}}
+        <div class="main-wrapper">
+
+            {{-- Mobile topbar --}}
+            <header class="topbar d-md-none">
+                <button class="topbar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                    <i class="bi bi-list"></i>
+                </button>
+                <span class="topbar-title">DCISM Portal</span>
+            </header>
+
+            {{-- Page content --}}
+            <main class="page-content">
+                @yield('content')
+            </main>
+
+            {{-- Footer --}}
+            <footer class="site-footer">
+                <p class="mb-0">&copy; {{ date('Y') }} DCISM Admin Portal. All rights reserved.</p>
+            </footer>
 
         </div>
     </div>
 
-    <footer class="bg-dark text-white text-center py-3">
-        <p class="mb-0">&copy; 2025 DCISM Admin Portal. All rights reserved.</p>
-    </footer>
+    @stack('scripts')
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Add active class to current page in navigation
-        document.addEventListener('DOMContentLoaded', function() {
-            const currentPath = window.location.pathname;
-            const navLinks = document.querySelectorAll('#menu .nav-link');
-            
-            navLinks.forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
-                    link.classList.add('active');
-                }
+        (() => {
+            const sidebar   = document.getElementById('sidebar');
+            const overlay   = document.getElementById('sidebarOverlay');
+            const toggleBtn = document.getElementById('sidebarToggle');
+
+            const openSidebar  = () => { sidebar.classList.add('is-open');    overlay.classList.add('is-visible'); };
+            const closeSidebar = () => { sidebar.classList.remove('is-open'); overlay.classList.remove('is-visible'); };
+
+            toggleBtn?.addEventListener('click', () => {
+                sidebar.classList.contains('is-open') ? closeSidebar() : openSidebar();
             });
-            
-            // Add smooth transitions
-            const sidebar = document.querySelector('.fixed-sidebar');
-            const mainContent = document.querySelector('.main-content');
-            const footer = document.querySelector('footer');
-            
-            // Toggle sidebar on small screens
-            const toggleSidebar = () => {
-                sidebar.classList.toggle('collapsed');
-                mainContent.classList.toggle('expanded');
-                footer.classList.toggle('expanded');
-            };
-            
-            // You can add a button to toggle the sidebar if needed
-            // For now, it's responsive based on screen size
-        });
+
+            overlay?.addEventListener('click', closeSidebar);
+            document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+        })();
     </script>
+
 </body>
 </html>

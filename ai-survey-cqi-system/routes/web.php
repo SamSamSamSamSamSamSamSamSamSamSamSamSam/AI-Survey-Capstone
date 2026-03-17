@@ -61,6 +61,12 @@ Route::get('/teacher/dashboard', function () {
     return view('teacher.dashboard');
 })->name('teacher.dashboard')->middleware(['auth', 'role:teacher']);
 
+// Placeholder for teacher reviews page -------------------------------------------------------
+Route::get('/teacher/reviews', function () {
+    // return view('teacher.reviews');
+    return "Teacher Reviews Page - Under Construction - line 67 in web.php";
+})->name('teacher.reviews')->middleware(['auth', 'role:teacher']);
+
 Route::get('/student/dashboard', function () {
     return view('student.dashboard');
 })->name('student.dashboard')->middleware(['auth', 'role:student']);
@@ -116,6 +122,7 @@ Route::middleware(['web','auth', 'role:teacher', 'check.onboarding'])->prefix('t
 
         // Reviews and Classes
         Route::get('/classes', [TeacherDashboardController::class, 'survey'])->name('classes');
+        // Teacher reviews page is currently a placeholder, so we won't add a route for it until it's implemented
         Route::get('/reviews', [TeacherDashboardController::class, 'reviews'])->name('reviews');
 });
 

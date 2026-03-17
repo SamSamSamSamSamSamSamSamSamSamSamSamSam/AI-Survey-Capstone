@@ -1,0 +1,28 @@
+// =============================================================================
+// app.scss  —  Main SCSS entry point
+//
+// Load order matters:
+//   1. Our variable overrides  (must come BEFORE Bootstrap)
+//   2. Bootstrap source        (picks up our variable overrides)
+//   3. Bootstrap Icons         (separate package)
+//   4. Our own partials        (can use Bootstrap mixins & variables freely)
+// =============================================================================
+
+// 1. Variable overrides — must be first
+@import 'variables';
+
+// 2. Bootstrap full source
+@import '/node_modules/bootstrap/scss/bootstrap';
+
+// 3. Bootstrap Icons (installed via npm: npm install bootstrap-icons)
+@import '/node_modules/bootstrap-icons/font/bootstrap-icons';
+
+// 4. Layout partials
+@import 'layouts/sidebar';
+@import 'layouts/layout';
+
+// 5. Component partials (add more files here as your project grows)
+// @import 'components/cards';
+// @import 'components/tables';
+// @import 'components/forms';
+// @import 'components/buttons';

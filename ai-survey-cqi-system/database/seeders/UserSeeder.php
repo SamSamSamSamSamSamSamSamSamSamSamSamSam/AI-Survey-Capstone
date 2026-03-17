@@ -38,6 +38,13 @@ class UserSeeder extends Seeder
         ]);
         $teacher->roles()->attach(Role::where('name', 'teacher')->first());
 
+        $teacher = User::create([
+            'name' => 'Teacher Faculty',
+            'email' => 'teacher@school.edu',
+            'password' => Hash::make('password'),
+        ]);
+        $teacher->roles()->attach(Role::where('name', 'teacher')->first());
+
         // Create student who is also teacher
         $studentTeacher = User::create([
             'name' => 'Alex Johnson',
