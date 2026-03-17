@@ -47,7 +47,7 @@ class DashboardDemoSeeder extends Seeder
         $teachers = collect([
             User::create(['name' => 'Mr. Smith', 'email' => 'smith@example.com', 'password' => Hash::make('password')]),
             User::create(['name' => 'Ms. Johnson', 'email' => 'johnson@example.com', 'password' => Hash::make('password')]),
-            User::create(['name' => 'Prof. Brown', 'email' => 'brown@example.com', 'password' => Hash::make('password')]),
+            User::create(['name' => 'Prof. Brown', 'email' => 'teacher@example.com', 'password' => Hash::make('password')]),
         ]);
         $teachers->each(fn($t) => $t->roles()->attach($teacherRole));
 
@@ -57,7 +57,7 @@ class DashboardDemoSeeder extends Seeder
             User::create(['name' => 'Bob', 'email' => 'bob@example.com', 'password' => Hash::make('password')]),
             User::create(['name' => 'Charlie', 'email' => 'charlie@example.com', 'password' => Hash::make('password')]),
             User::create(['name' => 'Diana', 'email' => 'diana@example.com', 'password' => Hash::make('password')]),
-            User::create(['name' => 'Eve', 'email' => 'eve@example.com', 'password' => Hash::make('password')]),
+            User::create(['name' => 'Eve', 'email' => 'student@example.com', 'password' => Hash::make('password')]),
         ]);
         $students->each(fn($s) => $s->roles()->attach($studentRole));
 

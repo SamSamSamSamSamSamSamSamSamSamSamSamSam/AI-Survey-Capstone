@@ -56,5 +56,11 @@ class TeacherDashboardController extends Controller
         return view('teacher.dashboard', compact('classes', 'activeSurveys', 'topPerformers', 'role'));
     }
 
+    public function reviews()
+    {
+        // return view('teacher.reviews');
+        return "Teacher Reviews Page - Under Construction line 62 in TeacherDashboardController.php";
+    }
+
 
 }
