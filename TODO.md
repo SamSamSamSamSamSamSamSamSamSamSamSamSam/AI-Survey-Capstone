@@ -11,7 +11,9 @@ Legend:
 
 ## High Priority
 
-- [/] - icons not working (fix) 
+- [x] - icons not working (fix) 
+- [ ] - Improving Admin Dashboard UI
+- [ ] - Improving Admin Create Survey UI
 
 
 ## Backend (Laravel)

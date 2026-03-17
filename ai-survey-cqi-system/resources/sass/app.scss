@@ -12,10 +12,11 @@
 @import 'variables';
 
 // 2. Bootstrap full source
-@import '/node_modules/bootstrap/scss/bootstrap';
+@import 'bootstrap/scss/bootstrap';
 
 // 3. Bootstrap Icons (installed via npm: npm install bootstrap-icons)
-@import '/node_modules/bootstrap-icons/font/bootstrap-icons';
+$bootstrap-icons-font-dir: "bootstrap-icons/font/fonts"; // fix needed for correct font path
+@import 'bootstrap-icons/font/bootstrap-icons';
 
 // 4. Layout partials
 @import 'layouts/sidebar';
