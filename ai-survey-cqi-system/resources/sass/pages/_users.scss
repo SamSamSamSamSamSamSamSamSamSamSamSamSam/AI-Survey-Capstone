@@ -27,6 +27,28 @@
     justify-content: center;
     flex-shrink: 0;
 }
+// -----------------------------------------------------------------------------
+// Card layout
+// -----------------------------------------------------------------------------
+// Make the card fill remaining vertical space
+.dash-card {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0; // important — prevents flex overflow
+}
+
+// Let the table wrapper scroll, not the whole page
+.dash-card__body.p-0 {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+// Pagination stays at the bottom naturally
+.dash-card__body.border-top {
+    flex-shrink: 0;
+}
 
 // -----------------------------------------------------------------------------
 // Action buttons

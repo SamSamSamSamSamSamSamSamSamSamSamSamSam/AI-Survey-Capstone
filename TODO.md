@@ -14,7 +14,7 @@ Legend:
 - [ ] - Integrate Model for Sentiment Analysis
 - [ ] - Dynamic Search for subjects
 - [ ] - Sudject Management for Each User in Admin Panel
-- [ ] - Faculty Statistics
+- [ ] - Faculty Statistics - FACULTY
 - [ ] - CQI Report Generation
 - [ ]
 
