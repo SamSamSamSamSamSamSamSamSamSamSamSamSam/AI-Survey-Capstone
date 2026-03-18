@@ -1,107 +1,109 @@
 import sys
 import json
 import logging
-from typing import List, Dict, Any, Literal
+from typing import List, Dict, Any
 
-from pydantic import BaseModel, Field, RootModel
-
-from google import genai
-from google.genai import types
-from google.genai.errors import APIError
+import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-MODEL_NAME = "gemini-2.5-flash" 
+# Path to your fine-tuned DistilBERT model
+MODEL_PATH = "resources/python/model"
 
-class SentimentResult(BaseModel):
-    id: int = Field(description="The original response ID.")
-    sentiment_label: Literal["positive", "negative", "neutral"] = Field(
-        description="The determined sentiment: positive, negative, or neutral."
-    )
-    sentiment_score: float = Field(
-        description="Fixed score of 1.0 for a definitive label.",
-        default=1.0
-    )
+# Label mapping from your model's config.json
+ID2LABEL = {
+    0: "negative",
+    1: "neutral",
+    2: "positive",
+}
 
-
-class SentimentBatch(RootModel):
-    root: List[SentimentResult]
-
+# Load model and tokenizer once at startup
 try:
-    client = genai.Client()
-    logging.info(f"Gemini Client initialized with model: {MODEL_NAME}")
+    logging.info(f"Loading tokenizer from {MODEL_PATH}...")
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+
+    logging.info(f"Loading model from {MODEL_PATH}...")
+    model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
+    model.eval()
+
+    logging.info("Model and tokenizer loaded successfully.")
 except Exception as e:
-    logging.error(f"Failed to initialize Gemini Client. Check GEMINI_API_KEY environment variable: {e}")
+    logging.error(f"Failed to load model or tokenizer from '{MODEL_PATH}': {e}")
     sys.exit(1)
 
-RESPONSE_SCHEMA = SentimentBatch.model_json_schema()
 
-SYSTEM_INSTRUCTION = (
-    "You are an expert sentiment analysis engine. Your task is to analyze a list of user responses "
-    "and classify the sentiment of each one as either 'positive', 'negative', or 'neutral'. "
-    "You MUST return the output as a single JSON array object that strictly adheres to the provided schema. "
-    "Set the 'sentiment_score' to 1.0 for every result."
-)
+def predict_sentiment(text: str) -> Dict[str, Any]:
+    """Run inference on a single text and return label + confidence score."""
+    inputs = tokenizer(
+        text,
+        return_tensors="pt",
+        truncation=True,
+        padding=True,
+        max_length=512,
+    )
+
+    with torch.no_grad():
+        outputs = model(**inputs)
+
+    logits = outputs.logits
+    probabilities = torch.softmax(logits, dim=-1).squeeze()
+    predicted_class = torch.argmax(probabilities).item()
+
+    label = ID2LABEL[predicted_class]
+    score = round(probabilities[predicted_class].item(), 4)
+
+    return {"sentiment_label": label, "sentiment_score": score}
+
 
 def analyze_responses(responses: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Analyze sentiment for a list of response dicts with 'id' and 'text' keys."""
     if not responses:
         return []
 
-    responses_for_prompt = [{"id": r.get("id", i), "text": r.get("text", "")} 
-                            for i, r in enumerate(responses)]
-    
-    user_prompt = (
-        "Analyze the sentiment for the following list of text responses:\n\n"
-        f"{json.dumps(responses_for_prompt, indent=2)}"
-    )
+    results = []
+    logging.info(f"Analyzing {len(responses)} responses with local DistilBERT model...")
 
-    logging.info(f"Sending {len(responses)} responses for analysis to {MODEL_NAME}...")
+    for i, r in enumerate(responses):
+        response_id = r.get("id", i)
+        text = r.get("text", "").strip()
 
-    try:
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=[user_prompt],
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_INSTRUCTION,
-                response_mime_type="application/json", 
-                response_schema=RESPONSE_SCHEMA,
-            )
-        )
-        
-        raw_json = response.text
-        
-        parsed_data = SentimentBatch.model_validate_json(raw_json)
-        
-        results_list = parsed_data.root 
-        analyzed_results = [item.model_dump() for item in results_list]
-        
-        logging.info("Analysis complete and structured JSON received.")
-        
-        return analyzed_results 
+        if not text:
+            # Empty text — default to neutral
+            results.append({
+                "id": response_id,
+                "sentiment_label": "neutral",
+                "sentiment_score": 1.0,
+            })
+            continue
 
-    except APIError as e:
-        logging.error(f"Gemini API call failed: {e}")
-        return [
-            {"id": r.get("id", i), "sentiment_label": "api_error", "sentiment_score": 0.0}
-            for i, r in enumerate(responses)
-        ]
-    except Exception as e:
-        raw_output = getattr(locals().get('response'), 'text', 'N/A')
-        logging.error(f"Pydantic validation or JSON decode failed: {e}. Raw output: {raw_output}")
-        return [
-            {"id": r.get("id", i), "sentiment_label": "parse_error", "sentiment_score": 0.0}
-            for i, r in enumerate(responses)
-        ]
+        try:
+            prediction = predict_sentiment(text)
+            results.append({
+                "id": response_id,
+                "sentiment_label": prediction["sentiment_label"],
+                "sentiment_score": prediction["sentiment_score"],
+            })
+        except Exception as e:
+            logging.error(f"Inference failed for id={response_id}: {e}")
+            results.append({
+                "id": response_id,
+                "sentiment_label": "parse_error",
+                "sentiment_score": 0.0,
+            })
+
+    logging.info("Analysis complete.")
+    return results
+
 
 if __name__ == "__main__":
-    raw = sys.stdin.read() # Read from stdin when run by Laravel
-    
+    raw = sys.stdin.read()
+
     if raw and raw.strip():
         try:
             input_data = json.loads(raw)
             if not isinstance(input_data, list):
                 raise TypeError("JSON input must be a list of objects.")
-
         except json.JSONDecodeError:
             logging.error("Failed to decode JSON from stdin.")
             print(json.dumps([]))
@@ -126,7 +128,7 @@ if __name__ == "__main__":
             {"id": 2, "text": "The teacher is boring and the material is old."},
             {"id": 3, "text": "It was just okay, nothing special, nothing bad."},
             {"id": 4, "text": "I can't say if I liked it or not."},
-            {"id": 5, "text": "This is great!"}
+            {"id": 5, "text": "This is great!"},
         ]
 
         test_results = analyze_responses(test_data)
