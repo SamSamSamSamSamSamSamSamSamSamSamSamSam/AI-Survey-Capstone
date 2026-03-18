@@ -38,11 +38,11 @@
                         <div class="sidebar-user-name">{{ Auth::user()->name }}</div>
                         <div class="sidebar-user-role">
                             @if(Auth::user()->hasRole('admin'))
-                                <span class="role-badge role-badge--admin">Administrator</span>
+                                <span class="role-badge role-badge--admin role-badge--on-dark">Administrator</span>
                             @elseif(Auth::user()->hasRole('teacher'))
-                                <span class="role-badge role-badge--teacher">Faculty</span>
+                                <span class="role-badge role-badge--teacher role-badge--on-dark">Faculty</span>
                             @else
-                                <span class="role-badge role-badge--student">Student</span>
+                                <span class="role-badge role-badge--student role-badge--on-dark">Student</span>
                             @endif
                         </div>
                     </div>

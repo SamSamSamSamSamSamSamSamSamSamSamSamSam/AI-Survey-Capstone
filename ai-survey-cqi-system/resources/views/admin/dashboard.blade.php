@@ -1,38 +1,42 @@
 @extends('layouts.default')
 
 @section('content')
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Faculty Improvement Dashboard</h2>
-        
-        <div class="d-flex align-items-center">
-            <small class="text-muted me-3">Last updated: {{ now()->toDateTimeString() }}</small>
-            <div class="admin-controls">
-                <a href="{{ route('admin.surveys.create') }}" class="btn btn-primary btn-sm me-2">
-                    <i class="bi bi-plus-circle me-1"></i> Create Survey
-                </a>
-                <a href="{{ route('admin.surveys.index') }}" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-eye me-1"></i> View Surveys
-                </a>
-                <a href="{{ route('admin.reports.filter') }}" 
-                    class="btn btn-sm btn-success ms-2">
-                    <i class="bi bi-file-earmark-pdf"></i> Generate CQI Report
-                </a>
-            </div>
-        </div>
+
+{{-- Page Header --}}
+<div class="dash-header">
+    <div class="dash-header__left">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="#">Admin</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+            </ol>
+        </nav>
+        <h1 class="dash-header__title">Faculty Improvement Dashboard</h1>
+        <p class="dash-header__subtitle">Monitor performance, sentiment, and evaluation trends across all faculty.</p>
     </div>
-    
-    <div class="mb-4 d-flex justify-content-between align-items-center">
-        <div>
-            <label for="survey-filter" class="form-label me-2 mb-0">
-                <strong>Current View:</strong>
+    <div class="dash-header__actions">
+        <a href="{{ route('admin.surveys.create') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle me-1"></i> Create Survey
+        </a>
+        <a href="{{ route('admin.surveys.index') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-eye me-1"></i> View Surveys
+        </a>
+        <a href="{{ route('admin.reports.filter') }}" class="btn btn-success btn-sm">
+            <i class="bi bi-file-earmark-pdf me-1"></i> CQI Report
+        </a>
+    </div>
+</div>
+
+{{-- Filter Bar --}}
+<div class="dash-filters">
+    <div class="dash-filters__selects">
+
+        <div class="dash-filter-group">
+            <label class="dash-filter-group__label" for="survey-filter">
+                <i class="bi bi-funnel me-1"></i> Survey
             </label>
-            <select id="survey-filter"
-                    class="form-select form-select-sm w-auto d-inline-block"
-                    onchange="window.location.href = this.value;">
-                <option value="{{ route('admin.dashboard') }}">
-                    Overall (All Surveys)
-                </option>
+            <select id="survey-filter" class="form-select form-select-sm">
+                <option value="{{ route('admin.dashboard') }}">Overall (All Surveys)</option>
                 @foreach($allSurveys as $survey)
                     <option value="{{ route('admin.dashboard', ['survey_id' => $survey->id]) }}"
                         {{ request('survey_id') == $survey->id ? 'selected' : '' }}>
@@ -42,20 +46,16 @@
             </select>
         </div>
 
-        {{-- COURSE FILTER --}}
-        <div class="ms-3">
-            <label class="form-label me-2 mb-0"><strong>Course:</strong></label>
-            <select id="course-filter" class="form-select form-select-sm w-auto d-inline-block"
-                    onchange="window.location.href = this.value;">
+        <div class="dash-filter-group">
+            <label class="dash-filter-group__label" for="course-filter">
+                <i class="bi bi-book me-1"></i> Course
+            </label>
+            <select id="course-filter" class="form-select form-select-sm">
                 <option value="{{ route('admin.dashboard', ['survey_id' => request('survey_id')]) }}">
                     All Courses
                 </option>
-
                 @foreach($courses as $course)
-                    <option value="{{ route('admin.dashboard', [
-                        'survey_id' => request('survey_id'),
-                        'course' => $course
-                    ]) }}"
+                    <option value="{{ route('admin.dashboard', ['survey_id' => request('survey_id'), 'course' => $course]) }}"
                         {{ request('course') == $course ? 'selected' : '' }}>
                         {{ $course }}
                     </option>
@@ -63,186 +63,295 @@
             </select>
         </div>
 
-        <div>
-            <a href="{{ route('admin.analysis.surveys') }}" class="btn btn-sm btn-outline-primary me-2">
-                <i class="bi bi-bar-chart"></i> Question Analysis
-            </a>
-            <a href="{{ route('admin.analysis.wordCloud') }}" class="btn btn-sm btn-outline-secondary">
-                <i class="bi bi-cloud"></i> Word Cloud
-            </a>
-        </div>
     </div>
 
-    {{-- KPI CARDS --}}
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card p-3 border-start border-primary border-4">
-                <h6>Total Responses</h6>
-                <h3>{{ $distinct_evaluators ?? 0 }}</h3>
-                <small class="text-muted">
-                    Participation: <strong>{{ $participation_pct ?? 'N/A' }}%</strong> 
-                    @if($eligible_evaluators) 
-                        (of {{ $eligible_evaluators }} eligible)
+    <div class="dash-filters__links">
+        <a href="{{ route('admin.analysis.surveys') }}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-bar-chart me-1"></i> Question Analysis
+        </a>
+        <a href="{{ route('admin.analysis.wordCloud') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-cloud me-1"></i> Word Cloud
+        </a>
+        <small class="dash-filters__timestamp text-muted">
+            <i class="bi bi-clock me-1"></i> Updated {{ now()->toDateTimeString() }}
+        </small>
+    </div>
+</div>
+
+{{-- KPI Cards --}}
+<div class="row g-3 mb-4">
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-card--primary">
+            <div class="kpi-card__icon">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div class="kpi-card__body">
+                <span class="kpi-card__label">Total Responses</span>
+                <span class="kpi-card__value">{{ $distinct_evaluators ?? 0 }}</span>
+                <span class="kpi-card__sub">
+                    Participation:
+                    <strong>{{ $participation_pct ?? 'N/A' }}%</strong>
+                    @if($eligible_evaluators)
+                        of {{ $eligible_evaluators }} eligible
                     @endif
-                </small>
+                </span>
             </div>
         </div>
+    </div>
 
-        <div class="col-md-3">
-            <div class="card p-3 border-start border-success border-4">
-                <h6>Overall Mean Rating</h6>
-                <h3 class="{{ $mean >= 4.0 ? 'text-success' : ($mean < 3.0 ? 'text-danger' : 'text-warning') }}">
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-card--success">
+            <div class="kpi-card__icon">
+                <i class="bi bi-star-fill"></i>
+            </div>
+            <div class="kpi-card__body">
+                <span class="kpi-card__label">Overall Mean Rating</span>
+                <span class="kpi-card__value {{ $mean >= 4.0 ? 'text-success' : ($mean < 3.0 ? 'text-danger' : 'text-warning') }}">
                     {{ $mean !== null ? number_format($mean, 2) : 'N/A' }}
-                </h3>
-                <small class="text-muted">Target: 4.0. Higher is better.</small>
+                </span>
+                <span class="kpi-card__sub">Target: <strong>4.0</strong> — Higher is better</span>
             </div>
         </div>
-        
-        <div class="col-md-3">
-            <div class="card p-3 border-start border-info border-4">
-                <h6>Overall Positive Sentiment</h6>
-                <h3>{{ $overallPositivePct ?? 'N/A' }}%</h3>
-                <small class="text-muted">Percentage of positive qualitative comments.</small>
-            </div>
-        </div>
+    </div>
 
-        <div class="col-md-3">
-            <div class="card p-3 border-start border-secondary border-4">
-                <h6>Standard Deviation</h6>
-                <h3 class="{{ $stddev < 0.8 ? 'text-success' : 'text-warning' }}">
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-card--info">
+            <div class="kpi-card__icon">
+                <i class="bi bi-chat-heart-fill"></i>
+            </div>
+            <div class="kpi-card__body">
+                <span class="kpi-card__label">Positive Sentiment</span>
+                <span class="kpi-card__value">{{ $overallPositivePct ?? 'N/A' }}%</span>
+                <span class="kpi-card__sub">Of all qualitative comments</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card kpi-card--warning">
+            <div class="kpi-card__icon">
+                <i class="bi bi-activity"></i>
+            </div>
+            <div class="kpi-card__body">
+                <span class="kpi-card__label">Standard Deviation</span>
+                <span class="kpi-card__value {{ $stddev < 0.8 ? 'text-success' : 'text-warning' }}">
                     {{ $stddev !== null ? number_format($stddev, 2) : 'N/A' }}
-                </h3>
-                <small class="text-muted">Lower = more consistent ratings.</small>
+                </span>
+                <span class="kpi-card__sub">Lower = more consistent ratings</span>
             </div>
         </div>
-    </div>
-
-    {{-- CATEGORY PERFORMANCE PANEL --}}
-    <div class="card p-3 mb-4">
-        <h5>Category Performance Summary</h5>
-        <table class="table table-sm mt-2">
-            <thead>
-                <tr>
-                    <th>Category</th>
-                    <th>Average Score</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($categoryScores as $cat)
-                <tr>
-                    <td>{{ $cat['category'] }}</td>
-                    <td class="{{ $cat['avg'] >= 4.0 ? 'text-success fw-bold' : 'text-warning' }}">
-                        {{ number_format($cat['avg'], 2) }}
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="2">No category rating data available.</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    {{-- MONTHLY GRAPH + TOP PERFORMERS --}}
-    <div class="row mb-4">
-        <div class="col-lg-8">
-            <div class="card p-3 mb-3">
-                <h5>Monthly Performance Trend (Rating & Sentiment)</h5>
-                <canvas id="monthlyCombinedChart" height="120"></canvas>
-                <p class="mt-2 small text-muted">
-                    Interpretation: Consistent upward trends indicate continuous improvement.
-                </p>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="card p-3 mb-3">
-                <h5>Top Performing Faculty <i class="bi bi-star-fill text-warning"></i></h5>
-                <table class="table table-sm mt-2">
-                    <thead><tr><th>Name</th><th>Avg</th><th>Positive %</th></tr></thead>
-                    <tbody>
-                        @forelse($topPerformers as $p)
-                        <tr>
-                            <td>
-                                <a href="{{ route('admin.evaluatee.evaluateeDetails', ['id' => $p['evaluatee_id']]) }}" 
-                                   class="text-decoration-none">
-                                    {{ $p['name'] }}
-                                </a>
-                            </td>
-                            <td class="{{ $p['avg_rating'] >= 4.5 ? 'fw-bold text-success' : '' }}">
-                                {{ number_format($p['avg_rating'], 2) }}
-                            </td>
-                            <td class="{{ $p['positive_pct'] >= 80 ? 'text-primary' : '' }}">
-                                {{ $p['positive_pct'] }}%
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="3">Not enough data (≥3 rating responses required).</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-                <p class="small text-muted">Top 10 based on rating count & sentiment.</p>
-            </div>
-        </div>
-    </div>
-    
-    {{-- FACULTY SENTIMENT BREAKDOWN --}}
-    <div class="card p-3">
-        <h5>Faculty Sentiment Breakdown</h5>
-        <table class="table table-sm mt-2">
-            <thead>
-                <tr>
-                    <th>Faculty</th>
-                    <th>Total</th>
-                    <th class="text-success">Positive %</th>
-                    <th class="text-danger">Negative %</th>
-                    <th class="text-warning">Neutral %</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($sentimentPerPerson as $s)
-                <tr>
-                    <td>
-                        <a href="{{ route('admin.evaluatee.evaluateeDetails', ['id' => $s['evaluatee_id']]) }}">
-                            {{ $s['name'] }}
-                        </a>
-                    </td>
-                    <td>{{ $s['total'] }}</td>
-                    <td class="text-success">{{ $s['positive_pct'] }}%</td>
-                    <td class="text-danger">{{ $s['negative_pct'] }}%</td>
-                    <td class="text-warning">{{ $s['neutral_pct'] }}%</td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="5">No qualitative data available.</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-        <p class="small text-muted">Top 10 faculty with the most qualitative responses.</p>
     </div>
 
 </div>
 
-<style>
-    #monthlyCombinedChart {
-        width: 100% !important;
-        height: 350px !important;
-    }
-</style>
+{{-- Chart + Top Performers --}}
+<div class="row g-3 mb-4">
+
+    <div class="col-lg-8">
+        <div class="dash-card h-100">
+            <div class="dash-card__header">
+                <div>
+                    <h5 class="dash-card__title">Monthly Performance Trend</h5>
+                    <p class="dash-card__subtitle">Rating score and sentiment over time</p>
+                </div>
+            </div>
+            <div class="dash-card__body">
+                <div class="chart-container">
+                    <canvas id="monthlyCombinedChart"></canvas>
+                </div>
+                <p class="dash-card__hint">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Consistent upward trends indicate continuous faculty improvement.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="dash-card h-100">
+            <div class="dash-card__header">
+                <div>
+                    <h5 class="dash-card__title">
+                        Top Performing Faculty
+                        <i class="bi bi-star-fill text-warning ms-1" style="font-size: 0.85rem;"></i>
+                    </h5>
+                    <p class="dash-card__subtitle">Based on rating count &amp; sentiment</p>
+                </div>
+            </div>
+            <div class="dash-card__body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover dash-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th class="text-end">Avg</th>
+                                <th class="text-end">Positive</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($topPerformers as $p)
+                            <tr>
+                                <td>
+                                    <a href="{{ route('admin.evaluatee.evaluateeDetails', ['id' => $p['evaluatee_id']]) }}"
+                                       class="dash-table__link">
+                                        {{ $p['name'] }}
+                                    </a>
+                                </td>
+                                <td class="text-end">
+                                    <span class="badge {{ $p['avg_rating'] >= 4.5 ? 'bg-success' : 'bg-secondary' }}">
+                                        {{ number_format($p['avg_rating'], 2) }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <span class="{{ $p['positive_pct'] >= 80 ? 'text-primary fw-semibold' : 'text-muted' }}">
+                                        {{ $p['positive_pct'] }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3">
+                                    <div class="dash-empty">
+                                        <i class="bi bi-inbox dash-empty__icon"></i>
+                                        <span>Not enough data<br><small>≥3 rating responses required</small></span>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{{-- Category Performance --}}
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="dash-card">
+            <div class="dash-card__header">
+                <div>
+                    <h5 class="dash-card__title">Category Performance Summary</h5>
+                    <p class="dash-card__subtitle">Average score per evaluation category</p>
+                </div>
+            </div>
+            <div class="dash-card__body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover dash-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th class="text-end">Average Score</th>
+                                <th>Performance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($categoryScores as $cat)
+                            <tr>
+                                <td class="fw-medium">{{ $cat['category'] }}</td>
+                                <td class="text-end">
+                                    <span class="fw-semibold {{ $cat['avg'] >= 4.0 ? 'text-success' : 'text-warning' }}">
+                                        {{ number_format($cat['avg'], 2) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="dash-progress">
+                                        <div class="dash-progress__bar {{ $cat['avg'] >= 4.0 ? 'dash-progress__bar--success' : 'dash-progress__bar--warning' }}"
+                                             style="width: {{ min(($cat['avg'] / 5) * 100, 100) }}%">
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="3">
+                                    <div class="dash-empty">
+                                        <i class="bi bi-inbox dash-empty__icon"></i>
+                                        <span>No category rating data available.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Faculty Sentiment Breakdown --}}
+<div class="row g-3 mb-2">
+    <div class="col-12">
+        <div class="dash-card">
+            <div class="dash-card__header">
+                <div>
+                    <h5 class="dash-card__title">Faculty Sentiment Breakdown</h5>
+                    <p class="dash-card__subtitle">Top 10 faculty with the most qualitative responses</p>
+                </div>
+            </div>
+            <div class="dash-card__body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover dash-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Faculty</th>
+                                <th class="text-center">Total</th>
+                                <th class="text-center text-success">Positive</th>
+                                <th class="text-center text-danger">Negative</th>
+                                <th class="text-center text-warning">Neutral</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($sentimentPerPerson as $s)
+                            <tr>
+                                <td>
+                                    <a href="{{ route('admin.evaluatee.evaluateeDetails', ['id' => $s['evaluatee_id']]) }}"
+                                       class="dash-table__link">
+                                        {{ $s['name'] }}
+                                    </a>
+                                </td>
+                                <td class="text-center text-muted">{{ $s['total'] }}</td>
+                                <td class="text-center">
+                                    <span class="dash-sentiment dash-sentiment--positive">{{ $s['positive_pct'] }}%</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="dash-sentiment dash-sentiment--negative">{{ $s['negative_pct'] }}%</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="dash-sentiment dash-sentiment--neutral">{{ $s['neutral_pct'] }}%</span>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="5">
+                                    <div class="dash-empty">
+                                        <i class="bi bi-inbox dash-empty__icon"></i>
+                                        <span>No qualitative data available.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
-<script>
-    const dashboardData = {
-        monthlyLabels: @json($monthlyLabels ?? []),
-        monthlyAvg: @json($monthlyAvg ?? []),
-        monthlyPosPct: @json($monthlyPositivePct ?? []),
-    };
-</script>
-<script src="{{ asset('js/admin/dashboard.js') }}"></script>
+    <script>
+        const dashboardData = {
+            monthlyLabels:  @json($monthlyLabels ?? []),
+            monthlyAvg:     @json($monthlyAvg ?? []),
+            monthlyPosPct:  @json($monthlyPositivePct ?? []),
+        };
+    </script>
+    @vite('resources/js/admin/dashboard.js')
 @endpush
