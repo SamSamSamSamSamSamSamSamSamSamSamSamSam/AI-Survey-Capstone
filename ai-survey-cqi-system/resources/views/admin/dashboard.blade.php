@@ -1,9 +1,5 @@
 @extends('layouts.default')
 
-@push('styles')
-    @vite(['resources/sass/pages/dashboard.scss'])
-@endpush
-
 @section('content')
 
 {{-- Page Header --}}

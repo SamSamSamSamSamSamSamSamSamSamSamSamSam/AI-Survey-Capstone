@@ -1,9 +1,5 @@
 @extends('layouts.default')
 
-@push('styles')
-    @vite(['resources/sass/pages/department.scss'])
-@endpush
-
 @section('content')
 
 {{-- Page Header --}}
@@ -82,26 +78,24 @@
 
             <div class="fcard">
 
-                {{-- Avatar + role badge --}}
+                {{-- Avatar + info + role badge --}}
                 <div class="fcard__avatar-wrap">
                     <div class="fcard__avatar {{ $isAdmin ? 'fcard__avatar--admin' : 'fcard__avatar--faculty' }}">
                         {{ $initial }}
                     </div>
+                    <div class="fcard__info">
+                        <h6 class="fcard__name">{{ $member->name }}</h6>
+                        <p class="fcard__email">{{ $member->email }}</p>
+                    </div>
                     @if($isAdmin)
-                        <span class="role-badge role-badge role-badge--admin">
+                        <span class="role-badge role-badge--admin">
                             <i class="bi bi-shield-fill me-1"></i>Admin
                         </span>
                     @else
-                        <span class="role-badge role-badge role-badge--teacher">
+                        <span class="role-badge role-badge--teacher">
                             <i class="bi bi-person-fill me-1"></i>Faculty
                         </span>
                     @endif
-                </div>
-
-                {{-- Info --}}
-                <div class="fcard__info">
-                    <h6 class="fcard__name">{{ $member->name }}</h6>
-                    <p class="fcard__email">{{ $member->email }}</p>
                 </div>
 
                 {{-- Courses --}}

@@ -21,6 +21,9 @@ $bootstrap-icons-font-dir: "bootstrap-icons/font/fonts"; // fix needed for corre
 @import 'components/search';
 @import 'components/badges';
 
-// NOTE: Page-specific SCSS (e.g. pages/_dashboard.scss) are NOT imported here.
-// They are compiled separately by Vite and pushed into <head> via @push('styles')
-// in each individual Blade view. This keeps the global bundle lean.
+// 6. Page-specific partials
+// Previously compiled separately via @push('styles') in each blade view.
+// Now bundled here so all styles go through a single Vite entry point.
+@import 'pages/department';
+@import 'pages/dashboard';
+@import 'pages/users';

@@ -1,9 +1,5 @@
 @extends('layouts.default')
 
-@push('styles')
-    @vite(['resources/sass/pages/users.scss'])
-@endpush
-
 @section('content')
 
 {{-- Page Header --}}

@@ -10,6 +10,55 @@ Note: see template at the bottom
 
 ## [2026-03-18]
 
+**Author:** 
+**Module/Area:** Faculty Directory (Department Page)
+**Type:** Fix | Improvement | Refactor
+
+### Description
+Fixed uneven card layout on the Faculty Directory page where the "View Profile"
+button was rendering at inconsistent vertical positions across cards depending on
+how many courses each faculty member had assigned. Also resolved a 404 error
+caused by a misconfigured Vite asset path, and cleaned up redundant SCSS.
+
+### Details
+- Restructured `.fcard` to use a proper flex column layout so the footer button
+  always anchors to the bottom regardless of course count
+- Moved `fcard__info` (name + email) inside `fcard__avatar-wrap` so the card
+  header is a single self-contained flex column — no more absolute-positioned
+  role badge hack with negative `bottom` offset
+- Removed `position: absolute` and negative `bottom` trick from `&__role-badge`
+  in `_department.scss`; badge now sits naturally in flow inside `__avatar-wrap`
+- Removed unused `&__role-badge` block with `@extend .role-badge` from
+  `_department.scss` — the blade already uses `.role-badge` directly from
+  `components/_badges.scss`, so the extend was dead code
+- Removed `margin: 0 0.5rem` side margin from `&__courses` that caused
+  inconsistent alignment against card edges
+- Reduced `&__info` top padding from `1.25rem` to `0.85rem` (was compensating
+  for the overflowing absolute badge — no longer needed)
+- Fixed 404 on `department.scss` by switching from a standalone Vite entry point
+  to a proper SCSS partial imported through `app.scss`
+- Removed `@push('styles') @vite([...]) @endpush` from `department.blade.php`
+  since styles are now bundled through the main entry
+- Fixed duplicate `role-badge` class on badge `<span>` elements in the blade
+  (`role-badge role-badge role-badge--admin` → `role-badge role-badge--admin`)
+
+### Files Affected
+- `resources/sass/pages/_department.scss`
+- `resources/sass/app.scss`
+- `resources/views/admin/department.blade.php`
+
+### Notes
+- `_department.scss` must remain a partial (underscore prefix) since it is now
+  imported via `app.scss` using `@import 'pages/department'`
+- Import order in `app.scss` is intentional — `pages/department` comes after
+  `bootstrap` and `components/badges` so `$primary`, `$warning`, `$dark`, and
+  `.role-badge` are all defined before the department partial compiles
+- If other page-specific SCSS files need to be migrated off standalone Vite
+  entries in the future, follow the same pattern: rename to partial, add import
+  to `app.scss` section 6, remove `@push('styles')` from the blade
+
+## [2026-03-18]
+
 **Author:**
 **Module/Area:** Frontend — Layout & SCSS Setup
 **Type:** Refactor
@@ -226,7 +275,7 @@ Extracted shared UI patterns from page-specific SCSS files into reusable compone
 ### Notes
 Any future page that needs a search input, filter bar, page header, or role badge should use the component classes and does not need to redefine them in its own page SCSS file.
 
----------------------------- TEMPLATE ----------------------------
+# ---------------------------- TEMPLATE ----------------------------
 
 ## [YYYY-MM-DD]
 
