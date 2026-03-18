@@ -24,8 +24,6 @@ class AnalyzeSentiment extends Command
      */
     public function handle()
     {
-        $geminiApiKey = env('GEMINI_API_KEY');
-        $this->info('Fetching responses to analyze...');
 
         // Set sentiment to null for rating questions
         Response::whereHas('question', fn($q) => $q->where('type', 'rating'))
@@ -58,18 +56,15 @@ class AnalyzeSentiment extends Command
 
         // Determine Python path
         $pythonPath = (PHP_OS_FAMILY === 'Windows')
-            ? base_path('myvenv/Scripts/python.exe')
+            ? base_path('resources/python/myvenv/Scripts/python.exe')
             : base_path('myvenv/bin/python');
 
         $scriptPath = base_path('resources/python/sentiment_analyzer.py');
 
         $this->comment(sprintf('Analyzing %d responses via Python...', $responses->count()));
 
-        $process = new Process(
-            [$pythonPath, $scriptPath],
-            null,
-            ['GEMINI_API_KEY' => $geminiApiKey]
-        );
+        $process =  new Process([$pythonPath, $scriptPath]);
+
         $process->setInput($inputData);
         $process->setTimeout(3600);
 
