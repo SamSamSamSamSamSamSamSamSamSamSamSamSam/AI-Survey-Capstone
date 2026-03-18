@@ -3,44 +3,46 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Http;
 use App\Models\Response;
-use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class AnalyzeSentiment extends Command
 {
-    /**
-     * The console command signature.
-     */
     protected $signature = 'analyze:sentiment {--limit= : Limit the number of responses to process.}';
+    protected $description = 'Analyze sentiment for survey responses using the local DistilBERT API server.';
 
-    /**
-     * The console command description.
-     */
-    protected $description = 'Analyze sentiment for survey responses using the Python AI script.';
+    const SENTIMENT_API = 'http://127.0.0.1:5000';
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
+        // Check the Flask server is running before doing anything
+        try {
+            $health = Http::timeout(3)->get(self::SENTIMENT_API . '/health');
+            if (!$health->successful()) {
+                $this->error('Sentiment server is not responding. Run: start_sentiment_server.bat');
+                return Command::FAILURE;
+            }
+        } catch (\Exception $e) {
+            $this->error('Cannot connect to sentiment server at ' . self::SENTIMENT_API);
+            $this->error('Start it first by running: start_sentiment_server.bat');
+            return Command::FAILURE;
+        }
+
+        $this->info('Fetching responses to analyze...');
 
         // Set sentiment to null for rating questions
         Response::whereHas('question', fn($q) => $q->where('type', 'rating'))
-            ->update([
-                'sentiment_label' => null,
-                'sentiment_score' => null,
-            ]);
+            ->update(['sentiment_label' => null, 'sentiment_score' => null]);
 
-        // Fetch text responses that need analysis
+        // Fetch only unanalyzed text responses
         $query = Response::whereNull('sentiment_label')
             ->whereNotNull('response')
             ->whereHas('question', fn($q) => $q->where('type', 'text'));
 
-        // Apply limit if specified
         if ($limit = $this->option('limit')) {
             $query = $query->take((int) $limit);
         }
+
         $responses = $query->get();
 
         if ($responses->isEmpty()) {
@@ -48,58 +50,30 @@ class AnalyzeSentiment extends Command
             return Command::SUCCESS;
         }
 
-        // Prepare input JSON for Python
-        $inputData = $responses->map(fn($r) => [
-            'id' => $r->id,
+        $payload = $responses->map(fn($r) => [
+            'id'   => $r->id,
             'text' => $r->response,
-        ])->toJson();
+        ])->values()->all();
 
-        // Determine Python path
-        $pythonPath = (PHP_OS_FAMILY === 'Windows')
-            ? base_path('resources/python/myvenv/Scripts/python.exe')
-            : base_path('myvenv/bin/python');
-
-        $scriptPath = base_path('resources/python/sentiment_analyzer.py');
-
-        $this->comment(sprintf('Analyzing %d responses via Python...', $responses->count()));
-
-        $process =  new Process([$pythonPath, $scriptPath]);
-
-        $process->setInput($inputData);
-        $process->setTimeout(3600);
+        $this->comment(sprintf('Sending %d responses to sentiment server...', count($payload)));
 
         try {
-            $process->mustRun();
+            $apiResponse = Http::timeout(120)->post(self::SENTIMENT_API . '/analyze', $payload);
 
-            $output = trim($process->getOutput());
-            $errorOutput = trim($process->getErrorOutput());
-
-            $this->info("--- Python Analysis Process Output ---");
-
-            if ($errorOutput) {
-                $this->warn("Python STDERR (Client Logs/Errors):");
-                $this->warn(substr($errorOutput, 0, 1000));
-            }
-
-            $this->line("Python STDOUT (JSON Payload): " . substr($output, 0, 300) . '...');
-            $this->info("------------------------------------");
-
-            $results = json_decode($output, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                $this->error('Failed to decode JSON output from Python script.');
-                $this->line('Output snippet: ' . substr($output, 0, 500));
+            if (!$apiResponse->successful()) {
+                $this->error('Sentiment server returned an error: ' . $apiResponse->body());
                 return Command::FAILURE;
             }
 
+            $results = $apiResponse->json();
             $updatedCount = 0;
 
             foreach ($results as $res) {
-                $response = Response::find($res['id']);
-                if (!$response) continue;
+                $record = Response::find($res['id']);
+                if (!$record) continue;
 
                 if (isset($res['sentiment_label'], $res['sentiment_score'])) {
-                    $response->update([
+                    $record->update([
                         'sentiment_label' => $res['sentiment_label'],
                         'sentiment_score' => $res['sentiment_score'],
                     ]);
@@ -110,11 +84,8 @@ class AnalyzeSentiment extends Command
             $this->info("Sentiment analysis complete — updated {$updatedCount} records successfully.");
             return Command::SUCCESS;
 
-        } catch (ProcessFailedException $e) {
-            $this->error('Python script execution failed.');
-            $this->line('Exception: ' . $e->getMessage());
-            $this->line('STDERR: ' . $process->getErrorOutput());
-            $this->line('STDOUT: ' . $process->getOutput());
+        } catch (\Exception $e) {
+            $this->error('Request to sentiment server failed: ' . $e->getMessage());
             return Command::FAILURE;
         }
     }
