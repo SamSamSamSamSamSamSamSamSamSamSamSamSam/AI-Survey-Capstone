@@ -1,0 +1,94 @@
+// =============================================================================
+// pages/_users.scss
+// Users management — page-specific styles only.
+// .search-wrap, .search-clear, .results-count, .role-badge, .dash-empty,
+// .dash-header, .dash-filters are now in components/ via app.scss.
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Name cell — small avatar + name inline
+// -----------------------------------------------------------------------------
+.users-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.users-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $primary, darken($primary, 12%));
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+// -----------------------------------------------------------------------------
+// Action buttons
+// -----------------------------------------------------------------------------
+.users-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+// -----------------------------------------------------------------------------
+// Hidden row state — toggled by users.js during filtering
+// -----------------------------------------------------------------------------
+.user-row {
+    &.is-hidden { display: none !important; }
+}
+
+// -----------------------------------------------------------------------------
+// Delete confirmation modal
+// -----------------------------------------------------------------------------
+.users-delete-modal {
+    border: none;
+    border-radius: 0.75rem;
+    overflow: hidden;
+
+    &__icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background-color: rgba($danger, 0.1);
+        color: $danger;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+    }
+
+    &__title {
+        font-weight: 700;
+        font-size: 1rem;
+        color: $dark;
+        margin-bottom: 0.4rem;
+    }
+
+    &__message {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin: 0;
+        line-height: 1.5;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Responsive
+// -----------------------------------------------------------------------------
+@include media-breakpoint-down(md) {
+    .users-actions {
+        flex-direction: column;
+        gap: 0.3rem;
+
+        .btn { width: 100%; }
+    }
+}

@@ -113,20 +113,8 @@
     max-width: 100%;
 }
 
-// Role badges
-.role-badge {
-    display: inline-block;
-    padding: 0.15rem 0.6rem;
-    border-radius: 999px;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-
-    &--admin   { background-color: rgba($primary, 0.25);   color: lighten($primary, 30%); }
-    &--teacher { background-color: rgba($secondary, 0.25); color: lighten($secondary, 20%); }
-    &--student { background-color: rgba($warning, 0.25);   color: lighten($warning, 10%); }
-}
+// Role badges — base styles from components/_badges.scss (loaded via app.scss)
+// Sidebar uses the --on-dark modifier for light text on dark background
 
 // -----------------------------------------------------------------------------
 // Navigation

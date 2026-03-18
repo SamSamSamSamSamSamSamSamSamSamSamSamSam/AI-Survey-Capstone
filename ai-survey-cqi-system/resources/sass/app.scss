@@ -1,20 +1,14 @@
 // =============================================================================
 // app.scss  —  Main SCSS entry point
-//
-// Load order matters:
-//   1. Our variable overrides  (must come BEFORE Bootstrap)
-//   2. Bootstrap source        (picks up our variable overrides)
-//   3. Bootstrap Icons         (separate package)
-//   4. Our own partials        (can use Bootstrap mixins & variables freely)
 // =============================================================================
 
-// 1. Variable overrides — must be first
+// 1. Variable overrides — must come BEFORE Bootstrap
 @import 'variables';
 
 // 2. Bootstrap full source
 @import 'bootstrap/scss/bootstrap';
 
-// 3. Bootstrap Icons (installed via npm: npm install bootstrap-icons)
+// 3. Bootstrap Icons (npm install bootstrap-icons)
 $bootstrap-icons-font-dir: "bootstrap-icons/font/fonts"; // fix needed for correct font path
 @import 'bootstrap-icons/font/bootstrap-icons';
 
@@ -22,8 +16,11 @@ $bootstrap-icons-font-dir: "bootstrap-icons/font/fonts"; // fix needed for corre
 @import 'layouts/sidebar';
 @import 'layouts/layout';
 
-// 5. Component partials (add more files here as your project grows)
-// @import 'components/cards';
-// @import 'components/tables';
-// @import 'components/forms';
-// @import 'components/buttons';
+// 5. Shared components — loaded globally, available on every page
+@import 'components/page-header';
+@import 'components/search';
+@import 'components/badges';
+
+// NOTE: Page-specific SCSS (e.g. pages/_dashboard.scss) are NOT imported here.
+// They are compiled separately by Vite and pushed into <head> via @push('styles')
+// in each individual Blade view. This keeps the global bundle lean.
