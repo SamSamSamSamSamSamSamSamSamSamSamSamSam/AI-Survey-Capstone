@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\DepartmentsController;
 use App\Http\Controllers\Admin\SubjectsController;
+use App\Http\Controllers\Admin\SemesterController;
 use App\Http\Controllers\Teacher\TeacherDashboardController as TeacherDashboardController;
 use App\Http\Controllers\Teacher\TeacherSurveyController as TeacherSurveyController;
 use App\Http\Controllers\Student\StudentDashboardController as StudentDashboardController;
@@ -82,7 +83,11 @@ Route::middleware(['web','auth', 'role:admin'])->prefix('admin')->name('admin.')
     Route::get('/cqi/filter', function () {return view('admin.reports.filter'); })->name('reports.filter');
     Route::get('/reports/cqi/generate/{surveyId?}', [ReportController::class, 'generateCQIReport'])->name('reports.cqi');
 
-
+    //Semester
+    Route::get('/semesters', [SemesterController::class, 'index'])->name('semesters.index');
+    Route::post('/semesters', [SemesterController::class, 'store'])->name('semesters.store');
+    Route::post('/semesters/{semester}/activate', [SemesterController::class, 'activate'])->name('semesters.activate');
+    Route::delete('/semesters/{semester}', [SemesterController::class, 'destroy'])->name('semesters.destroy');
 
     // Users (with Subjects / Groups handled in UsersController)
     Route::get('/users', [UsersController::class, 'index'])->name('users');
@@ -97,6 +102,7 @@ Route::middleware(['web','auth', 'role:admin'])->prefix('admin')->name('admin.')
     Route::get('/surveys/use-official', [SurveyController::class, 'useOfficialQuestionnaire'])->name('surveys.useOfficial');
     Route::resource('surveys', SurveyController::class); 
     Route::post('/surveys/{survey}/toggle-status', [SurveyController::class, 'toggleStatus'])->name('surveys.toggle-status');
+    Route::post('/surveys/{survey}/duplicate', [SurveyController::class, 'duplicate'])->name('surveys.duplicate');
 
     // Teacher-specific subjects
     Route::get('/teachers/{teacherId}/subjects', [SurveyController::class, 'getSubjectsByTeacher'])->name('teachers.subjects');

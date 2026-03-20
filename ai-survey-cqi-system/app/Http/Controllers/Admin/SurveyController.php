@@ -7,6 +7,7 @@ use App\Models\Survey;
 use App\Models\Question;
 use App\Models\Subject;
 use App\Models\User;
+use App\Models\Semester;
 use Illuminate\Http\Request;
 
 class SurveyController extends Controller
@@ -19,7 +20,8 @@ class SurveyController extends Controller
             ->latest()
             ->get();
 
-        return view('admin.surveys.index', compact('surveys'));
+        $activeSemester = Semester::getActive();
+        return view('admin.surveys.index', compact('surveys', 'activeSemester'));
     }
 
     /** Show create form */
@@ -29,7 +31,9 @@ class SurveyController extends Controller
             $q->whereIn('name', ['teacher', 'admin'])
         )->orderBy('name')->get();
 
-        return view('admin.surveys.create', compact('faculty'));
+        $activeSemester = Semester::getActive();
+
+        return view('admin.surveys.create', compact('faculty','activeSemester'));
     }
 
     /** Store a new survey */
@@ -59,6 +63,7 @@ class SurveyController extends Controller
             'evaluatee_id' => $request->evaluatee_id,
             'subject_id' => $subjectId,
             'group' => $group,
+            'semester_id' => Semester::getActive()?->id,
             'created_by' => auth()->id(),
             'target_role' => $request->target_role,
             'is_active' => true,
@@ -261,4 +266,38 @@ class SurveyController extends Controller
     }
 
 
+
+    /** Duplicate a survey into the active semester */
+    public function duplicate($id)
+    {
+        $original       = Survey::with('questions')->findOrFail($id);
+        $activeSemester = Semester::getActive();
+
+        $newSurvey = Survey::create([
+            'title'        => $original->title . ' (Copy)',
+            'description'  => $original->description,
+            'evaluatee_id' => $original->evaluatee_id,
+            'subject_id'   => $original->subject_id,
+            'group'        => $original->group,
+            'semester_id'  => $activeSemester?->id,
+            'created_by'   => auth()->id(),
+            'target_role'  => $original->target_role,
+            'is_active'    => false,
+        ]);
+
+        foreach ($original->questions as $question) {
+            $newSurvey->questions()->create([
+                'question_text' => $question->question_text,
+                'type'          => $question->type,
+                'category'      => $question->category,
+                'order'         => $question->order,
+                'options'       => $question->options,
+            ]);
+        }
+
+        $semesterLabel = $activeSemester ? $activeSemester->name : 'no semester';
+
+        return redirect()->route('admin.surveys.index')
+            ->with('success', "Survey duplicated into {$semesterLabel}. It is inactive — review and activate when ready.");
+    }
 }

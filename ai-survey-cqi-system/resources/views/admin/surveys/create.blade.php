@@ -29,6 +29,22 @@
                         </div>
                     @endif
 
+
+                        {{-- Active Semester Notice --}}
+                        @if($activeSemester)
+                            <div class="alert alert-info py-2 mb-3">
+                                <i class="bi bi-calendar2-check me-1"></i>
+                                This survey will be assigned to the active semester:
+                                <strong>{{ $activeSemester->name }}</strong>
+                            </div>
+                        @else
+                            <div class="alert alert-warning py-2 mb-3">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                No active semester set. 
+                                <a href="{{ route('admin.semesters.index') }}">Set one here</a> before creating surveys.
+                            </div>
+                        @endif
+
                     <form action="{{ route('admin.surveys.store') }}" method="POST">
                         @csrf
 

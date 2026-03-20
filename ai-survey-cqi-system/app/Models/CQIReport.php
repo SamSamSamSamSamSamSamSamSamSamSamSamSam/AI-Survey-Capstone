@@ -11,7 +11,15 @@ class CQIReport extends Model
     
     protected $table = 'cqi_reports';
 
-    protected $fillable = ['title', 'description', 'survey_id', 'generated_by', 'data', 'file_path', 'data'];
+    protected $fillable = [
+            'title', 
+            'description', 
+            'survey_id',
+            'semester_id',
+            'generated_by', 
+            'data', 
+            'file_path', 
+            'data'];
 
     protected $casts = [
         'data' => 'array'
@@ -20,6 +28,11 @@ class CQIReport extends Model
     public function survey()
     {
         return $this->belongsTo(Survey::class);
+    }
+
+    public function semester()
+    {
+        return $this->belongsTo(Semester::class);
     }
 
     public function generator()

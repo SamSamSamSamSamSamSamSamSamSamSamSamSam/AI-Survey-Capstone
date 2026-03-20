@@ -9,7 +9,15 @@ class Response extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['survey_id', 'question_id', 'evaluator_id', 'evaluatee_id', 'subject_id', 'response', 'sentiment_label',
+    protected $fillable = [
+        'survey_id', 
+        'question_id', 
+        'evaluator_id', 
+        'evaluatee_id', 
+        'subject_id',
+        'semester_id', 
+        'response', 
+        'sentiment_label',
         'sentiment_score'];
     
     protected $casts = [
@@ -39,5 +47,10 @@ class Response extends Model
     public function subject()
     {
         return $this->belongsTo(Subject::class);
+    }
+
+    public function semester()
+    {
+        return $this->belongsTo(Semester::class);
     }
 }

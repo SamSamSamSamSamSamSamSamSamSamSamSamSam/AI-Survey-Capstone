@@ -14,6 +14,7 @@ class Survey extends Model
         'description',
         'created_by',
         'evaluatee_id',
+        'semester_id',
         'subject_id',
         'target_role',
         'is_active',
@@ -33,6 +34,11 @@ class Survey extends Model
     public function subject()
     {
         return $this->belongsTo(Subject::class, 'subject_id');
+    }
+
+    public function semester()
+    {
+        return $this->belongsTo(Semester::class);
     }
 
     public function questions()
