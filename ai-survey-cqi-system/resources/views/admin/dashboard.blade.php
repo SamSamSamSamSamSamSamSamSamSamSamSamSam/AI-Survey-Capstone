@@ -31,33 +31,46 @@
 <div class="dash-filters">
     <div class="dash-filters__selects">
 
+        {{-- Teacher Filter --}}
         <div class="dash-filter-group">
-            <label class="dash-filter-group__label" for="survey-filter">
-                <i class="bi bi-funnel me-1"></i> Survey
+            <label class="dash-filter-group__label" for="teacher-filter">
+                <i class="bi bi-person-badge me-1"></i> Teacher
             </label>
-            <select id="survey-filter" class="form-select form-select-sm">
-                <option value="{{ route('admin.dashboard') }}">Overall (All Surveys)</option>
-                @foreach($allSurveys as $survey)
-                    <option value="{{ route('admin.dashboard', ['survey_id' => $survey->id]) }}"
-                        {{ request('survey_id') == $survey->id ? 'selected' : '' }}>
-                        {{ $survey->title }}
+            <select id="teacher-filter" class="form-select form-select-sm"
+                    onchange="window.location.href = this.value;">
+                <option value="{{ route('admin.dashboard', ['semester_id' => request('semester_id')]) }}">
+                    All Teachers
+                </option>
+                @foreach($teachers as $teacher)
+                    <option value="{{ route('admin.dashboard', [
+                        'teacher_id'  => $teacher->id,
+                        'semester_id' => request('semester_id'),
+                    ]) }}"
+                        {{ request('teacher_id') == $teacher->id ? 'selected' : '' }}>
+                        {{ $teacher->name }}
                     </option>
                 @endforeach
             </select>
         </div>
 
+        {{-- Semester Filter --}}
         <div class="dash-filter-group">
-            <label class="dash-filter-group__label" for="course-filter">
-                <i class="bi bi-book me-1"></i> Course
+            <label class="dash-filter-group__label" for="semester-filter">
+                <i class="bi bi-calendar2-range me-1"></i> Semester
             </label>
-            <select id="course-filter" class="form-select form-select-sm">
-                <option value="{{ route('admin.dashboard', ['survey_id' => request('survey_id')]) }}">
-                    All Courses
+            <select id="semester-filter" class="form-select form-select-sm"
+                    onchange="window.location.href = this.value;">
+                <option value="{{ route('admin.dashboard', ['teacher_id' => request('teacher_id')]) }}">
+                    All Semesters
                 </option>
-                @foreach($courses as $course)
-                    <option value="{{ route('admin.dashboard', ['survey_id' => request('survey_id'), 'course' => $course]) }}"
-                        {{ request('course') == $course ? 'selected' : '' }}>
-                        {{ $course }}
+                @foreach($semesters as $sem)
+                    <option value="{{ route('admin.dashboard', [
+                        'teacher_id'  => request('teacher_id'),
+                        'semester_id' => $sem->id,
+                    ]) }}"
+                        {{ request('semester_id') == $sem->id ? 'selected' : '' }}>
+                        {{ $sem->name }}
+                        @if($sem->is_active) (Active) @endif
                     </option>
                 @endforeach
             </select>
@@ -107,7 +120,7 @@
             </div>
             <div class="kpi-card__body">
                 <span class="kpi-card__label">Overall Mean Rating</span>
-                <span class="kpi-card__value {{ $mean >= 4.0 ? 'text-success' : ($mean < 3.0 ? 'text-danger' : 'text-warning') }}">
+                <span class="kpi-card__value {{ ($mean ?? 0) >= 4.0 ? 'text-success' : (($mean ?? 0) < 3.0 ? 'text-danger' : 'text-warning') }}">
                     {{ $mean !== null ? number_format($mean, 2) : 'N/A' }}
                 </span>
                 <span class="kpi-card__sub">Target: <strong>4.0</strong> — Higher is better</span>
@@ -135,7 +148,7 @@
             </div>
             <div class="kpi-card__body">
                 <span class="kpi-card__label">Standard Deviation</span>
-                <span class="kpi-card__value {{ $stddev < 0.8 ? 'text-success' : 'text-warning' }}">
+                <span class="kpi-card__value {{ ($stddev ?? 1) < 0.8 ? 'text-success' : 'text-warning' }}">
                     {{ $stddev !== null ? number_format($stddev, 2) : 'N/A' }}
                 </span>
                 <span class="kpi-card__sub">Lower = more consistent ratings</span>
