@@ -15,9 +15,9 @@ export default defineConfig({
                 'resources/js/admin/users.js',
 
                 // Page-specific SCSS — loaded only where needed via @push('styles')
-                'resources/sass/pages/dashboard.scss',
-                'resources/sass/pages/department.scss',
-                'resources/sass/pages/users.scss',
+                // 'resources/sass/pages/admin/dashboard.scss',
+                // 'resources/sass/pages/admin/department.scss',
+                // 'resources/sass/pages/admin/users.scss',
             ],
             refresh: true,
         }),
