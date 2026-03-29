@@ -12,10 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class TeacherSurveyController extends Controller
 {
-    /**
-     * Show all surveys available to the teacher
-     * scoped to the currently active semester.
-     */
     public function index()
     {
         $activeSemester = Semester::getActive();

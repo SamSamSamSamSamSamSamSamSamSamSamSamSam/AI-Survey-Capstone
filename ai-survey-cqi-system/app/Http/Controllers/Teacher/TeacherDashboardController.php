@@ -16,24 +16,27 @@ class TeacherDashboardController extends Controller
         $teacher        = auth()->user();
         $activeSemester = Semester::getActive();
 
-        // Classes this teacher handles
-        $classes = $teacher->teachingSubjects()->withCount('students')->get()->map(function ($s) {
-            return [
-                'id'       => $s->id,
-                'code'     => $s->course_code,
-                'title'    => $s->name,
-                'group'    => $s->pivot->group,
-                'students' => $s->students()->count(),
-            ];
-        });
+        // Classes scoped to active semester
+        $classes = $activeSemester
+            ? $teacher->teachingSubjectsForSemester($activeSemester->id)
+                      ->withCount('students')
+                      ->get()
+                      ->map(fn($s) => [
+                          'id'       => $s->id,
+                          'code'     => $s->course_code,
+                          'title'    => $s->name,
+                          'group'    => $s->pivot->group,
+                          'students' => $s->students()->count(),
+                      ])
+            : collect();
 
-        // Active surveys for teacher's classes — scoped to active semester
-        $activeSurveys = Survey::whereIn('subject_id', $teacher->teachingSubjects->pluck('id'))
+        // Active surveys scoped to active semester
+        $activeSurveys = Survey::whereIn('subject_id', $classes->pluck('id'))
             ->where('is_active', 1)
             ->when($activeSemester, fn($q) => $q->where('semester_id', $activeSemester->id))
             ->get();
 
-        // Top-performing faculty (min 3 responses)
+        // Top-performing faculty (all time — not semester scoped, for context)
         $topPerformersQuery = DB::table('responses')
             ->join('questions', 'responses.question_id', '=', 'questions.id')
             ->select(

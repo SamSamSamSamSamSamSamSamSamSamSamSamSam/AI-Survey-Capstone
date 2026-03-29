@@ -12,18 +12,17 @@ use Illuminate\Support\Facades\DB;
 
 class StudentSurveyController extends Controller
 {
-    /**
-     * Show all surveys available to the logged-in student
-     * scoped to the currently active semester.
-     */
     public function index()
     {
         $student        = auth()->user();
         $activeSemester = Semester::getActive();
 
-        $studentSubjects = $student->enrolledSubjects()
-            ->select('subjects.id', 'subject_student.group')
-            ->get();
+        // Subjects scoped to active semester
+        $studentSubjects = $activeSemester
+            ? $student->enrolledSubjectsForSemester($activeSemester->id)
+                      ->select('subjects.id', 'subject_student.group')
+                      ->get()
+            : collect();
 
         $subjectIds = $studentSubjects->pluck('id');
         $groups     = $studentSubjects->pluck('group')->unique();
@@ -40,22 +39,23 @@ class StudentSurveyController extends Controller
         return view('student.survey', compact('survey', 'activeSemester'));
     }
 
-    /**
-     * Show the survey form for the student to take.
-     */
     public function show(Survey $survey)
     {
         $survey->load(['questions', 'evaluatee', 'subject']);
-        $student = auth()->user();
+        $student        = auth()->user();
+        $activeSemester = Semester::getActive();
 
-        $isEnrolled = $student->enrolledSubjects()
-            ->where('subjects.id', $survey->subject_id)
-            ->wherePivot('group', $survey->group)
-            ->exists();
+        // Enrollment check scoped to active semester
+        $isEnrolled = $activeSemester
+            ? $student->enrolledSubjectsForSemester($activeSemester->id)
+                      ->where('subjects.id', $survey->subject_id)
+                      ->wherePivot('group', $survey->group)
+                      ->exists()
+            : false;
 
         if (!$isEnrolled) {
             return redirect()->route('student.survey')
-                ->with('error', 'You are not enrolled in this subject or group.');
+                ->with('error', 'You are not enrolled in this subject or group for the current semester.');
         }
 
         $alreadySubmitted = Response::where('survey_id', $survey->id)
@@ -65,17 +65,18 @@ class StudentSurveyController extends Controller
         return view('student.survey_take', compact('survey', 'alreadySubmitted'));
     }
 
-    /**
-     * Handle survey submission.
-     */
     public function submit(Request $request, Survey $survey)
     {
-        $student = auth()->user();
+        $student        = auth()->user();
+        $activeSemester = Semester::getActive();
 
-        $isEnrolled = $student->enrolledSubjects()
-            ->where('subjects.id', $survey->subject_id)
-            ->wherePivot('group', $survey->group)
-            ->exists();
+        // Enrollment check scoped to active semester
+        $isEnrolled = $activeSemester
+            ? $student->enrolledSubjectsForSemester($activeSemester->id)
+                      ->where('subjects.id', $survey->subject_id)
+                      ->wherePivot('group', $survey->group)
+                      ->exists()
+            : false;
 
         if (!$isEnrolled) {
             abort(403, 'Unauthorized submission.');

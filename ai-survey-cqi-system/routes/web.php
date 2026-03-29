@@ -147,8 +147,3 @@ Route::middleware(['web','auth', 'role:student', 'check.onboarding'])->prefix('s
         // Results
         Route::get('/results', [StudentDashboardController::class, 'results'])->name('results');
 });
-
-
-
-
-

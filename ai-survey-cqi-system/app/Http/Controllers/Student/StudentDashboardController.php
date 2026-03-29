@@ -16,8 +16,10 @@ class StudentDashboardController extends Controller
         $user           = Auth::user();
         $activeSemester = Semester::getActive();
 
-        // Enrolled subjects
-        $subjects = $user->enrolledSubjects()->with('teachers')->get();
+        // Enrolled subjects scoped to active semester
+        $subjects = $activeSemester
+            ? $user->enrolledSubjectsForSemester($activeSemester->id)->with('teachers')->get()
+            : collect();
 
         // Active surveys for this student — scoped to active semester
         $activeSurveys = Survey::where('is_active', true)
@@ -32,7 +34,7 @@ class StudentDashboardController extends Controller
             ->pluck('survey_id')
             ->unique();
 
-        // Recent responses
+        // Recent responses (all time — historical)
         $recentResponses = Response::with('survey.subject')
             ->where('evaluator_id', $user->id)
             ->latest()
