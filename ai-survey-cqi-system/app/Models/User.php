@@ -32,26 +32,65 @@ class User extends Authenticatable
         if (is_string($role)) {
             return $this->roles->contains('name', $role);
         }
-
         return !!$role->intersect($this->roles)->count();
     }
 
-    // === Subjects ===
-    // Subjects this user teaches
+    // ── Subjects (all time, no semester scope) ─────────────────────────────────
+
     public function teachingSubjects()
     {
         return $this->belongsToMany(Subject::class, 'subject_teacher', 'teacher_id', 'subject_id')
-                    ->withPivot('group');
+                    ->withPivot('group', 'semester_id');
     }
 
-    // Subjects this user is enrolled in (as a student)
     public function enrolledSubjects()
     {
         return $this->belongsToMany(Subject::class, 'subject_student', 'student_id', 'subject_id')
-                    ->withPivot('group');
+                    ->withPivot('group', 'semester_id');
     }
 
-    // === Surveys and Responses ===
+    // ── Semester-scoped subject helpers ────────────────────────────────────────
+
+    /**
+     * Subjects this teacher is assigned to for a specific semester.
+     */
+    public function teachingSubjectsForSemester($semesterId)
+    {
+        return $this->teachingSubjects()
+                    ->wherePivot('semester_id', $semesterId);
+    }
+
+    /**
+     * Subjects this student is enrolled in for a specific semester.
+     */
+    public function enrolledSubjectsForSemester($semesterId)
+    {
+        return $this->enrolledSubjects()
+                    ->wherePivot('semester_id', $semesterId);
+    }
+
+    /**
+     * Check if the user has subjects enrolled/assigned for the given semester.
+     */
+    public function hasSubjectsForSemester($semesterId): bool
+    {
+        if ($this->hasRole('student')) {
+            return $this->enrolledSubjects()
+                        ->wherePivot('semester_id', $semesterId)
+                        ->exists();
+        }
+
+        if ($this->hasRole('teacher')) {
+            return $this->teachingSubjects()
+                        ->wherePivot('semester_id', $semesterId)
+                        ->exists();
+        }
+
+        return true; // admins always pass
+    }
+
+    // ── Surveys and Responses ──────────────────────────────────────────────────
+
     public function createdSurveys()
     {
         return $this->hasMany(Survey::class, 'created_by');

@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Semester;
 
 class CheckOnboarding
 {
@@ -12,19 +13,21 @@ class CheckOnboarding
     {
         $user = Auth::user();
 
-        // Skip for admins
+        // Admins always pass
         if ($user->roles()->where('name', 'admin')->exists()) {
             return $next($request);
         }
 
-        // Check if onboarded (has subjects)
-        $hasSubjects = false;
+        $activeSemester = Semester::getActive();
 
-        if ($user->roles()->where('name', 'student')->exists()) {
-            $hasSubjects = $user->enrolledSubjects()->exists();
-        } elseif ($user->roles()->where('name', 'teacher')->exists()) {
-            $hasSubjects = $user->teachingSubjects()->exists();
+        // If there is no active semester, let them through —
+        // there's nothing to onboard into yet.
+        if (!$activeSemester) {
+            return $next($request);
         }
+
+        // Check if user has subjects for the ACTIVE semester specifically
+        $hasSubjects = $user->hasSubjectsForSemester($activeSemester->id);
 
         if (!$hasSubjects && !$request->is('onboarding/*')) {
             return redirect()->route('onboarding.upload');
