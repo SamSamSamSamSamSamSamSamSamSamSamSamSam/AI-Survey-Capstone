@@ -1,127 +1,161 @@
 @extends('layouts.default')
 
 @section('content')
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Generate CQI Report</h5>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('admin.reports.cqi') }}" method="GET" target="_blank" id="reportForm">
-                        {{-- @csrf is not required for GET requests, but included here for completeness if method changes --}}
-                        {{-- @csrf --}} 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Report Range</label>
-                            <div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="range_type" id="autoRange" value="auto" checked>
-                                    <label class="form-check-label" for="autoRange">
-                                        Last 5 Months (Automatic)
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="range_type" id="customRange" value="custom">
-                                    <label class="form-check-label" for="customRange">
-                                        Custom Range
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div id="customRangeFields" class="row g-3 mt-2" style="display:none;">
-                            <div class="col-md-6">
-                                <label for="start_date" class="form-label">Start Month & Year</label>
-                                <input type="month" name="start_date" id="start_date" class="form-control">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="end_date" class="form-label">End Month & Year</label>
-                                <input type="month" name="end_date" id="end_date" class="form-control">
-                                <div class="invalid-feedback" id="dateError">
-                                    The End Date must be after or the same as the Start Date.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-4 text-end">
-                            <button type="submit" class="btn btn-success" id="submitButton">
-                                <i class="bi bi-file-earmark-pdf"></i> Generate PDF Report
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+<div class="page-header">
+    <div class="page-header-content">
+        <h1 class="page-title">Generate CQI Report</h1>
+        <p class="page-subtitle">Select a semester and survey to generate a Continuous Quality Improvement report.</p>
     </div>
 </div>
 
-{{-- --- JAVASCRIPT VALIDATION --- --}}
+{{-- Flash error --}}
+@if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
+<div class="row g-4">
+
+    {{-- ── Step 1: Pick semester ───────────────────────────────────────────── --}}
+    <div class="col-12">
+        <div class="cqi-step-card">
+            <div class="cqi-step-header">
+                <span class="cqi-step-number">1</span>
+                <div>
+                    <h5 class="cqi-step-title">Select Semester</h5>
+                    <p class="cqi-step-desc">Choose the academic semester you want to generate the report for.</p>
+                </div>
+            </div>
+
+            <form method="GET" action="{{ route('admin.reports.filter') }}" id="semesterForm">
+                <div class="row align-items-end g-3">
+                    <div class="col-md-5">
+                        <label class="form-label fw-semibold">Academic Semester</label>
+                        <select name="semester_id" class="form-select" id="semesterSelect"
+                                onchange="document.getElementById('semesterForm').submit()">
+                            <option value="">— Choose a semester —</option>
+                            @foreach($semesters as $semester)
+                                <option value="{{ $semester->id }}"
+                                    {{ $selectedSemesterId == $semester->id ? 'selected' : '' }}>
+                                    {{ $semester->label }}
+                                    @if($semester->is_active)
+                                        (Active)
+                                    @endif
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- ── Step 2: Pick survey ─────────────────────────────────────────────── --}}
+    @if($selectedSemesterId)
+        <div class="col-12">
+            <div class="cqi-step-card">
+                <div class="cqi-step-header">
+                    <span class="cqi-step-number">2</span>
+                    <div>
+                        <h5 class="cqi-step-title">Select Survey</h5>
+                        <p class="cqi-step-desc">Each row represents one faculty member evaluated for one subject and group.</p>
+                    </div>
+                </div>
+
+                @if($surveys->isEmpty())
+                    <div class="cqi-empty-state">
+                        <i class="bi bi-inbox cqi-empty-icon"></i>
+                        <p>No surveys found for this semester.</p>
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table cqi-survey-table">
+                            <thead>
+                                <tr>
+                                    <th>Faculty Member</th>
+                                    <th>Subject</th>
+                                    <th>Group</th>
+                                    <th>Survey Title</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($surveys as $survey)
+                                    <tr>
+                                        <td>
+                                            <div class="cqi-faculty-cell">
+                                                <div class="cqi-faculty-avatar">
+                                                    {{ strtoupper(substr($survey->evaluatee?->name ?? '?', 0, 1)) }}
+                                                </div>
+                                                <span>{{ $survey->evaluatee?->name ?? 'Unknown' }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="fw-semibold">{{ $survey->subject?->course_code }}</span>
+                                            <br>
+                                            <small class="text-muted">{{ $survey->subject?->name }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">Group {{ $survey->group ?? 'N/A' }}</span>
+                                        </td>
+                                        <td>{{ $survey->title }}</td>
+                                        <td>
+                                            @if($survey->is_active)
+                                                <span class="badge cqi-badge-active">Active</span>
+                                            @else
+                                                <span class="badge cqi-badge-closed">Closed</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-end">
+                                            <a href="{{ route('admin.reports.pdf.cqi_report', $survey->id) }}"
+                                               class="btn btn-primary btn-sm cqi-generate-btn"
+                                               onclick="return confirmGenerate(this)">
+                                                <i class="bi bi-file-earmark-text me-1"></i>
+                                                Generate Report
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
+
+</div>
+
+{{-- Generating overlay --}}
+<div class="cqi-overlay" id="generatingOverlay">
+    <div class="cqi-overlay-card">
+        <div class="cqi-spinner">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+        <h5 class="mt-3 mb-1">Generating CQI Report</h5>
+        <p class="text-muted mb-0">Analyzing evaluation data and consulting AI&hellip;</p>
+        <p class="text-muted small">This may take up to 30 seconds.</p>
+        <!-- Close button -->
+        <button type="button" class="btn btn-secondary mt-3" onclick="closeOverlay()">Close</button>
+    </div>
+</div>
+
+@endsection
+
+@push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const reportForm = document.getElementById('reportForm');
-    const custom = document.getElementById('customRange');
-    const customFields = document.getElementById('customRangeFields');
-    const startDateInput = document.getElementById('start_date');
-    const endDateInput = document.getElementById('end_date');
-    const dateErrorDiv = document.getElementById('dateError');
-
-    // Initial state setup and event listeners for radio buttons
-    document.getElementById('autoRange').addEventListener('change', toggleFields);
-    custom.addEventListener('change', toggleFields);
-
-    function toggleFields() {
-        // Toggle display
-        customFields.style.display = custom.checked ? 'flex' : 'none';
-        
-        // Remove validation state when switching away from custom
-        if (!custom.checked) {
-            endDateInput.classList.remove('is-invalid');
-            dateErrorDiv.style.display = 'none';
-        }
+    function confirmGenerate(link) {
+        document.getElementById('generatingOverlay').classList.add('is-visible');
+        return true;
     }
 
-    // --- Validation Logic ---
-    reportForm.addEventListener('submit', function(event) {
-        // Only validate if the 'Custom Range' radio button is checked
-        if (custom.checked) {
-            const startDate = startDateInput.value;
-            const endDate = endDateInput.value;
-
-            // Check if both dates are provided
-            if (!startDate || !endDate) {
-                // If inputs are required, you would handle setting 'is-invalid' here for missing data.
-                // Assuming HTML 'required' or backend handles missing data, we focus on chronological order.
-                return true; // Let form submit if dates are empty and not required for now
-            }
-
-            // Compare dates
-            // HTML <input type="month"> value format is YYYY-MM, which is easily comparable as strings
-            if (startDate > endDate) {
-                // Prevent form submission
-                event.preventDefault(); 
-                
-                // Show error message
-                endDateInput.classList.add('is-invalid');
-                dateErrorDiv.style.display = 'block';
-            } else {
-                // Dates are valid, remove error state and allow submission
-                endDateInput.classList.remove('is-invalid');
-                dateErrorDiv.style.display = 'none';
-            }
-        }
-    });
-
-    // Optional: Clear error state instantly when the user corrects the End Date
-    endDateInput.addEventListener('change', function() {
-        if (endDateInput.classList.contains('is-invalid') && endDateInput.value >= startDateInput.value) {
-            endDateInput.classList.remove('is-invalid');
-            dateErrorDiv.style.display = 'none';
-        }
-    });
-
-    // Run once on load to set initial state
-    toggleFields();
-});
+    // Simple close function
+    function closeOverlay() {
+        document.getElementById('generatingOverlay').classList.remove('is-visible');
+    }
 </script>
-@endsection
+@endpush

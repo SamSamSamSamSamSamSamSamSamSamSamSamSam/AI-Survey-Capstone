@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'), // Gemini API key from environment variable
+    ],
+
 ];

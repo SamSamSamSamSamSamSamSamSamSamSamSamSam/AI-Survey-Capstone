@@ -17,6 +17,9 @@ use App\Http\Controllers\Student\StudentDashboardController as StudentDashboardC
 use App\Http\Controllers\Student\StudentSurveyController as StudentSurveyController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\Admin\CQIFilterController;
+
+use App\Http\Controllers\Admin\GeminiTestController;
 
 
 // Auth routes
@@ -72,6 +75,7 @@ Route::get('/student/dashboard', function () {
     return view('student.dashboard');
 })->name('student.dashboard')->middleware(['auth', 'role:student']);
 
+// Admin routes (only accessible to users with 'admin' role, protected by auth middleware)
 Route::middleware(['web','auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
 
     // Dashboard & Analysis
@@ -80,8 +84,12 @@ Route::middleware(['web','auth', 'role:admin'])->prefix('admin')->name('admin.')
     Route::get('/analysis/questions', [DashboardController::class, 'questionAnalysis'])->name('analysis.questionAnalysis');
     Route::get('/analysis/wordcloud', [DashboardController::class, 'wordCloud'])->name('analysis.wordCloud');
     Route::get('/evaluatee/{id}', [DashboardController::class, 'evaluateeDetails'])->name('evaluatee.evaluateeDetails');
-    Route::get('/cqi/filter', function () {return view('admin.reports.filter'); })->name('reports.filter');
-    Route::get('/reports/cqi/generate/{surveyId?}', [ReportController::class, 'generateCQIReport'])->name('reports.cqi');
+    // ── CQI Report Module ───────────────────────────────────────────────────────
+    Route::get('/cqi/filter', [CQIFilterController::class, 'index'])->name('reports.filter');
+    Route::get('/reports/pdf/cqi_report/{surveyId?}', [ReportController::class, 'generateCQIReport'])->name('reports.pdf.cqi_report');
+    Route::post('/reports/pdf/cqi_report/generate', [ReportController::class, 'generateCQIReport'])->name('reports.pdf.cqi_report.post');
+    // Route::get('/cqi/filter', function () {return view('admin.reports.filter'); })->name('reports.filter');
+    // Route::get('/reports/cqi/generate/{surveyId?}', [ReportController::class, 'generateCQIReport'])->name('reports.cqi');
 
     //Semester
     Route::get('/semesters', [SemesterController::class, 'index'])->name('semesters.index');
@@ -111,6 +119,9 @@ Route::middleware(['web','auth', 'role:admin'])->prefix('admin')->name('admin.')
     Route::get('/subjects', [SubjectsController::class, 'index'])->name('subjects.index');
     Route::post('/subjects', [SubjectsController::class, 'store'])->name('subjects.store');
     Route::delete('/subjects/{subject}', [SubjectsController::class, 'destroy'])->name('subjects.destroy');
+
+    //Gemini Test Route
+    Route::get('/gemini/test', [GeminiTestController::class, 'test'])->name('gemini.test');
 
 });
 
