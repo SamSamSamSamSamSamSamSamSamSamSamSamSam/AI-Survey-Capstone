@@ -24,6 +24,11 @@ $bootstrap-icons-font-dir: "bootstrap-icons/font/fonts"; // fix needed for corre
 // 6. Page-specific partials
 // Previously compiled separately via @push('styles') in each blade view.
 // Now bundled here so all styles go through a single Vite entry point.
-@import 'pages/department';
-@import 'pages/dashboard';
-@import 'pages/users';
+// Admin page styles
+@import 'pages/admin/department';
+@import 'pages/admin/dashboard';
+@import 'pages/admin/users';
+@import 'pages/admin/cqi';
+// Student page styles
+
+// Teacher page styles
