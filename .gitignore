@@ -62,7 +62,6 @@ yarn-error.log*
 
 # Environment variables
 **/.env
-**/.env.example
 
 # Laravel storage folder (logs, sessions, compiled views)
 **/storage/framework/cache/data/*
