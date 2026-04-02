@@ -55,7 +55,7 @@ yarn-error.log*
 
 # =============== PHP / Laravel Specific Ignores ===============
 # Matches 'vendor' anywhere (e.g., in laravel-front/vendor)
-**/vendor/
+/vendor/
 
 # Laravel framework cache files (The files you saw in your merge)
 **/bootstrap/cache/*.php
