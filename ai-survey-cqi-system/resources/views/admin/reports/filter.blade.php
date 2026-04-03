@@ -111,12 +111,22 @@
                                             @endif
                                         </td>
                                         <td class="text-end">
-                                            <a href="{{ route('admin.reports.pdf.cqi_report', $survey->id) }}"
-                                               class="btn btn-primary btn-sm cqi-generate-btn"
-                                               onclick="return confirmGenerate(this)">
-                                                <i class="bi bi-file-earmark-text me-1"></i>
-                                                Generate Report
-                                            </a>
+                                            @if($hasApiKey)
+                                                <a href="{{ route('admin.reports.pdf.cqi_report', $survey->id) }}"
+                                                   class="btn btn-primary btn-sm cqi-generate-btn"
+                                                   onclick="return confirmGenerate(this)">
+                                                    <i class="bi bi-file-earmark-text me-1"></i>
+                                                    Generate Report
+                                                </a>
+                                            @else
+                                                <span data-bs-toggle="tooltip"
+                                                      title="No AI API key configured. Go to Settings to add one.">
+                                                    <button class="btn btn-secondary btn-sm" disabled>
+                                                        <i class="bi bi-lock-fill me-1"></i>
+                                                        Generate Report
+                                                    </button>
+                                                </span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach

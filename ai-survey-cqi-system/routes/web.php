@@ -18,16 +18,59 @@ use App\Http\Controllers\Student\StudentSurveyController as StudentSurveyControl
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Admin\CQIFilterController;
+use App\Http\Controllers\Admin\SettingsController;
 
 use App\Http\Controllers\Admin\GeminiTestController;
 
 
-// Auth routes
+// // Auth routes
+
+// Route::get('/', function () {
+//     return redirect()->route('login');
+// });
+
+// // Account Setup page
+// Route::get('/set-account/{user}', [SetAccountController::class, 'showSetAccountForm'])->name('auth.set-account')->middleware('signed');
+
+// // Acccount Setup page: save password
+// Route::post('/set-account/save/{email}', [SetAccountController::class, 'savePassword'])->name('auth.save-password');
+
+
+// Route::middleware(['guest'])->group(function () {
+    //     Route::get('/login', [AuthenticateController::class, 'login'])->name('login');
+    //     Route::post('/login', [AuthenticateController::class, 'loginRequest'])->name('login.request');
+// });
+
+// Route::middleware(['auth', 'isAdmin'])->group(function () {
+    
+//     //Admin dashboard
+//     Route::get('admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+
+//     //User Management
+//     Route::get('management/users', [UserController::class, 'userManagement'])->name('management.users');
+//     Route::post('management/users/store', [UserController::class, 'storeUser'])->name('management.add.users');
+//     Route::delete('management/users/delete/{id}', [UserController::class, 'destroy'])->name('management.delete.user');
+// });
+
+
+// Route::middleware(['auth', 'isFaculty'])->group(function () {
+    
+// });
+
+
+// Route::middleware(['auth', 'limit.access'])->group(function () {
+    
+//     //user dashboard
+//     Route::get('dashboard', [UserController::class, 'dashboard'])->name('dashboard');
+
+//     //logout
+//     Route::post('/logout', [AuthenticateController::class, 'logout'])->name('logout');
+
+// });
 
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login'); 
-
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -119,6 +162,12 @@ Route::middleware(['web','auth', 'role:admin'])->prefix('admin')->name('admin.')
     Route::get('/subjects', [SubjectsController::class, 'index'])->name('subjects.index');
     Route::post('/subjects', [SubjectsController::class, 'store'])->name('subjects.store');
     Route::delete('/subjects/{subject}', [SubjectsController::class, 'destroy'])->name('subjects.destroy');
+
+    // Settings
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    Route::delete('/settings/api-key', [SettingsController::class, 'clearApiKey'])->name('settings.clearKey');
+    Route::get('/settings/test-key', [SettingsController::class, 'testApiKey'])->name('settings.testKey');
 
     //Gemini Test Route
     Route::get('/gemini/test', [GeminiTestController::class, 'test'])->name('gemini.test');
