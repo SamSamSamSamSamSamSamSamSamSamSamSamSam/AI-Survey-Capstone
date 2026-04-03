@@ -61,6 +61,7 @@ class OnboardingController extends Controller
                 ]
             );
 
+            
             // Log entire response for debugging
             Log::info('Gemini API Raw Response', ['body' => $response->body()]);
 
