@@ -1,4 +1,4 @@
-Important Laravel Project Structure for: C:\Users\Arjoy\Desktop\DESKTOP\Projects\Capstoneproject\student_cqi_system\laravel-front
+Important Laravel Project Structure for: D:\Remote FIles\Edriane\OneDrive\Documents\School\AI-Survey-Capstone\laravel-front
 
 ├── README.md
 ├── app
@@ -10,13 +10,15 @@ Important Laravel Project Structure for: C:\Users\Arjoy\Desktop\DESKTOP\Projects
 │   │   │   ├── Admin
 │   │   │   │   ├── DashboardController.php
 │   │   │   │   ├── DepartmentsController.php
-│   │   │   │   ├── ReportsController.php
+│   │   │   │   ├── ReportController.php
 │   │   │   │   ├── SettingsController.php
+│   │   │   │   ├── SubjectsController.php
 │   │   │   │   ├── SurveyController.php
 │   │   │   │   └── UsersController.php
 │   │   │   ├── Auth
 │   │   │   │   └── AuthController.php
 │   │   │   ├── Controller.php
+│   │   │   ├── OnboardingController.php
 │   │   │   ├── Student
 │   │   │   │   ├── StudentDashboardController.php
 │   │   │   │   └── StudentSurveyController.php
@@ -25,6 +27,7 @@ Important Laravel Project Structure for: C:\Users\Arjoy\Desktop\DESKTOP\Projects
 │   │   │   │   └── TeacherSurveyController.php
 │   │   │   └── UserController.php
 │   │   └── Middleware
+│   │       ├── CheckOnboarding.php
 │   │       └── RoleMiddleware.php
 │   ├── Jobs
 │   │   └── RunSentimentAnalysis.php
@@ -48,6 +51,7 @@ Important Laravel Project Structure for: C:\Users\Arjoy\Desktop\DESKTOP\Projects
 │   ├── auth.php
 │   ├── cache.php
 │   ├── database.php
+│   ├── dompdf.php
 │   ├── filesystems.php
 │   ├── logging.php
 │   ├── mail.php
@@ -55,7 +59,6 @@ Important Laravel Project Structure for: C:\Users\Arjoy\Desktop\DESKTOP\Projects
 │   ├── services.php
 │   └── session.php
 ├── database
-│   ├── database.sqlite
 │   ├── factories
 │   │   └── UserFactory.php
 │   ├── migrations
@@ -68,7 +71,6 @@ Important Laravel Project Structure for: C:\Users\Arjoy\Desktop\DESKTOP\Projects
 │   │   ├── 2025_09_05_031423_create_cqi_reports_table.php
 │   │   ├── 2025_10_09_070853_add_sentiment_to_responses.php
 │   │   └── 2025_10_14_064219_create_subject_student_table.php
-│   ├── schema
 │   └── seeders
 │       ├── DashboardDemoSeeder.php
 │       ├── DatabaseSeeder.php
@@ -233,75 +235,6 @@ Important Laravel Project Structure for: C:\Users\Arjoy\Desktop\DESKTOP\Projects
 │   │   │   ├── ru.json
 │   │   │   └── sp.json
 │   │   └── libs
-│   │       ├── @ckeditor
-│   │       │   └── ckeditor5-build-classic
-│   │       │       └── build
-│   │       │           ├── ckeditor-manifest.json
-│   │       │           ├── ckeditor.js
-│   │       │           ├── translations
-│   │       │           │   ├── af.js
-│   │       │           │   ├── ar.js
-│   │       │           │   ├── ast.js
-│   │       │           │   ├── az.js
-│   │       │           │   ├── bg.js
-│   │       │           │   ├── ca.js
-│   │       │           │   ├── cs.js
-│   │       │           │   ├── da.js
-│   │       │           │   ├── de-ch.js
-│   │       │           │   ├── de.js
-│   │       │           │   ├── el.js
-│   │       │           │   ├── en-au.js
-│   │       │           │   ├── en-gb.js
-│   │       │           │   ├── eo.js
-│   │       │           │   ├── es.js
-│   │       │           │   ├── et.js
-│   │       │           │   ├── eu.js
-│   │       │           │   ├── fa.js
-│   │       │           │   ├── fi.js
-│   │       │           │   ├── fr.js
-│   │       │           │   ├── gl.js
-│   │       │           │   ├── gu.js
-│   │       │           │   ├── he.js
-│   │       │           │   ├── hi.js
-│   │       │           │   ├── hr.js
-│   │       │           │   ├── hu.js
-│   │       │           │   ├── id.js
-│   │       │           │   ├── it.js
-│   │       │           │   ├── ja.js
-│   │       │           │   ├── km.js
-│   │       │           │   ├── kn.js
-│   │       │           │   ├── ko.js
-│   │       │           │   ├── ku.js
-│   │       │           │   ├── lt.js
-│   │       │           │   ├── lv.js
-│   │       │           │   ├── ms.js
-│   │       │           │   ├── nb.js
-│   │       │           │   ├── ne.js
-│   │       │           │   ├── nl.js
-│   │       │           │   ├── no.js
-│   │       │           │   ├── oc.js
-│   │       │           │   ├── pl.js
-│   │       │           │   ├── pt-br.js
-│   │       │           │   ├── pt.js
-│   │       │           │   ├── ro.js
-│   │       │           │   ├── ru.js
-│   │       │           │   ├── si.js
-│   │       │           │   ├── sk.js
-│   │       │           │   ├── sl.js
-│   │       │           │   ├── sq.js
-│   │       │           │   ├── sr-latn.js
-│   │       │           │   ├── sr.js
-│   │       │           │   ├── sv.js
-│   │       │           │   ├── th.js
-│   │       │           │   ├── tk.js
-│   │       │           │   ├── tr.js
-│   │       │           │   ├── tt.js
-│   │       │           │   ├── ug.js
-│   │       │           │   ├── uk.js
-│   │       │           │   ├── vi.js
-│   │       │           │   ├── zh-cn.js
-│   │       │           │   └── zh.js
-│   │       │           └── vendor.js
 │   │       ├── @curiosityx
 │   │       │   └── bootstrap-session-timeout
 │   │       │       └── index.js
@@ -335,20 +268,6 @@ Important Laravel Project Structure for: C:\Users\Arjoy\Desktop\DESKTOP\Projects
 │   │       │   └── rwd-table
 │   │       │       ├── rwd-table.min.css
 │   │       │       └── rwd-table.min.js
-│   │       ├── alertifyjs
-│   │       │   └── build
-│   │       │       ├── alertify.min.js
-│   │       │       ├── alertifyjs.zip
-│   │       │       └── css
-│   │       │           ├── alertify.min.css
-│   │       │           ├── alertify.rtl.min.css
-│   │       │           └── themes
-│   │       │               ├── bootstrap.min.css
-│   │       │               ├── bootstrap.rtl.min.css
-│   │       │               ├── default.min.css
-│   │       │               ├── default.rtl.min.css
-│   │       │               ├── semantic.min.css
-│   │       │               └── semantic.rtl.min.css
 │   │       ├── apexcharts
 │   │       │   ├── apexcharts.amd.js
 │   │       │   ├── apexcharts.common.js
@@ -1279,9 +1198,6 @@ Important Laravel Project Structure for: C:\Users\Arjoy\Desktop\DESKTOP\Projects
 │   │       │           ├── pace-theme-material.css
 │   │       │           └── pace-theme-minimal.css
 │   │       ├── pdfmake
-│   │       │   ├── build
-│   │       │   │   ├── pdfmake.min.js
-│   │       │   │   └── vfs_fonts.js
 │   │       │   └── build-vfs.js
 │   │       ├── pristinejs
 │   │       │   └── pristine.min.js
@@ -1441,8 +1357,6 @@ Important Laravel Project Structure for: C:\Users\Arjoy\Desktop\DESKTOP\Projects
 │   │       │   ├── swiper.min.mjs
 │   │       │   └── swiper.mjs
 │   │       ├── table-edits
-│   │       │   ├── build
-│   │       │   │   └── table-edits.min.js
 │   │       │   └── index.html
 │   │       ├── twitter-bootstrap-wizard
 │   │       │   ├── MIT-LICENSE.txt
@@ -1454,11 +1368,28 @@ Important Laravel Project Structure for: C:\Users\Arjoy\Desktop\DESKTOP\Projects
 │   │           ├── LICENSE.MD
 │   │           └── wNumb.min.js
 │   ├── css
+│   │   ├── admin
+│   │   │   ├── department.css
+│   │   │   └── surveys
+│   │   │       ├── create.css
+│   │   │       └── edit.css
 │   │   └── custom.css
 │   ├── favicon.ico
 │   ├── images
 │   │   └── dcismicon.png
 │   ├── index.php
+│   ├── js
+│   │   ├── admin
+│   │   │   ├── dashboard.js
+│   │   │   ├── department.js
+│   │   │   ├── surveys
+│   │   │   │   ├── create.js
+│   │   │   │   ├── edit.js
+│   │   │   │   └── index.js
+│   │   │   └── users.js
+│   │   ├── custom.js
+│   │   └── student
+│   │       └── survey_take.js
 │   └── robots.txt
 ├── resources
 │   ├── css
@@ -1478,7 +1409,11 @@ Important Laravel Project Structure for: C:\Users\Arjoy\Desktop\DESKTOP\Projects
 │       │   ├── department.blade.php
 │       │   ├── evaluatee
 │       │   │   └── evaluateeDetails.blade.php
-│       │   ├── settings.blade.php
+│       │   ├── reports
+│       │   │   ├── cqi.blade.php
+│       │   │   └── filter.blade.php
+│       │   ├── subjects
+│       │   │   └── index.blade.php
 │       │   ├── surveys
 │       │   │   ├── create.blade.php
 │       │   │   ├── edit.blade.php
@@ -1498,6 +1433,8 @@ Important Laravel Project Structure for: C:\Users\Arjoy\Desktop\DESKTOP\Projects
 │       ├── layouts
 │       │   ├── app.blade.php
 │       │   └── default.blade.php
+│       ├── onboarding
+│       │   └── upload.blade.php
 │       ├── student
 │       │   ├── dashboard.blade.php
 │       │   ├── results.blade.php
