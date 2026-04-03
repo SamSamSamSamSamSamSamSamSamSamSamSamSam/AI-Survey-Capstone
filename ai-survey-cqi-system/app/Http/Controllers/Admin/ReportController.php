@@ -8,6 +8,7 @@ use App\Services\CQIDataService;
 use App\Services\GeminiCQIService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Log;
 
 class ReportController extends Controller
@@ -22,6 +23,12 @@ class ReportController extends Controller
      */
     public function generateCQIReport(Request $request, ?int $surveyId = null)
     {
+        // ── 0. Guard: require API key ─────────────────────────────────────────
+        if (!Setting::hasApiKey()) {
+            return redirect()->route('admin.reports.filter')
+                ->with('error', 'An AI API key is required to generate CQI reports. Please configure one in Settings.');
+        }
+
         // ── 1. Resolve the survey ─────────────────────────────────────────────
         $id = $surveyId ?? $request->input('survey_id');
 
