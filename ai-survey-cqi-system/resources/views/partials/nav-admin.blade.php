@@ -29,3 +29,11 @@
         <span class="sidebar-menu-label">Users</span>
     </a>
 </li>
+
+<li class="sidebar-menu-item">
+    <a href="{{ route('admin.settings.index') }}"
+       class="sidebar-menu-link {{ request()->routeIs('admin.settings.*') ? 'is-active' : '' }}">
+        <i class="bi bi-gear sidebar-menu-icon"></i>
+        <span class="sidebar-menu-label">Settings</span>
+    </a>
+</li>

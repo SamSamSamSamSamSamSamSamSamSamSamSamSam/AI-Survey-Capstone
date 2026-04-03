@@ -9,6 +9,25 @@
     </div>
 </div>
 
+{{-- AI Key Warning --}}
+@if(!$hasApiKey)
+    <div class="alert alert-warning d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>No AI API key configured.</strong>
+            CQI reports will be generated without AI-assisted action plan recommendations.
+        </div>
+        <a href="{{ route('admin.settings.index') }}" class="btn btn-warning btn-sm ms-3">
+            <i class="bi bi-gear me-1"></i> Configure in Settings
+        </a>
+    </div>
+@else
+    <div class="alert alert-success py-2 mb-4">
+        <i class="bi bi-robot me-2"></i>
+        AI recommendations are enabled ({{ ucfirst(Setting::get('ai_provider')) }}).
+    </div>
+@endif
+
 {{-- Flash error --}}
 @if(session('error'))
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -41,9 +60,7 @@
                                 <option value="{{ $semester->id }}"
                                     {{ $selectedSemesterId == $semester->id ? 'selected' : '' }}>
                                     {{ $semester->label }}
-                                    @if($semester->is_active)
-                                        (Active)
-                                    @endif
+                                    @if($semester->is_active) (Active) @endif
                                 </option>
                             @endforeach
                         </select>
@@ -137,9 +154,8 @@
             <div class="spinner-border text-primary" role="status"></div>
         </div>
         <h5 class="mt-3 mb-1">Generating CQI Report</h5>
-        <p class="text-muted mb-0">Analyzing evaluation data and consulting AI&hellip;</p>
+        <p class="text-muted mb-0">Analyzing evaluation data{{ $hasApiKey ? ' and consulting AI…' : '…' }}</p>
         <p class="text-muted small">This may take up to 30 seconds.</p>
-        <!-- Close button -->
         <button type="button" class="btn btn-secondary mt-3" onclick="closeOverlay()">Close</button>
     </div>
 </div>
@@ -152,8 +168,6 @@
         document.getElementById('generatingOverlay').classList.add('is-visible');
         return true;
     }
-
-    // Simple close function
     function closeOverlay() {
         document.getElementById('generatingOverlay').classList.remove('is-visible');
     }

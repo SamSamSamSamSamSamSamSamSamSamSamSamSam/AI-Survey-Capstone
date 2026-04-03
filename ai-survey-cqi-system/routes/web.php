@@ -18,6 +18,7 @@ use App\Http\Controllers\Student\StudentSurveyController as StudentSurveyControl
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Admin\CQIFilterController;
+use App\Http\Controllers\Admin\SettingsController;
 
 use App\Http\Controllers\Admin\GeminiTestController;
 
@@ -119,6 +120,12 @@ Route::middleware(['web','auth', 'role:admin'])->prefix('admin')->name('admin.')
     Route::get('/subjects', [SubjectsController::class, 'index'])->name('subjects.index');
     Route::post('/subjects', [SubjectsController::class, 'store'])->name('subjects.store');
     Route::delete('/subjects/{subject}', [SubjectsController::class, 'destroy'])->name('subjects.destroy');
+
+    // Settings
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
+    Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    Route::delete('/settings/api-key', [SettingsController::class, 'clearApiKey'])->name('settings.clearKey');
+    Route::get('/settings/test-key', [SettingsController::class, 'testApiKey'])->name('settings.testKey');
 
     //Gemini Test Route
     Route::get('/gemini/test', [GeminiTestController::class, 'test'])->name('gemini.test');
