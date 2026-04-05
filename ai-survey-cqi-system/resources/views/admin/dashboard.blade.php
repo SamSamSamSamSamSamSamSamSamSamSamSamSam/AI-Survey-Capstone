@@ -15,13 +15,13 @@
         <p class="dash-header__subtitle">Monitor performance, sentiment, and evaluation trends across all faculty.</p>
     </div>
     <div class="dash-header__actions">
-        <a href="{{ route('admin.surveys.create') }}" class="btn btn-primary btn-sm">
+        <a href="{{ route('admin.surveys.create') }}" class="cbtn cbtn--primary cbtn--sm">
             <i class="bi bi-plus-circle me-1"></i> Create Survey
         </a>
-        <a href="{{ route('admin.surveys.index') }}" class="btn btn-outline-secondary btn-sm">
+        <a href="{{ route('admin.surveys.index') }}" class="cbtn cbtn--secondary cbtn--sm">
             <i class="bi bi-eye me-1"></i> View Surveys
         </a>
-        <a href="{{ route('admin.reports.filter') }}" class="btn btn-success btn-sm">
+        <a href="{{ route('admin.reports.filter') }}" class="cbtn cbtn--success cbtn--sm">
             <i class="bi bi-file-earmark-pdf me-1"></i> CQI Report
         </a>
     </div>
@@ -79,12 +79,6 @@
     </div>
 
     <div class="dash-filters__links">
-        <a href="{{ route('admin.analysis.surveys') }}" class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-bar-chart me-1"></i> Question Analysis
-        </a>
-        <a href="{{ route('admin.analysis.wordCloud') }}" class="btn btn-sm btn-outline-secondary">
-            <i class="bi bi-cloud me-1"></i> Word Cloud
-        </a>
         <small class="dash-filters__timestamp text-muted">
             <i class="bi bi-clock me-1"></i> Updated {{ now()->toDateTimeString() }}
         </small>
@@ -158,15 +152,16 @@
 
 </div>
 
-{{-- Chart + Top Performers --}}
+{{-- ROW 1: Monthly Trend (line) + Sentiment Donut --}}
 <div class="row g-3 mb-4">
 
+    {{-- Monthly Performance Trend — enhanced with target line --}}
     <div class="col-lg-8">
         <div class="dash-card h-100">
             <div class="dash-card__header">
                 <div>
                     <h5 class="dash-card__title">Monthly Performance Trend</h5>
-                    <p class="dash-card__subtitle">Rating score and sentiment over time</p>
+                    <p class="dash-card__subtitle">Rating score and sentiment over time — dotted line marks the 4.0 target</p>
                 </div>
             </div>
             <div class="dash-card__body">
@@ -181,7 +176,91 @@
         </div>
     </div>
 
+    {{-- Sentiment Donut --}}
     <div class="col-lg-4">
+        <div class="dash-card h-100">
+            <div class="dash-card__header">
+                <div>
+                    <h5 class="dash-card__title">Overall Sentiment Split</h5>
+                    <p class="dash-card__subtitle">Positive / Neutral / Negative breakdown</p>
+                </div>
+            </div>
+            <div class="dash-card__body d-flex flex-column align-items-center justify-content-center">
+                <div class="chart-container chart-container--donut">
+                    <canvas id="sentimentDonutChart"></canvas>
+                </div>
+                <div class="donut-legend mt-3" id="sentimentLegend"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{{-- ROW 2: Rating Distribution + Faculty Comparison --}}
+<div class="row g-3 mb-4">
+
+    {{-- Rating Distribution Histogram --}}
+    <div class="col-lg-5">
+        <div class="dash-card h-100">
+            <div class="dash-card__header">
+                <div>
+                    <h5 class="dash-card__title">Rating Distribution</h5>
+                    <p class="dash-card__subtitle">How responses are spread across 1–5 scores</p>
+                </div>
+            </div>
+            <div class="dash-card__body">
+                <div class="chart-container">
+                    <canvas id="ratingDistributionChart"></canvas>
+                </div>
+                <p class="dash-card__hint">
+                    <i class="bi bi-info-circle me-1"></i>
+                    A healthy distribution clusters at 4–5. Low scores need attention.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {{-- Faculty Comparison Horizontal Bar --}}
+    <div class="col-lg-7">
+        <div class="dash-card h-100">
+            <div class="dash-card__header">
+                <div>
+                    <h5 class="dash-card__title">Faculty Rating Comparison</h5>
+                    <p class="dash-card__subtitle">Top 10 faculty by average rating — dotted line marks the 4.0 target</p>
+                </div>
+            </div>
+            <div class="dash-card__body">
+                <div class="chart-container chart-container--bar-h">
+                    <canvas id="facultyComparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{{-- ROW 3: Category Radar + Top Performers table --}}
+<div class="row g-3 mb-4">
+
+    {{-- Category Radar --}}
+    <div class="col-lg-5">
+        <div class="dash-card h-100">
+            <div class="dash-card__header">
+                <div>
+                    <h5 class="dash-card__title">Category Performance Radar</h5>
+                    <p class="dash-card__subtitle">Strengths &amp; weaknesses across evaluation categories</p>
+                </div>
+            </div>
+            <div class="dash-card__body d-flex align-items-center justify-content-center">
+                <div class="chart-container chart-container--radar">
+                    <canvas id="categoryRadarChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Top Performers table --}}
+    <div class="col-lg-7">
         <div class="dash-card h-100">
             <div class="dash-card__header">
                 <div>
@@ -241,7 +320,7 @@
 
 </div>
 
-{{-- Category Performance --}}
+{{-- ROW 4: Category Performance table (full-width, as fallback/detail) --}}
 <div class="row g-3 mb-4">
     <div class="col-12">
         <div class="dash-card">
@@ -296,7 +375,7 @@
     </div>
 </div>
 
-{{-- Faculty Sentiment Breakdown --}}
+{{-- ROW 5: Faculty Sentiment Breakdown --}}
 <div class="row g-3 mb-2">
     <div class="col-12">
         <div class="dash-card">
@@ -361,9 +440,28 @@
 @push('scripts')
     <script>
         const dashboardData = {
-            monthlyLabels:  @json($monthlyLabels ?? []),
-            monthlyAvg:     @json($monthlyAvg ?? []),
-            monthlyPosPct:  @json($monthlyPositivePct ?? []),
+            // Monthly trend
+            monthlyLabels:     @json($monthlyLabels ?? []),
+            monthlyAvg:        @json($monthlyAvg ?? []),
+            monthlyPosPct:     @json($monthlyPositivePct ?? []),
+
+            // Sentiment donut
+            sentimentTotals: {
+                positive: {{ $sentimentTotals['positive'] ?? 0 }},
+                neutral:  {{ $sentimentTotals['neutral']  ?? 0 }},
+                negative: {{ $sentimentTotals['negative'] ?? 0 }},
+            },
+
+            // Rating distribution (1–5 counts pre-computed in controller)
+            ratingDistribution: @js($ratingDistribution ?? [0,0,0,0,0]),
+
+            // Faculty comparison
+            facultyNames:   @json(collect($topPerformers)->pluck('name')->toArray()),
+            facultyRatings: @json(collect($topPerformers)->pluck('avg_rating')->toArray()),
+
+            // Category radar
+            categoryLabels: @json(collect($categoryScores)->pluck('category')->toArray()),
+            categoryAvgs:   @json(collect($categoryScores)->pluck('avg')->toArray()),
         };
     </script>
     @vite('resources/js/admin/dashboard.js')

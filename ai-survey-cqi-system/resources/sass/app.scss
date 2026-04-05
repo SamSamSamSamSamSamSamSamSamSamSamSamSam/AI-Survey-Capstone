@@ -15,11 +15,13 @@ $bootstrap-icons-font-dir: "bootstrap-icons/font/fonts"; // fix needed for corre
 // 4. Layout partials
 @import 'layouts/sidebar';
 @import 'layouts/layout';
+@import 'layouts/pagination';
 
 // 5. Shared components — loaded globally, available on every page
 @import 'components/page-header';
 @import 'components/search';
 @import 'components/badges';
+@import 'components/buttons';
 
 // 6. Page-specific partials
 // Previously compiled separately via @push('styles') in each blade view.

@@ -15,7 +15,7 @@
         <p class="dash-header__subtitle">View, search, and manage all registered users.</p>
     </div>
     <div class="dash-header__actions">
-        <a href="{{ route('admin.subjects.index') }}" class="btn btn-outline-success btn-sm">
+        <a href="{{ route('admin.subjects.index') }}" class="cbtn cbtn--success cbtn--sm">
             <i class="bi bi-journal-text me-1"></i> Manage Courses
         </a>
     </div>
@@ -108,11 +108,11 @@
                             <td class="text-center">
                                 <div class="users-actions">
                                     <a href="{{ route('admin.users.edit', $user) }}"
-                                       class="btn btn-sm btn-outline-primary">
+                                       class="cbtn cbtn--ghost-primary cbtn--xs">
                                         <i class="bi bi-pencil me-1"></i>Edit
                                     </a>
                                     <button type="button"
-                                            class="btn btn-sm btn-outline-danger users-delete-btn"
+                                            class="cbtn cbtn--ghost-danger cbtn--xs"
                                             data-user-id="{{ $user->id }}"
                                             data-user-name="{{ $user->name }}"
                                             data-delete-url="{{ route('admin.users.destroy', $user) }}">
@@ -149,7 +149,7 @@
     {{-- Pagination --}}
     @if($users->hasPages())
         <div class="dash-card__body border-top d-flex justify-content-center py-3">
-            {{ $users->onEachSide(1)->links('vendor.pagination.bootstrap-4') }}
+            {{ $users->onEachSide(1)->links('vendor.pagination.cpagination') }}
         </div>
     @endif
 

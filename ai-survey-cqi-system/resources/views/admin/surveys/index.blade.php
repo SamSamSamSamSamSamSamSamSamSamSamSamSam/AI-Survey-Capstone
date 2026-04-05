@@ -95,27 +95,27 @@
                                     </td>
                                     <td class="align-middle text-muted">{{ $survey->created_at->format('M d, Y') }}</td>
                                     <td class="align-middle text-end pe-4">
-                                        <div class="btn-group" role="group">
+                                        <div class="cbtn-group-pill" role="group">
 
                                             {{-- View --}}
                                             <a href="{{ route('admin.surveys.show', $survey->id) }}"
-                                               class="btn btn-sm btn-outline-primary"
+                                               class="cbtn cbtn--ghost-primary cbtn--icon cbtn--pill"
                                                data-bs-toggle="tooltip" title="View Survey">
-                                                <i class="fa fa-eye"></i>
+                                                <i class="bi bi-eye"></i>
                                             </a>
 
                                             {{-- Edit --}}
                                             <a href="{{ route('admin.surveys.edit', $survey->id) }}"
-                                               class="btn btn-sm btn-outline-secondary"
+                                               class="cbtn cbtn--ghost-primary cbtn--icon cbtn--pill"
                                                data-bs-toggle="tooltip" title="Edit Survey">
-                                                <i class="fa fa-edit"></i>
+                                                <i class="bi bi-pencil"></i>
                                             </a>
 
                                             {{-- Duplicate --}}
                                             <form action="{{ route('admin.surveys.duplicate', $survey->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 <button type="submit"
-                                                        class="btn btn-sm btn-outline-info"
+                                                        class="cbtn cbtn--ghost-primary cbtn--icon cbtn--pill"
                                                         data-bs-toggle="tooltip"
                                                         title="Duplicate to active semester"
                                                         onclick="return confirm('Duplicate \'{{ $survey->title }}\' into the active semester?')">
@@ -127,10 +127,10 @@
                                             <form action="{{ route('admin.surveys.toggle-status', $survey->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 <button type="submit"
-                                                        class="btn btn-sm btn-outline-{{ $survey->is_active ? 'warning' : 'success' }}"
+                                                        class="cbtn cbtn--{{ $survey->is_active ? 'warning' : 'success' }} cbtn--pill cbtn--xs"
                                                         data-bs-toggle="tooltip"
                                                         title="{{ $survey->is_active ? 'Deactivate' : 'Activate' }}">
-                                                    <i class="fa {{ $survey->is_active ? 'fa-times' : 'fa-check' }}"></i>
+                                                    <i class="bi {{ $survey->is_active ? 'bi-x' : 'bi-check-all' }}"></i>
                                                 </button>
                                             </form>
 
@@ -140,9 +140,9 @@
                                                 @method('DELETE')
                                                 <button type="submit"
                                                         onclick="return confirm('Are you sure you want to delete this survey?')"
-                                                        class="btn btn-sm btn-outline-danger"
+                                                        class="cbtn cbtn--danger cbtn--pill cbtn--xs"
                                                         data-bs-toggle="tooltip" title="Delete Survey">
-                                                    <i class="fa fa-trash"></i>
+                                                    <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
 
