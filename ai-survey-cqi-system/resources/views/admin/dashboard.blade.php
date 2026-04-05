@@ -85,6 +85,37 @@
     </div>
 </div>
 
+
+{{-- Semester Performance Trend --}}
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="dash-card">
+            <div class="dash-card__header">
+                <div>
+                    <h5 class="dash-card__title">Semester-over-Semester Performance</h5>
+                    <p class="dash-card__subtitle">Mean rating, participation rate, and positive sentiment across all semesters</p>
+                </div>
+            </div>
+            <div class="dash-card__body">
+                @if(!empty($semesterTrend['labels']))
+                    <div style="position:relative; height:300px;">
+                        <canvas id="semesterTrendChart"></canvas>
+                    </div>
+                    <p class="dash-card__hint mt-2">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Upward trends across all three lines indicate continuous improvement over time.
+                    </p>
+                @else
+                    <div class="dash-empty py-4">
+                        <i class="bi bi-calendar2-x dash-empty__icon"></i>
+                        <span>No semester data available yet. Create and activate semesters to see trends.</span>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- KPI Cards --}}
 <div class="row g-3 mb-4">
 
@@ -463,6 +494,92 @@
             categoryLabels: @json(collect($categoryScores)->pluck('category')->toArray()),
             categoryAvgs:   @json(collect($categoryScores)->pluck('avg')->toArray()),
         };
+
+        const semesterTrendData = {
+            labels:         @json($semesterTrend['labels']        ?? []),
+            meanRatings:    @json($semesterTrend['meanRatings']    ?? []),
+            participation:  @json($semesterTrend['participation']  ?? []),
+            positiveSent:   @json($semesterTrend['positiveSent']   ?? []),
+            responseCounts: @json($semesterTrend['responseCounts'] ?? []),
+        };
+    </script>
+
+    <script>
+    // Semester trend chart
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('semesterTrendChart');
+        if (!ctx || !semesterTrendData.labels.length) return;
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: semesterTrendData.labels,
+                datasets: [
+                    {
+                        label: 'Mean Rating',
+                        data: semesterTrendData.meanRatings,
+                        borderColor: '#4e73df',
+                        backgroundColor: 'rgba(78,115,223,0.08)',
+                        tension: 0.3,
+                        fill: true,
+                        yAxisID: 'yRating',
+                    },
+                    {
+                        label: 'Participation %',
+                        data: semesterTrendData.participation,
+                        borderColor: '#1cc88a',
+                        backgroundColor: 'rgba(28,200,138,0.08)',
+                        tension: 0.3,
+                        fill: false,
+                        yAxisID: 'yPercent',
+                    },
+                    {
+                        label: 'Positive Sentiment %',
+                        data: semesterTrendData.positiveSent,
+                        borderColor: '#36b9cc',
+                        backgroundColor: 'rgba(54,185,204,0.08)',
+                        tension: 0.3,
+                        fill: false,
+                        yAxisID: 'yPercent',
+                    },
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            afterBody: function(items) {
+                                const idx = items[0]?.dataIndex;
+                                const cnt = semesterTrendData.responseCounts[idx];
+                                return cnt !== undefined ? ['', 'Response count: ' + cnt] : [];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    yRating: {
+                        type: 'linear',
+                        position: 'left',
+                        min: 0,
+                        max: 5,
+                        title: { display: true, text: 'Mean Rating (0–5)' },
+                    },
+                    yPercent: {
+                        type: 'linear',
+                        position: 'right',
+                        min: 0,
+                        max: 100,
+                        title: { display: true, text: 'Percentage (%)' },
+                        grid: { drawOnChartArea: false },
+                    }
+                }
+            }
+        });
+    });
     </script>
     @vite('resources/js/admin/dashboard.js')
 @endpush
