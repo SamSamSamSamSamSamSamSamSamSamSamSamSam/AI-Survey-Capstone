@@ -164,7 +164,7 @@ http://127.0.0.1:8000
 
 ---
 
-## 9. PHP Configuration (If PHP Was Newly Installed)
+## 9. PHP Configuration
 Open your `php.ini` file and ensure the following extensions are enabled.
 
 ```ini
