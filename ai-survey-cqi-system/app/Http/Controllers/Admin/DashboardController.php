@@ -90,6 +90,14 @@ class DashboardController extends Controller
             ? round($distinctEvaluators / max(1, $eligibleEvaluators) * 100, 1)
             : null;
 
+        $ratingDist = array_fill(1, 5, 0); // [1=>0, 2=>0, 3=>0, 4=>0, 5=>0]
+        foreach ($ratingValues as $v) {
+            $score = (int) round($v);
+            if ($score >= 1 && $score <= 5) {
+                $ratingDist[$score]++;
+            }
+        }
+
         return [
             'mean'                => $ratingStats['mean'],
             'median'              => $ratingStats['median'],
@@ -101,6 +109,7 @@ class DashboardController extends Controller
             'distinct_evaluators' => $distinctEvaluators,
             'eligible_evaluators' => $eligibleEvaluators,
             'participation_pct'   => $participationPct,
+            'ratingDistribution'  => array_values($ratingDist),
         ];
     }
 
