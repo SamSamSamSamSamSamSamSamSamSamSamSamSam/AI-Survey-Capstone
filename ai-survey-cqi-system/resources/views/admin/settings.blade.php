@@ -135,14 +135,10 @@
                                 <button type="button" class="btn btn-sm btn-outline-primary" id="testKeyBtn">
                                     <i class="bi bi-wifi me-1"></i> Test Connection
                                 </button>
-                                <form action="{{ route('admin.settings.clearKey') }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                                            onclick="return confirm('Remove the stored API key?')">
-                                        <i class="bi bi-trash me-1"></i> Remove Key
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                        onclick="if(confirm('Remove the stored API key?')) document.getElementById('clear-key-form').submit();">
+                                    <i class="bi bi-trash me-1"></i> Remove Key
+                                </button>
                             </div>
                         </div>
                     @else
@@ -203,6 +199,11 @@
         </div>
 
     </div>
+</form>
+
+<form id="clear-key-form" action="{{ route('admin.settings.clearKey') }}" method="POST" style="display: none;">
+    @csrf
+    @method('DELETE')
 </form>
 
 @push('scripts')
