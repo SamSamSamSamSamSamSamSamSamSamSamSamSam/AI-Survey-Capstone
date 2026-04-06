@@ -43,14 +43,16 @@
 
                                         <!-- Session Messages -->
                                         @if (session('success'))
-                                            <div class="alert alert-success mt-4" role="alert">
-                                                {{ session('success') }}
+                                            <div class="alert alert-success alert-dismissible fade show mt-4" role="alert">
+                                                <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                             </div>
-                                        @endif 
-                                        
+                                        @endif
+
                                         @if (session('error'))
-                                            <div class="alert alert-danger mt-4" role="alert">
-                                                {{ session('error') }}
+                                            <div class="alert alert-danger alert-dismissible fade show mt-4" role="alert">
+                                                <i class="bi bi-exclamation-circle me-2"></i>{{ session('error') }}
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                             </div>
                                         @endif
                                         
@@ -61,16 +63,17 @@
                                             <!-- Email Field -->
                                             <div class="mb-3">
                                                 <label class="form-label" for="email">Email</label>
-                                                <input type="email" 
-                                                       class="form-control @error('email') is-invalid @enderror" 
-                                                       name="email" 
-                                                       id="email" 
-                                                       placeholder="Enter Your Email" 
-                                                       value="{{ old('email') }}"
-                                                       required>
+                                                <input type="email"
+                                                    class="form-control @error('email') is-invalid @enderror"
+                                                    name="email"
+                                                    id="email"
+                                                    placeholder="Enter Your Email"
+                                                    value="{{ old('email') }}"
+                                                    autocomplete="email"
+                                                    required>
                                                 @error('email')
-                                                    <div class="invalid-feedback d-block">
-                                                        {{ $message }}
+                                                    <div class="invalid-feedback">
+                                                        <i class="bi bi-exclamation-circle me-1"></i>{{ $message }}
                                                     </div>
                                                 @enderror
                                             </div>

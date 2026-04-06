@@ -79,7 +79,7 @@ class SettingsController extends Controller
                 $response = Http::timeout(10)->withHeaders([
                     'Content-Type' => 'application/json',
                 ])->post(
-                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={$key}",
+                    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={$key}",
                     ['contents' => [['role' => 'user', 'parts' => [['text' => 'Reply with: OK']]]]]
                 );
                 $success = $response->successful();
