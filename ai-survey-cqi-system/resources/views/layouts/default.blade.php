@@ -25,27 +25,8 @@
                 <div class="sidebar-brand-wrap">
                     <a href="{{ route('admin.dashboard') }}" class="sidebar-brand">
                         <img src="{{ asset('images/dcismicon.png') }}" alt="DCISM Icon" class="sidebar-brand-logo">
-                        <span class="sidebar-brand-text">DCISM</span>
+                        <span class="sidebar-brand-text">SURVEY</span>
                     </a>
-                </div>
-
-                {{-- User Info --}}
-                <div class="sidebar-user">
-                    <div class="sidebar-user-avatar">
-                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                    </div>
-                    <div class="sidebar-user-details">
-                        <div class="sidebar-user-name">{{ Auth::user()->name }}</div>
-                        <div class="sidebar-user-role">
-                            @if(Auth::user()->hasRole('admin'))
-                                <span class="role-badge role-badge--admin role-badge--on-dark">Administrator</span>
-                            @elseif(Auth::user()->hasRole('teacher'))
-                                <span class="role-badge role-badge--teacher role-badge--on-dark">Faculty</span>
-                            @else
-                                <span class="role-badge role-badge--student role-badge--on-dark">Student</span>
-                            @endif
-                        </div>
-                    </div>
                 </div>
 
                 {{-- Navigation — role-specific nav items live in their own partials --}}
@@ -63,6 +44,27 @@
 
                 {{-- Logout --}}
                 <div class="sidebar-footer">
+
+                    {{-- Compact User Info --}}
+                    <div class="sidebar-user">
+                        <div class="sidebar-user-avatar">
+                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        </div>
+                        <div class="sidebar-user-details">
+                            <div class="sidebar-user-name">{{ Auth::user()->name }}</div>
+                            <div class="sidebar-user-role">
+                                @if(Auth::user()->hasRole('admin'))
+                                    <span class="role-badge role-badge--admin role-badge--on-dark">Administrator</span>
+                                @elseif(Auth::user()->hasRole('teacher'))
+                                    <span class="role-badge role-badge--teacher role-badge--on-dark">Faculty</span>
+                                @else
+                                    <span class="role-badge role-badge--student role-badge--on-dark">Student</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Logout --}}
                     <a href="#"
                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
                        class="sidebar-logout-btn">
@@ -72,6 +74,7 @@
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                         @csrf
                     </form>
+
                 </div>
 
             </div>

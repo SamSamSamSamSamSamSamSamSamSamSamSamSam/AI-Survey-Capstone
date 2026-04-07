@@ -74,21 +74,20 @@
 }
 
 // -----------------------------------------------------------------------------
-// User info
+// User info — compact horizontal row in the footer
 // -----------------------------------------------------------------------------
 .sidebar-user {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    padding: 1.25rem 1rem;
-    border-bottom: 1px solid $sidebar-border;
-    text-align: center;
-    flex-shrink: 0;
+    gap: 0.6rem;
+    padding: 0.5rem 0.85rem 0.65rem;
+    min-width: 0; // allow text truncation inside flex children
 }
 
 .sidebar-user-avatar {
-    width: 56px;
-    height: 56px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     background-color: $primary;
     display: flex;
@@ -96,21 +95,26 @@
     justify-content: center;
     color: #fff;
     font-weight: 700;
-    font-size: 1.4rem;
-    margin-bottom: 0.6rem;
+    font-size: 0.8rem;
     flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba($primary, 0.4);
+    box-shadow: 0 2px 8px rgba($primary, 0.35);
+}
+
+.sidebar-user-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
 
 .sidebar-user-name {
     color: $sidebar-text;
     font-weight: 600;
-    font-size: 0.9rem;
-    margin-bottom: 0.3rem;
+    font-size: 0.8rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100%;
+    line-height: 1.2;
+    margin-bottom: 0.2rem;
 }
 
 // Role badges — base styles from components/_badges.scss (loaded via app.scss)
@@ -182,6 +186,23 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+// Section divider labels (non-clickable group headings)
+.sidebar-menu-section {
+    list-style: none;
+    padding: 0.85rem 0.85rem 0.3rem;
+    margin-top: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba($sidebar-text, 0.4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    user-select: none;
 }
 
 // -----------------------------------------------------------------------------
