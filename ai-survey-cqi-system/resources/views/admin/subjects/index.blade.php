@@ -1,72 +1,73 @@
-@extends('layouts.default')
+@extends('admin.layouts.app')
+@section('title', 'Subjects')
 
 @section('content')
-<div class="container py-4">
-    <div class="card shadow-sm">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Manage Courses</h5>
-            <a href="{{ route('admin.users') }}" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-arrow-left"></i> Back to Users
-            </a>
-        </div>
-        <div class="card-body">
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
+<div class="page-header">
+    <h1>Subjects</h1>
+    <a href="{{ route('admin.subjects.create') }}" class="btn btn-primary">+ New Subject</a>
+</div>
 
-            <form action="{{ route('admin.subjects.store') }}" method="POST" class="mb-4">
-                @csrf
-                <div class="row g-2">
-                    <div class="col-md-3">
-                        <input type="text" name="course_code" class="form-control" placeholder="Course Code" required>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="text" name="name" class="form-control" placeholder="Course Name">
-                    </div>
-                    <div class="col-md-4">
-                        <input type="text" name="description" class="form-control" placeholder="Description">
-                    </div>
-                    <div class="col-md-1 d-grid">
-                        <button class="btn btn-success">Add</button>
-                    </div>
-                </div>
-            </form>
-
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th>Course Code</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th class="text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($subjects as $subject)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>{{ $subject->course_code }}</td>
-                                <td>{{ $subject->name }}</td>
-                                <td>{{ $subject->description }}</td>
-                                <td class="text-center">
-                                    <form action="{{ route('admin.subjects.destroy', $subject) }}" method="POST" onsubmit="return confirm('Delete this subject?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="btn btn-sm btn-outline-danger">Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-
-                <div class="d-flex justify-content-center mt-3">
-                    {{ $subjects->links('vendor.pagination.bootstrap-4') }}
-                </div>
-            </div>
-        </div>
+<form method="GET" action="{{ route('admin.subjects.index') }}">
+    <div class="filters">
+        <input type="text" name="search" class="form-control" placeholder="Search code or name…" value="{{ request('search') }}">
+        <select name="status" class="form-control">
+            <option value="">Active</option>
+            <option value="deleted" @selected(request('status') === 'deleted')>Archived</option>
+            <option value="all"     @selected(request('status') === 'all')>All</option>
+        </select>
+        <button type="submit" class="btn btn-secondary">Filter</button>
+        <a href="{{ route('admin.subjects.index') }}" class="btn btn-secondary">Clear</a>
     </div>
+</form>
+
+<div class="card">
+    @if ($subjects->isEmpty())
+        <p class="empty-state">No subjects found.</p>
+    @else
+        <table>
+            <thead>
+                <tr>
+                    <th>Course Code</th>
+                    <th>Name</th>
+                    <th>Units</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($subjects as $subject)
+                <tr class="{{ $subject->trashed() ? 'archived' : '' }}">
+                    <td>{{ $subject->course_code }}</td>
+                    <td>{{ $subject->name }}</td>
+                    <td>{{ $subject->units }}</td>
+                    <td>
+                        @if ($subject->trashed())
+                            <span class="badge badge-archived">Archived</span>
+                        @else
+                            <span class="badge badge-active">Active</span>
+                        @endif
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <a href="{{ route('admin.subjects.edit', $subject->id) }}" class="btn btn-sm btn-secondary">Edit</a>
+                            @if (! $subject->trashed())
+                                <form method="POST" action="{{ route('admin.subjects.destroy', $subject->id) }}" onsubmit="return confirm('Archive this subject?')">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-sm btn-danger">Archive</button>
+                                </form>
+                            @else
+                                <form method="POST" action="{{ route('admin.subjects.restore', $subject->id) }}">
+                                    @csrf @method('PATCH')
+                                    <button class="btn btn-sm btn-success">Restore</button>
+                                </form>
+                            @endif
+                        </div>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        <div class="pagination">{{ $subjects->links('pagination::simple-tailwind') }}</div>
+    @endif
 </div>
 @endsection

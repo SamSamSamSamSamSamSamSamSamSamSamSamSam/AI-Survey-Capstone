@@ -2,18 +2,24 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Question extends Model
 {
-    use HasFactory;
+    use SoftDeletes;
 
-    protected $fillable = ['survey_id', 'question_text', 'type', 'options', 'order', 'category'];
-
-    protected $casts = [
-        'options' => 'array'
+    protected $fillable = [
+        'survey_id',
+        'question_text',
+        'category',
+        'type',
+        'order',
     ];
+
+    // -------------------------------------------------------------------------
+    // Relationships
+    // -------------------------------------------------------------------------
 
     public function survey()
     {
@@ -23,5 +29,19 @@ class Question extends Model
     public function responses()
     {
         return $this->hasMany(Response::class);
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    public function isRating(): bool
+    {
+        return $this->type === 'rating';
+    }
+
+    public function isText(): bool
+    {
+        return $this->type === 'text';
     }
 }

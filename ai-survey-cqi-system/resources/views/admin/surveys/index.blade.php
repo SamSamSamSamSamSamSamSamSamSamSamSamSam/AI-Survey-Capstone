@@ -1,170 +1,104 @@
-@extends('layouts.default')
+@extends('admin.layouts.app')
+@section('title', 'Surveys')
 
 @section('content')
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="{{ route('admin.surveys.create') }}" class="btn btn-primary me-2">
-            <i class="bi bi-plus-circle me-1"></i> Create Survey
-        </a>
-        <h2 class="fw-bold">Survey Management</h2>
-        <a href="{{ route('admin.dashboard') }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fa fa-arrow-left me-1"></i> Back
-        </a>
-    </div>
+<div class="page-header">
+    <h1>Surveys</h1>
+    <a href="{{ route('admin.surveys.create') }}" class="btn btn-primary">+ New Survey</a>
+</div>
 
-    {{-- Active Semester Info --}}
-    @if($activeSemester)
-        <div class="alert alert-info py-2 mb-3">
-            <i class="bi bi-calendar2-range me-1"></i>
-            Active Semester: <strong>{{ $activeSemester->name }}</strong> — 
-            Duplicated surveys will be assigned to this semester.
-        </div>
+<form method="GET" action="{{ route('admin.surveys.index') }}">
+    <div class="filters">
+        <select name="semester_id" class="form-control" style="min-width:220px;">
+            <option value="">All Semesters</option>
+            @foreach ($semesters as $sem)
+                <option value="{{ $sem->id }}" @selected($selectedSemesterId == $sem->id)>
+                    {{ $sem->full_label }} {{ $sem->is_active ? '(Active)' : '' }}
+                </option>
+            @endforeach
+        </select>
+        <input type="text" name="search" class="form-control" placeholder="Search title…" value="{{ request('search') }}">
+        <select name="status" class="form-control">
+            <option value="">Non-archived</option>
+            <option value="deleted" @selected(request('status') === 'deleted')>Archived</option>
+            <option value="all"     @selected(request('status') === 'all')>All</option>
+        </select>
+        <button type="submit" class="btn btn-secondary">Filter</button>
+        <a href="{{ route('admin.surveys.index') }}" class="btn btn-secondary">Clear</a>
+    </div>
+</form>
+
+<div class="card">
+    @if ($surveys->isEmpty())
+        <p class="empty-state">No surveys found.</p>
     @else
-        <div class="alert alert-warning py-2 mb-3">
-            <i class="bi bi-exclamation-triangle me-1"></i>
-            No active semester set. Duplicated surveys will have no semester assigned.
-            <a href="{{ route('admin.semesters.index') }}">Set one here.</a>
-        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Offering</th>
+                    <th>Target Role</th>
+                    <th>Questions</th>
+                    <th>Responses</th>
+                    <th>Active</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($surveys as $survey)
+                <tr class="{{ $survey->trashed() ? 'archived' : '' }}">
+                    <td>
+                        <div style="font-weight:500;">{{ $survey->title }}</div>
+                        <div style="font-size:.78rem;color:#6b7280;">{{ $survey->offering->semester->full_label }}</div>
+                    </td>
+                    <td style="font-size:.82rem;">
+                        {{ $survey->offering->subject->course_code }}<br>
+                        <span style="color:#6b7280;">{{ $survey->offering->teacher->name }}</span>
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ $survey->targetRole->name }}">
+                            {{ ucfirst($survey->targetRole->name) }}
+                        </span>
+                    </td>
+                    <td>{{ $survey->questions_count ?? $survey->questions->count() }}</td>
+                    <td>{{ $survey->attempts()->whereNotNull('submitted_at')->count() }}</td>
+                    <td>
+                        @if ($survey->trashed())
+                            <span class="badge badge-archived">Archived</span>
+                        @elseif ($survey->is_active)
+                            <span class="badge badge-active">Active</span>
+                        @else
+                            <span class="badge badge-inactive">Inactive</span>
+                        @endif
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <a href="{{ route('admin.surveys.show', $survey->id) }}" class="btn btn-sm btn-secondary">View</a>
+                            @if (! $survey->trashed())
+                                <a href="{{ route('admin.surveys.edit', $survey->id) }}" class="btn btn-sm btn-secondary">Edit</a>
+                                <form method="POST" action="{{ route('admin.surveys.toggle-active', $survey->id) }}">
+                                    @csrf @method('PATCH')
+                                    <button class="btn btn-sm {{ $survey->is_active ? 'btn-warning' : 'btn-success' }}">
+                                        {{ $survey->is_active ? 'Deactivate' : 'Activate' }}
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('admin.surveys.destroy', $survey->id) }}" onsubmit="return confirm('Archive this survey?')">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-sm btn-danger">Archive</button>
+                                </form>
+                            @else
+                                <form method="POST" action="{{ route('admin.surveys.restore', $survey->id) }}">
+                                    @csrf @method('PATCH')
+                                    <button class="btn btn-sm btn-success">Restore</button>
+                                </form>
+                            @endif
+                        </div>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        <div class="pagination">{{ $surveys->links('pagination::simple-tailwind') }}</div>
     @endif
-
-    {{-- Flash Messages --}}
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-            <i class="fa fa-check-circle me-1"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    {{-- Survey List --}}
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white py-3">
-            <h5 class="mb-0 fw-bold text-muted">All Surveys</h5>
-        </div>
-
-        <div class="card-body p-0">
-            @if($surveys->count() > 0)
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="py-3 ps-4">#</th>
-                                <th class="py-3">Title</th>
-                                <th class="py-3">Evaluatee</th>
-                                <th class="py-3">Target</th>
-                                <th class="py-3">Course</th>
-                                <th class="py-3">Semester</th>
-                                <th class="py-3">Status</th>
-                                <th class="py-3">Created</th>
-                                <th class="py-3 text-end pe-4">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($surveys as $index => $survey)
-                                <tr>
-                                    <td class="align-middle ps-4">{{ $index + 1 }}</td>
-                                    <td class="align-middle fw-semibold">{{ $survey->title }}</td>
-                                    <td class="align-middle">{{ $survey->evaluatee->name }}</td>
-                                    <td class="align-middle">
-                                        <span class="badge rounded-pill bg-info text-capitalize">{{ $survey->target_role }}</span>
-                                    </td>
-                                    <td class="align-middle">
-                                        @if($survey->subject)
-                                            <span class="badge rounded-pill bg-secondary">
-                                                @if($survey->group) {{ $survey->group }} - @endif
-                                                {{ $survey->subject->course_code }}
-                                            </span>
-                                        @elseif($survey->group)
-                                            <span class="badge rounded-pill bg-info">{{ $survey->group }}</span>
-                                        @else
-                                            <span class="text-muted">N/A</span>
-                                        @endif
-                                    </td>
-                                    <td class="align-middle">
-                                        @if($survey->semester)
-                                            <span class="badge rounded-pill bg-primary">{{ $survey->semester->name }}</span>
-                                        @else
-                                            <span class="text-muted">N/A</span>
-                                        @endif
-                                    </td>
-                                    <td class="align-middle">
-                                        @if($survey->is_active)
-                                            <span class="badge rounded-pill bg-success">Active</span>
-                                        @else
-                                            <span class="badge rounded-pill bg-secondary">Inactive</span>
-                                        @endif
-                                    </td>
-                                    <td class="align-middle text-muted">{{ $survey->created_at->format('M d, Y') }}</td>
-                                    <td class="align-middle text-end pe-4">
-                                        <div class="cbtn-group-pill" role="group">
-
-                                            {{-- View --}}
-                                            <a href="{{ route('admin.surveys.show', $survey->id) }}"
-                                               class="cbtn cbtn--ghost-primary cbtn--icon cbtn--pill"
-                                               data-bs-toggle="tooltip" title="View Survey">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-
-                                            {{-- Edit --}}
-                                            <a href="{{ route('admin.surveys.edit', $survey->id) }}"
-                                               class="cbtn cbtn--ghost-primary cbtn--icon cbtn--pill"
-                                               data-bs-toggle="tooltip" title="Edit Survey">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-
-                                            {{-- Duplicate --}}
-                                            <form action="{{ route('admin.surveys.duplicate', $survey->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <button type="submit"
-                                                        class="cbtn cbtn--ghost-primary cbtn--icon cbtn--pill"
-                                                        data-bs-toggle="tooltip"
-                                                        title="Duplicate to active semester"
-                                                        onclick="return confirm('Duplicate \'{{ $survey->title }}\' into the active semester?')">
-                                                    <i class="bi bi-copy"></i>
-                                                </button>
-                                            </form>
-
-                                            {{-- Activate/Deactivate --}}
-                                            <form action="{{ route('admin.surveys.toggle-status', $survey->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <button type="submit"
-                                                        class="cbtn cbtn--{{ $survey->is_active ? 'warning' : 'success' }} cbtn--pill cbtn--xs"
-                                                        data-bs-toggle="tooltip"
-                                                        title="{{ $survey->is_active ? 'Deactivate' : 'Activate' }}">
-                                                    <i class="bi {{ $survey->is_active ? 'bi-x' : 'bi-check-all' }}"></i>
-                                                </button>
-                                            </form>
-
-                                            {{-- Delete --}}
-                                            <form action="{{ route('admin.surveys.destroy', $survey->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                        onclick="return confirm('Are you sure you want to delete this survey?')"
-                                                        class="cbtn cbtn--danger cbtn--pill cbtn--xs"
-                                                        data-bs-toggle="tooltip" title="Delete Survey">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
-
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <div class="p-5 text-center text-muted">
-                    <i class="fa fa-folder-open fa-3x mb-3"></i>
-                    <h4 class="mb-1">No Surveys Found</h4>
-                    <p class="mb-0">Start by creating a new one to see it listed here.</p>
-                </div>
-            @endif
-        </div>
-    </div>
 </div>
 @endsection
-
-@push('scripts')
-    <script src="{{ asset('js/admin/surveys/index.js') }}"></script>
-@endpush

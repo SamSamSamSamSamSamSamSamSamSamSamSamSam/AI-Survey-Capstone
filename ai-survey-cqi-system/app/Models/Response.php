@@ -2,55 +2,43 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Response extends Model
 {
-    use HasFactory;
+    public $incrementing = false;
+    protected $keyType   = 'string';
 
     protected $fillable = [
-        'survey_id', 
-        'question_id', 
-        'evaluator_id', 
-        'evaluatee_id', 
-        'subject_id',
-        'semester_id', 
-        'response', 
-        'sentiment_label',
-        'sentiment_score'];
-    
-    protected $casts = [
-        'sentiment_score' => 'float',
+        'attempt_id',
+        'survey_question_id',
+        'scale_value',
+        'text_response',
     ];
 
-    public function survey()
+    protected static function boot(): void
     {
-        return $this->belongsTo(Survey::class);
+        parent::boot();
+        static::creating(function (Response $model) {
+            if (empty($model->{$model->getKeyName()})) {
+                $model->{$model->getKeyName()} = (string) Str::ulid();
+            }
+        });
+    }
+
+    public function attempt()
+    {
+        return $this->belongsTo(SurveyAttempt::class, 'attempt_id');
     }
 
     public function question()
     {
-        return $this->belongsTo(Question::class);
+        return $this->belongsTo(SurveyQuestion::class, 'survey_question_id');
     }
 
-    public function evaluator()
+    public function sentiment()
     {
-        return $this->belongsTo(User::class, 'evaluator_id');
-    }
-
-    public function evaluatee()
-    {
-        return $this->belongsTo(User::class, 'evaluatee_id');
-    }
-
-    public function subject()
-    {
-        return $this->belongsTo(Subject::class);
-    }
-
-    public function semester()
-    {
-        return $this->belongsTo(Semester::class);
+        return $this->hasOne(ResponseSentiment::class, 'response_id');
     }
 }

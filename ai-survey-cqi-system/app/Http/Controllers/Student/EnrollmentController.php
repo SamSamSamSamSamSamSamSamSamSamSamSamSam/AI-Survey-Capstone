@@ -1,0 +1,108 @@
+<?php
+
+namespace App\Http\Controllers\Student;
+
+use App\Http\Controllers\Controller;
+use App\Models\CourseOffering;
+use App\Models\Enrollment;
+use App\Models\Semester;
+use App\Models\StudentStatus;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
+
+class EnrollmentController extends Controller
+{
+    /**
+     * Show available offerings for the active semester.
+     */
+    public function index(): View
+    {
+        $activeSemester = Semester::current();
+
+        $availableOfferings = collect();
+
+        if ($activeSemester) {
+            $enrolledOfferingIds = Enrollment::where('student_id', Auth::id())
+                                             ->pluck('offering_id');
+
+            $availableOfferings = CourseOffering::with(['subject', 'teacher', 'offeringType'])
+                ->where('semester_id', $activeSemester->id)
+                ->whereNotIn('id', $enrolledOfferingIds)
+                ->whereNull('deleted_at')
+                ->get();
+        }
+
+        // Student's current enrollments — all semesters for history
+        $myEnrollments = Enrollment::with(['offering.subject', 'offering.semester', 'studentStatus'])
+                                   ->where('student_id', Auth::id())
+                                   ->latest()
+                                   ->get();
+
+        return view('student.enrollments.index', compact(
+            'activeSemester',
+            'availableOfferings',
+            'myEnrollments',
+        ));
+    }
+
+    /**
+     * Student self-enrolls into an offering.
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'offering_id' => ['required', 'exists:course_offerings,id'],
+        ]);
+
+        $activeSemester = Semester::current();
+
+        if (! $activeSemester) {
+            return back()->with('error', 'Enrollment is not available. No active semester is set.');
+        }
+
+        $offering = CourseOffering::where('id', $request->offering_id)
+                                  ->where('semester_id', $activeSemester->id)
+                                  ->whereNull('deleted_at')
+                                  ->firstOrFail();
+
+        // Prevent duplicate enrollment
+        $alreadyEnrolled = Enrollment::where('offering_id', $offering->id)
+                                     ->where('student_id', Auth::id())
+                                     ->exists();
+
+        if ($alreadyEnrolled) {
+            return back()->with('error', 'You are already enrolled in this course.');
+        }
+
+        // Default status: 'regular' — adjust as needed
+        $defaultStatus = StudentStatus::whereName('regular')->first()
+                      ?? StudentStatus::first();
+
+        Enrollment::create([
+            'offering_id'       => $offering->id,
+            'student_id'        => Auth::id(),
+            'student_status_id' => $defaultStatus?->id,
+        ]);
+
+        return redirect()->route('student.enrollments.index')
+                         ->with('success', "Enrolled in {$offering->subject->name} successfully.");
+    }
+
+    /**
+     * Student drops (unenrolls from) a course.
+     */
+    public function destroy(Enrollment $enrollment): RedirectResponse
+    {
+        // Students can only drop their own enrollments
+        if ($enrollment->student_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $enrollment->delete();
+
+        return redirect()->route('student.enrollments.index')
+                         ->with('success', 'You have been unenrolled from the course.');
+    }
+}

@@ -40,9 +40,18 @@
                                         <div class="text-center">
                                             <h4 class="mt-2 text-dark">Sign in to continue.</h4>
                                         </div>
+                                        {{-- Session status (e.g. after email verification) --}}
+                                        @if (session('status'))
+                                            <div class="alert alert-success">{{ session('status') }}</div>
+                                        @endif
+
+                                        {{-- Login / rate-limit errors --}}
+                                        @if ($errors->has('login'))
+                                            <div class="alert alert-error">{{ $errors->first('login') }}</div>
+                                        @endif
 
                                         <!-- Session Messages -->
-                                        @if (session('success'))
+                                        {{-- @if (session('success'))
                                             <div class="alert alert-success alert-dismissible fade show mt-4" role="alert">
                                                 <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
                                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -54,28 +63,31 @@
                                                 <i class="bi bi-exclamation-circle me-2"></i>{{ session('error') }}
                                                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                             </div>
-                                        @endif
-                                        
+                                        @endif --}}
+                                                                        
                                         <!-- Login Form -->
-                                        <form class="mt-4 pt-2" method="POST" action="{{ route('login.submit') }}">
+                                        <form class="mt-4 pt-2" method="POST" action="{{ route('login') }}">
                                             @csrf
                                             
                                             <!-- Email Field -->
                                             <div class="mb-3">
-                                                <label class="form-label" for="email">Email</label>
-                                                <input type="email"
-                                                    class="form-control @error('email') is-invalid @enderror"
-                                                    name="email"
-                                                    id="email"
-                                                    placeholder="Enter Your Email"
-                                                    value="{{ old('email') }}"
-                                                    autocomplete="email"
-                                                    required>
-                                                @error('email')
+                                                <label class="form-label" for="login">Email or ID Number</label>
+                                                <input 
+                                                    type="text"
+                                                    class="form-control @error('login') is-invalid @enderror"
+                                                    name="login"
+                                                    id="login"
+                                                    placeholder="you@example.com or 123456789"
+                                                    value="{{ old('login') }}"
+                                                    autocomplete="username"
+                                                    autofocus
+                                                    required
+                                                >
+                                                {{-- @error('login')
                                                     <div class="invalid-feedback">
                                                         <i class="bi bi-exclamation-circle me-1"></i>{{ $message }}
                                                     </div>
-                                                @enderror
+                                                @enderror --}}
                                             </div>
                                             
                                             <!-- Password Field -->
@@ -91,21 +103,24 @@
                                                 </div>
                                                 
                                                 <div class="input-group auth-pass-inputgroup">
-                                                    <input type="password" 
-                                                           class="form-control @error('password') is-invalid @enderror" 
-                                                           name="password" 
-                                                           id="password" 
-                                                           placeholder="Enter Your Password" 
-                                                           required>
+                                                    <input 
+                                                        type="password" 
+                                                        class="form-control @error('password') is-invalid @enderror" 
+                                                        name="password" 
+                                                        id="password" 
+                                                        placeholder="••••••••" 
+                                                        autocomplete="current-password"
+                                                        required
+                                                    >
                                                     <button class="btn btn-light shadow-none ms-0" type="button" id="password-addon">
                                                         <i class="mdi mdi-eye-outline"></i>
                                                     </button>
                                                 </div>
-                                                @error('password')
+                                                {{-- @error('password')
                                                     <div class="invalid-feedback d-block">
                                                         {{ $message }}
                                                     </div>
-                                                @enderror
+                                                @enderror --}}
                                             </div>
 
                                             <!-- Remember Me Checkbox -->
@@ -129,14 +144,14 @@
                                                     Sign In
                                                 </button>
                                             </div>
-                                            <div class="text-center mt-3">
+                                            {{-- <div class="text-center mt-3">
                                                 <p class="mb-0">
                                                     Don't have an account?
                                                     <a href="{{ route('signup') }}" class="text-primary fw-semibold">
                                                         Sign Up
                                                     </a>
                                                 </p>
-                                            </div>
+                                            </div> --}}
                                         </form>
                                     </div>
                                 </div> 

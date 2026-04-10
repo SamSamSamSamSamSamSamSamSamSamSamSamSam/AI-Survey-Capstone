@@ -1,0 +1,22 @@
+currently refractoring the Database!
+
+new models list:
+ai-survey-cqi-system/app/Models/CourseOffering.php
+ai-survey-cqi-system/app/Models/CqiReport.php
+ai-survey-cqi-system/app/Models/Enrollment.php
+ai-survey-cqi-system/app/Models/FacultyAnalytic.php
+ai-survey-cqi-system/app/Models/OfferingType.php
+ai-survey-cqi-system/app/Models/Program.php
+ai-survey-cqi-system/app/Models/Prospectus.php
+ai-survey-cqi-system/app/Models/Question.php
+ai-survey-cqi-system/app/Models/Response.php
+ai-survey-cqi-system/app/Models/ResponseSentiment.php
+ai-survey-cqi-system/app/Models/Role.php
+ai-survey-cqi-system/app/Models/Semester.php
+ai-survey-cqi-system/app/Models/SentimentType.php
+ai-survey-cqi-system/app/Models/Setting.php
+ai-survey-cqi-system/app/Models/StudentStatus.php
+ai-survey-cqi-system/app/Models/Subject.php
+ai-survey-cqi-system/app/Models/Survey.php
+ai-survey-cqi-system/app/Models/SurveyAttempt.php
+ai-survey-cqi-system/app/Models/User.php

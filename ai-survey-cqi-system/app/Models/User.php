@@ -2,112 +2,82 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
+
+    public $incrementing = false;
+    protected $keyType   = 'string';
 
     protected $fillable = [
-        'name', 'email', 'password',
+        'user_id_number',
+        'name',
+        'email',
+        'password',
+        'email_verified_at',
     ];
 
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
     ];
 
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password'          => 'hashed',
+        ];
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function (User $user) {
+            if (empty($user->{$user->getKeyName()})) {
+                $user->{$user->getKeyName()} = (string) Str::ulid();
+            }
+        });
+    }
+
+    // -------------------------------------------------------------------------
+    // Relationships
+    // -------------------------------------------------------------------------
 
     public function roles()
     {
-        return $this->belongsToMany(Role::class);
+        return $this->belongsToMany(Role::class, 'role_user')->withTimestamps();
     }
 
-    public function hasRole($role)
+    // -------------------------------------------------------------------------
+    // Role helpers
+    // -------------------------------------------------------------------------
+
+    public function hasRole(string $role): bool
     {
-        if (is_string($role)) {
-            return $this->roles->contains('name', $role);
-        }
-        return !!$role->intersect($this->roles)->count();
+        return $this->roles->contains('name', $role);
     }
 
-    // ── Subjects (all time, no semester scope) ─────────────────────────────────
-
-    public function teachingSubjects()
+    public function primaryRole(): ?string
     {
-        return $this->belongsToMany(Subject::class, 'subject_teacher', 'teacher_id', 'subject_id')
-                    ->withPivot('group', 'semester_id');
+        return $this->roles->first()?->name;
     }
 
-    public function enrolledSubjects()
+    public function dashboardRoute(): string
     {
-        return $this->belongsToMany(Subject::class, 'subject_student', 'student_id', 'subject_id')
-                    ->withPivot('group', 'semester_id');
-    }
-
-    // ── Semester-scoped subject helpers ────────────────────────────────────────
-
-    /**
-     * Subjects this teacher is assigned to for a specific semester.
-     */
-    public function teachingSubjectsForSemester($semesterId)
-    {
-        return $this->teachingSubjects()
-                    ->wherePivot('semester_id', $semesterId);
-    }
-
-    /**
-     * Subjects this student is enrolled in for a specific semester.
-     */
-    public function enrolledSubjectsForSemester($semesterId)
-    {
-        return $this->enrolledSubjects()
-                    ->wherePivot('semester_id', $semesterId);
-    }
-
-    /**
-     * Check if the user has subjects enrolled/assigned for the given semester.
-     */
-    public function hasSubjectsForSemester($semesterId): bool
-    {
-        if ($this->hasRole('student')) {
-            return $this->enrolledSubjects()
-                        ->wherePivot('semester_id', $semesterId)
-                        ->exists();
-        }
-
-        if ($this->hasRole('teacher')) {
-            return $this->teachingSubjects()
-                        ->wherePivot('semester_id', $semesterId)
-                        ->exists();
-        }
-
-        return true; // admins always pass
-    }
-
-    // ── Surveys and Responses ──────────────────────────────────────────────────
-
-    public function createdSurveys()
-    {
-        return $this->hasMany(Survey::class, 'created_by');
-    }
-
-    public function evaluationsGiven()
-    {
-        return $this->hasMany(Response::class, 'evaluator_id');
-    }
-
-    public function evaluationsReceived()
-    {
-        return $this->hasMany(Response::class, 'evaluatee_id');
-    }
-
-    public function generatedReports()
-    {
-        return $this->hasMany(CQIReport::class, 'generated_by');
+        return match ($this->primaryRole()) {
+            'admin'   => route('admin.dashboard'),
+            'faculty' => route('faculty.dashboard'),
+            'student' => route('student.dashboard'),
+            default   => route('no-role.error'), // add a route for users without roles later
+        };
     }
 }

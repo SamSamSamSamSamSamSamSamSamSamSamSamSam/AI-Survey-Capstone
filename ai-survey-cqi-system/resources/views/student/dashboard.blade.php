@@ -1,118 +1,40 @@
-@extends('layouts.default')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Dashboard</title>
+    <style>
+        body { font-family: sans-serif; background: #f1f5f9; padding: 2rem; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+        .topbar h1 { font-size: 1.1rem; }
+        .badge { background: #d1fae5; color: #065f46; font-size: .72rem; font-weight: 700; padding: .2rem .55rem; border-radius: 999px; margin-left: .4rem; }
+        .user-meta { font-size: .85rem; color: #6b7280; }
+        .btn-logout { background: none; border: 1px solid #e5e7eb; padding: .4rem .9rem; border-radius: 6px; font-size: .85rem; cursor: pointer; color: #374151; }
+        .btn-logout:hover { background: #f3f4f6; }
+        .card { background: #fff; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,.06); color: #6b7280; font-size: .9rem; }
+        .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; border-radius: 7px; padding: .7rem 1rem; margin-bottom: 1.25rem; font-size: .875rem; }
+    </style>
+</head>
+<body>
 
-@section('title', 'Student Dashboard')
-
-@section('content')
-<div class="container py-5">
-
-    {{-- Header + Semester Badge --}}
-    <div class="d-flex justify-content-between align-items-start mb-2">
-        <div>
-            <h3 class="mb-0">Welcome, {{ auth()->user()->name }}</h3>
-            <p class="text-muted mb-0">Here's an overview of your subjects and survey activities.</p>
-            <p class="text-muted mb-0"><strong>Role:</strong> {{ auth()->user()->roles->first()?->name ?? 'N/A' }}</p>
-        </div>
-        <div class="text-end">
-            @if($activeSemester)
-                <span class="badge bg-primary fs-6 px-3 py-2">
-                    <i class="bi bi-calendar2-range me-1"></i>
-                    {{ $activeSemester->name }}
-                </span>
-            @else
-                <span class="badge bg-secondary fs-6 px-3 py-2">
-                    <i class="bi bi-calendar2-x me-1"></i>
-                    No Active Semester
-                </span>
-            @endif
-        </div>
+<div class="topbar">
+    <div>
+        <h1>Dashboard <span class="badge">Student</span></h1>
+        <p class="user-meta">{{ auth()->user()->name }} &nbsp;·&nbsp; {{ auth()->user()->user_id_number }}</p>
     </div>
-
-    <hr class="mb-4">
-
-    {{-- Enrolled Subjects --}}
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">My Enrolled Subjects</h5>
-        </div>
-        <div class="card-body">
-            @if($subjects->isEmpty())
-                <p class="text-muted">No subjects found. You might need to upload your study load.</p>
-            @else
-                <ul class="list-group">
-                    @foreach($subjects as $subject)
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>{{ $subject->course_code ?? 'N/A' }}</strong>
-                                <span class="text-muted">{{ $subject->pivot->group ? ' - Group ' . $subject->pivot->group : '' }}</span>
-                            </div>
-                            <div>
-                                @foreach($subject->teachers as $teacher)
-                                    <span class="badge bg-secondary">{{ $teacher->name }}</span>
-                                @endforeach
-                            </div>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </div>
-    </div>
-
-    {{-- Active Surveys --}}
-    <div class="card mb-4">
-        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Active Surveys</h5>
-            @if($activeSemester)
-                <small class="opacity-75">{{ $activeSemester->name }}</small>
-            @endif
-        </div>
-        <div class="card-body">
-            @if($activeSurveys->isEmpty())
-                <p class="text-muted">No active surveys available right now.</p>
-            @else
-                <ul class="list-group">
-                    @foreach($activeSurveys as $survey)
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>{{ $survey->title }}</strong>
-                                <small class="text-muted d-block">{{ $survey->subject->course_code ?? '' }}</small>
-                            </div>
-                            @if($answeredSurveyIds->contains($survey->id))
-                                <span class="badge bg-secondary">Completed</span>
-                            @else
-                                <a href="{{ route('student.survey_take', $survey->id) }}" class="btn btn-sm btn-outline-primary">Take Survey</a>
-                            @endif
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </div>
-    </div>
-
-    {{-- Recent Feedback --}}
-    <div class="card">
-        <div class="card-header bg-info text-white">
-            <h5 class="mb-0">Recent Feedback</h5>
-        </div>
-        <div class="card-body">
-            @if($recentResponses->isEmpty())
-                <p class="text-muted">You haven't submitted any feedback yet.</p>
-            @else
-                <ul class="list-group">
-                    @foreach($recentResponses as $response)
-                        <li class="list-group-item">
-                            <div>
-                                <strong>{{ $response->survey->title ?? 'Unknown Survey' }}</strong><br>
-                                <small class="text-muted">Subject: {{ $response->survey->subject->course_code ?? 'N/A' }}</small>
-                            </div>
-                            <div class="mt-1">
-                                <small>Sentiment: <strong>{{ ucfirst($response->sentiment_label ?? 'n/a') }}</strong></small>
-                            </div>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </div>
-    </div>
-
+    <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit" class="btn-logout">Sign Out</button>
+    </form>
 </div>
-@endsection
+
+@if (session('status'))
+    <div class="alert-success">{{ session('status') }}</div>
+@endif
+
+<div class="card">
+    Student panel coming soon — your enrolled courses and pending surveys will appear here.
+</div>
+
+</body>
+</html>

@@ -2,38 +2,22 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Subject extends Model
 {
-    use HasFactory;
+    use SoftDeletes;
 
-    protected $fillable = ['course_code', 'name', 'description'];
+    protected $fillable = ['course_code', 'name', 'description', 'units'];
 
-
-    public function teachers()
+    public function prospectuses()
     {
-        return $this->belongsToMany(User::class, 'subject_teacher', 'subject_id', 'teacher_id')
-                    ->withPivot('group');
+        return $this->hasMany(Prospectus::class);
     }
 
-
-    public function students()
+    public function offerings()
     {
-        return $this->belongsToMany(User::class, 'subject_student', 'subject_id', 'student_id')
-                    ->withPivot('group');
-    }
-
-
-    public function surveys()
-    {
-        return $this->hasMany(Survey::class, 'subject_id');
-    }
-
- 
-    public function responses()
-    {
-        return $this->hasMany(Response::class);
+        return $this->hasMany(CourseOffering::class);
     }
 }

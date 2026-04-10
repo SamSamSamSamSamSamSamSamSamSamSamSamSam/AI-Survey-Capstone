@@ -1,0 +1,8 @@
+admin:
+admin@cqi-system.test
+
+faculty:
+mcdermott.casimer@example.com
+
+student:
+cartwright.mohammad@example.net

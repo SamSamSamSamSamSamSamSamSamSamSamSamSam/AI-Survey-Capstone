@@ -1,118 +1,133 @@
-@extends('layouts.default')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User — Admin</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: sans-serif; background: #f3f4f6; color: #111; padding: 2rem; }
+        .page-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+        .page-header h1 { font-size: 1.3rem; }
+        .back { font-size: .875rem; color: #4f46e5; text-decoration: none; }
+        .back:hover { text-decoration: underline; }
+        .card { background: #fff; border-radius: 8px; padding: 2rem; max-width: 600px; box-shadow: 0 1px 6px rgba(0,0,0,.07); }
+        .form-group { margin-bottom: 1.1rem; }
+        label { display: block; font-size: .875rem; font-weight: 500; margin-bottom: .35rem; }
+        input[type=text], input[type=email] { width: 100%; padding: .55rem .75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: .9rem; }
+        input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+        input.is-invalid { border-color: #dc2626; }
+        .error { color: #dc2626; font-size: .8rem; margin-top: .3rem; }
+        .roles-grid { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: .35rem; }
+        .role-option { display: flex; align-items: center; gap: .4rem; cursor: pointer; }
+        .role-option input { width: auto; cursor: pointer; }
+        .role-option span { font-size: .9rem; }
+        .form-actions { display: flex; gap: .75rem; margin-top: 1.5rem; }
+        .btn { padding: .55rem 1.2rem; border-radius: 6px; font-size: .875rem; cursor: pointer; text-decoration: none; border: none; }
+        .btn-primary { background: #4f46e5; color: #fff; }
+        .btn-primary:hover { background: #4338ca; }
+        .btn-secondary { background: #e5e7eb; color: #374151; }
+        .btn-secondary:hover { background: #d1d5db; }
+        .meta { font-size: .8rem; color: #9ca3af; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid #f3f4f6; }
+    </style>
+</head>
+<body>
 
-@section('content')
-<div class="container py-4">
-    <h3>Edit User</h3>
+<div class="page-header">
+    <a href="{{ route('admin.users.index') }}" class="back">← Back to Users</a>
+    <h1>Edit User</h1>
+</div>
 
-    @if(session('error')) 
-        <div class="alert alert-danger">{{ session('error') }}</div> 
-    @endif
-    @if(session('success')) 
-        <div class="alert alert-success">{{ session('success') }}</div> 
-    @endif
+<div class="card">
 
-    <form action="{{ route('admin.users.update', $user) }}" method="post">
+    <form method="POST" action="{{ route('admin.users.update', $user->id) }}">
         @csrf
         @method('PUT')
 
-        <!-- User Info -->
-        <div class="mb-3">
-            <label class="form-label">Name</label>
-            <input name="name" value="{{ old('name', $user->name) }}" class="form-control" required>
+        {{-- ID Number --}}
+        <div class="form-group">
+            <label for="user_id_number">ID Number <span style="color:#dc2626">*</span></label>
+            <input
+                type="text"
+                id="user_id_number"
+                name="user_id_number"
+                value="{{ old('user_id_number', $user->user_id_number) }}"
+                class="{{ $errors->has('user_id_number') ? 'is-invalid' : '' }}"
+            >
+            @error('user_id_number')
+                <p class="error">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input name="email" type="email" value="{{ old('email', $user->email) }}" class="form-control" required>
+        {{-- Name --}}
+        <div class="form-group">
+            <label for="name">Full Name <span style="color:#dc2626">*</span></label>
+            <input
+                type="text"
+                id="name"
+                name="name"
+                value="{{ old('name', $user->name) }}"
+                class="{{ $errors->has('name') ? 'is-invalid' : '' }}"
+            >
+            @error('name')
+                <p class="error">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Password (leave blank to keep)</label>
-            <input name="password" type="password" class="form-control">
+        {{-- Email --}}
+        <div class="form-group">
+            <label for="email">Email Address <span style="color:#dc2626">*</span></label>
+            <input
+                type="email"
+                id="email"
+                name="email"
+                value="{{ old('email', $user->email) }}"
+                class="{{ $errors->has('email') ? 'is-invalid' : '' }}"
+            >
+            @error('email')
+                <p class="error">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Confirm Password</label>
-            <input name="password_confirmation" type="password" class="form-control">
-        </div>
-
-        <!-- Roles -->
-        <div class="mb-3">
-            <label class="form-label">Roles</label>
-            <div>
-                @foreach($roles as $role)
-                    <label class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" name="roles[]" value="{{ $role->id }}"
-                            {{ $user->roles->contains('id', $role->id) ? 'checked' : '' }}>
-                        <span class="form-check-label">{{ $role->name }}</span>
+        {{-- Roles --}}
+        <div class="form-group">
+            <label>Roles <span style="color:#dc2626">*</span></label>
+            <div class="roles-grid">
+                @foreach ($roles as $role)
+                    @php
+                        $checked = in_array(
+                            $role->id,
+                            old('roles', $user->roles->pluck('id')->toArray())
+                        );
+                    @endphp
+                    <label class="role-option">
+                        <input
+                            type="checkbox"
+                            name="roles[]"
+                            value="{{ $role->id }}"
+                            {{ $checked ? 'checked' : '' }}
+                        >
+                        <span>{{ ucfirst($role->name) }}</span>
                     </label>
                 @endforeach
             </div>
+            @error('roles')
+                <p class="error">{{ $message }}</p>
+            @enderror
         </div>
 
-        <!-- Subjects -->
-        <div class="mb-3">
-            <label class="form-label">Subjects / Courses</label>
-            <table class="table table-bordered" id="subjectsTable">
-                <thead>
-                    <tr>
-                        <th>Course Code</th>
-                        <th>Group</th>
-                        <th>Assign</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($subjects as $subject)
-                        @php
-                            $pivot = $userSubjects->firstWhere('id', $subject->id);
-                            $assigned = $pivot ? true : false;
-                            $group = $pivot ? $pivot->pivot->group : '';
-                        @endphp
-                        <tr>
-                            <td>
-                                <input type="text" name="subjects[{{ $subject->id }}][code]" value="{{ $subject->course_code }}" class="form-control" readonly>
-                            </td>
-                            <td>
-                                <input type="text" name="subjects[{{ $subject->id }}][group]" value="{{ old('subjects.'.$subject->id.'.group', $group) }}" class="form-control">
-                            </td>
-                            <td class="text-center">
-                                <input type="checkbox" name="subjects[{{ $subject->id }}][assigned]" {{ $assigned ? 'checked' : '' }}>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-
-            <button type="button" class="btn btn-success btn-sm" id="addSubjectRow">Add New Subject</button>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{{ route('admin.users.show', $user->id) }}" class="btn btn-secondary">Cancel</a>
         </div>
 
-        <!-- Buttons -->
-        <div class="mb-3">
-            <a href="{{ route('admin.users') }}" class="btn btn-outline-secondary">Cancel</a>
-            <button class="btn btn-primary">Save</button>
-        </div>
     </form>
+
+    <div class="meta">
+        Created: {{ $user->created_at->format('M d, Y h:i A') }} &nbsp;·&nbsp;
+        Last updated: {{ $user->updated_at->format('M d, Y h:i A') }}
+    </div>
 </div>
 
-<!-- JS for adding new subjects -->
-<script>
-let rowIndex = {{ count($subjects) }};
-
-document.getElementById('addSubjectRow').addEventListener('click', function() {
-    let table = document.getElementById('subjectsTable').getElementsByTagName('tbody')[0];
-    let row = table.insertRow();
-    row.innerHTML = `
-        <td>
-            <input type="text" name="subjects[new_${rowIndex}][code]" class="form-control" placeholder="Course Code" required>
-        </td>
-        <td>
-            <input type="text" name="subjects[new_${rowIndex}][group]" class="form-control" placeholder="Group">
-        </td>
-        <td class="text-center">
-            <input type="checkbox" name="subjects[new_${rowIndex}][assigned]" checked>
-        </td>
-    `;
-    rowIndex++;
-});
-</script>
-@endsection
+</body>
+</html>

@@ -9,61 +9,69 @@ use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        // Create admin user
+        $adminRole = Role::where('name', 'admin')->first();
+        $teacherRole = Role::where('name', 'faculty')->first();
+        $studentRole = Role::where('name', 'student')->first();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create Default Admin
+        |--------------------------------------------------------------------------
+        */
+
         $admin = User::create([
+            'user_id_number' => 'ADMIN001',
             'name' => 'System Administrator',
-            'email' => 'admin@school.edu',
+            'email' => 'admin@example.com',
             'password' => Hash::make('password'),
-        ]);
-        $admin->roles()->attach(Role::where('name', 'admin')->first());
-
-        // Create teacher who is also admin
-        $teacherAdmin = User::create([
-            'name' => 'John Doe',
-            'email' => 'johndoe@school.edu',
-            'password' => Hash::make('password'),
-        ]);
-        $teacherAdmin->roles()->attach([
-            Role::where('name', 'admin')->first()->id,
-            Role::where('name', 'teacher')->first()->id
+            'email_verified_at' => now(),
         ]);
 
-        // Create regular teacher
-        $teacher = User::create([
-            'name' => 'Jane Smith',
-            'email' => 'janesmith@school.edu',
-            'password' => Hash::make('password'),
-        ]);
-        $teacher->roles()->attach(Role::where('name', 'teacher')->first());
+        $admin->roles()->attach($adminRole);
 
-        $teacher = User::create([
-            'name' => 'Teacher Faculty',
-            'email' => 'teacher@school.edu',
+        $studentsample = User::create([
+            'user_id_number' => '20230001',
+            'name' => 'Student Sample',
+            'email' => 'student@example.com',
             'password' => Hash::make('password'),
+            'email_verified_at' => now(),
         ]);
-        $teacher->roles()->attach(Role::where('name', 'teacher')->first());
-
-        // Create student who is also teacher
-        $studentTeacher = User::create([
-            'name' => 'Alex Johnson',
-            'email' => 'alexj@school.edu',
+        
+        $teachersample = User::create([
+            'user_id_number' => 'TEACHER001',
+            'name' => 'Teacher Sample',
+            'email' => 'teacher@example.com',
             'password' => Hash::make('password'),
+            'email_verified_at' => now(),
         ]);
-        $studentTeacher->roles()->attach([
-            Role::where('name', 'student')->first()->id,
-            Role::where('name', 'teacher')->first()->id
-        ]);
+        $teachersample->roles()->attach($teacherRole);
+        $studentsample->roles()->attach($studentRole);
 
-        // Create regular students
-        for ($i = 1; $i <= 10; $i++) {
-            $student = User::create([
-                'name' => 'Student ' . $i,
-                'email' => 'student' . $i . '@school.edu',
-                'password' => Hash::make('password'),
-            ]);
-            $student->roles()->attach(Role::where('name', 'student')->first());
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create Teacher Users
+        |--------------------------------------------------------------------------
+        */
+
+        $teacherUsers = User::factory()->count(5)->create();
+
+        foreach ($teacherUsers as $teacher) {
+            $teacher->roles()->attach($teacherRole);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create Student Users
+        |--------------------------------------------------------------------------
+        */
+
+        $studentUsers = User::factory()->count(30)->create();
+
+        foreach ($studentUsers as $student) {
+            $student->roles()->attach($studentRole);
         }
     }
 }
