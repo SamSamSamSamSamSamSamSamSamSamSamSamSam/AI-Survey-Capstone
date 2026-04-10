@@ -5,8 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Notifications\Messages\MailMessage;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
@@ -109,5 +112,24 @@ class User extends Authenticatable
     public function generatedReports()
     {
         return $this->hasMany(CQIReport::class, 'generated_by');
+    }
+
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new class extends VerifyEmail {
+            public function toMail($notifiable)
+            {
+                $verificationUrl = $this->verificationUrl($notifiable);
+
+                return (new MailMessage)
+                    ->subject('Verify Your DCISM AI Survey Account')
+                    ->greeting('Hello, ' . $notifiable->name . '!')
+                    ->line('Welcome to the AI Survey System.')
+                    ->line('Please click the button below to verify your email address and complete your onboarding.')
+                    ->action('Verify Email Address', $verificationUrl)
+                    ->line('If you did not create an account, you can safely ignore this email.')
+                    ->salutation('Best regards, ' . config('app.name'));
+            }
+        });
     }
 }

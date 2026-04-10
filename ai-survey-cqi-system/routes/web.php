@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Admin\SurveyController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -12,14 +13,15 @@ use App\Http\Controllers\Admin\DepartmentsController;
 use App\Http\Controllers\Admin\SubjectsController;
 use App\Http\Controllers\Admin\SemesterController;
 use App\Http\Controllers\Teacher\TeacherDashboardController as TeacherDashboardController;
+use App\Http\Controllers\Teacher\TeacherReviewController;
 use App\Http\Controllers\Teacher\TeacherSurveyController as TeacherSurveyController;
 use App\Http\Controllers\Student\StudentDashboardController as StudentDashboardController;
 use App\Http\Controllers\Student\StudentSurveyController as StudentSurveyController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Admin\CQIFilterController;
 use App\Http\Controllers\Admin\SettingsController;
-
 use App\Http\Controllers\Admin\GeminiTestController;
 
 
@@ -86,13 +88,19 @@ Route::get('/signup', function () {
 
 Route::post('/signup', [UserController::class, 'signup'])->name('signup.submit');
 
+
 // Onboarding routes (shared by teacher and student)
-Route::middleware(['web','auth'])->prefix('onboarding')->name('onboarding.')->group(function () {
+Route::middleware(['web','auth', 'verified'])->prefix('onboarding')->name('onboarding.')->group(function () {
     Route::get('/upload', [OnboardingController::class, 'showUploadForm'])->name('upload');
     Route::post('/upload', [OnboardingController::class, 'processUpload'])->name('process');
 });
 
-
+//Email Verification Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/email/verify', [VerifyEmailController::class, 'notice'])->name('verification.notice');
+    Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify'])->middleware(['signed'])->name('verification.verify');
+    Route::post('/email/resend', [VerifyEmailController::class, 'resend'])->name('verification.send');
+});
 
 
 //User Dashboards
@@ -107,12 +115,6 @@ Route::get('/admin/users', function () {
 Route::get('/teacher/dashboard', function () {
     return view('teacher.dashboard');
 })->name('teacher.dashboard')->middleware(['auth', 'role:teacher']);
-
-// Placeholder for teacher reviews page -------------------------------------------------------
-Route::get('/teacher/reviews', function () {
-    // return view('teacher.reviews');
-    return "Teacher Reviews Page - Under Construction - line 67 in web.php";
-})->name('teacher.reviews')->middleware(['auth', 'role:teacher']);
 
 Route::get('/student/dashboard', function () {
     return view('student.dashboard');
@@ -177,7 +179,7 @@ Route::middleware(['web','auth', 'role:admin'])->prefix('admin')->name('admin.')
 
 
 // Teacher routes
-Route::middleware(['web','auth', 'role:teacher', 'check.onboarding'])->prefix('teacher')->name('teacher.')->group(function () {
+Route::middleware(['web','auth', 'role:teacher', 'verified','check.onboarding'])->prefix('teacher')->name('teacher.')->group(function () {
         // Dashboard
         Route::get('/dashboard', [TeacherDashboardController::class, 'index'])->name('dashboard');
 
@@ -189,13 +191,13 @@ Route::middleware(['web','auth', 'role:teacher', 'check.onboarding'])->prefix('t
         // Reviews and Classes
         Route::get('/classes', [TeacherDashboardController::class, 'survey'])->name('classes');
         // Teacher reviews page is currently a placeholder, so we won't add a route for it until it's implemented
-        Route::get('/reviews', [TeacherDashboardController::class, 'reviews'])->name('reviews');
+        Route::get('/reviews', [TeacherReviewController::class, 'index'])->name('reviews');
 });
 
 
 
 // Student routes
-Route::middleware(['web','auth', 'role:student', 'check.onboarding'])->prefix('student')->name('student.')->group(function () {
+Route::middleware(['web','auth', 'role:student', 'verified','check.onboarding'])->prefix('student')->name('student.')->group(function () {
         // Dashboard
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
 

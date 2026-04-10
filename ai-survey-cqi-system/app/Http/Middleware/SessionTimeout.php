@@ -17,7 +17,7 @@ class SessionTimeout
    public function handle($request, Closure $next)
     {
         if (Auth::check()) {
-            $timeout = 120 * 60; // 2 hours in seconds
+            $timeout = 60; // 1 minute in seconds
             $lastActivity = session('last_activity', time());
             if (time() - $lastActivity > $timeout) {
                 Auth::logout();

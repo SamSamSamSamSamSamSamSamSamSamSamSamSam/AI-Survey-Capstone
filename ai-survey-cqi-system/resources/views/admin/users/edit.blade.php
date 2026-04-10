@@ -50,41 +50,6 @@
             </div>
         </div>
 
-        <!-- Subjects -->
-        <div class="mb-3">
-            <label class="form-label">Subjects / Courses</label>
-            <table class="table table-bordered" id="subjectsTable">
-                <thead>
-                    <tr>
-                        <th>Course Code</th>
-                        <th>Group</th>
-                        <th>Assign</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($subjects as $subject)
-                        @php
-                            $pivot = $userSubjects->firstWhere('id', $subject->id);
-                            $assigned = $pivot ? true : false;
-                            $group = $pivot ? $pivot->pivot->group : '';
-                        @endphp
-                        <tr>
-                            <td>
-                                <input type="text" name="subjects[{{ $subject->id }}][code]" value="{{ $subject->course_code }}" class="form-control" readonly>
-                            </td>
-                            <td>
-                                <input type="text" name="subjects[{{ $subject->id }}][group]" value="{{ old('subjects.'.$subject->id.'.group', $group) }}" class="form-control">
-                            </td>
-                            <td class="text-center">
-                                <input type="checkbox" name="subjects[{{ $subject->id }}][assigned]" {{ $assigned ? 'checked' : '' }}>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-
-            <button type="button" class="btn btn-success btn-sm" id="addSubjectRow">Add New Subject</button>
-        </div>
 
         <!-- Buttons -->
         <div class="mb-3">
