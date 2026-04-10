@@ -1,17 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Users — Admin</title>
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; background: #f3f4f6; color: #111; }
+@extends('admin.layouts.app')
+@section('title', 'User Management')
 
-        /* Layout */
-        .layout { display: flex; min-height: 100vh; }
-        .main { flex: 1; padding: 2rem; }
-
+@push('styles')
+<style>
         /* Page header */
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
         .page-header h1 { font-size: 1.4rem; }
@@ -63,10 +54,10 @@
 
         .actions { display: flex; gap: .4rem; flex-wrap: wrap; }
         .empty { text-align: center; padding: 3rem; color: #9ca3af; font-size: .9rem; }
-    </style>
-</head>
-<body>
+</style>
+@endpush
 
+@section('content')
 <div class="layout">
     <div class="main">
 
@@ -205,6 +196,4 @@
 
     </div>
 </div>
-
-</body>
-</html>
+@endsection

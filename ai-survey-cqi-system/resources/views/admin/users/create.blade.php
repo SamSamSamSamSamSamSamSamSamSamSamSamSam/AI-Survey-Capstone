@@ -1,12 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create User — Admin</title>
+@extends('admin.layouts.app')
+@section('title', 'Create User')
+
+@push('styles')
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; background: #f3f4f6; color: #111; padding: 2rem; }
+        /* *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; } */
+        /* body { font-family: sans-serif; background: #f3f4f6; color: #111; padding: 2rem; } */
         .page-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
         .page-header h1 { font-size: 1.3rem; }
         .back { font-size: .875rem; color: #4f46e5; text-decoration: none; }
@@ -31,9 +29,9 @@
         .btn-secondary:hover { background: #d1d5db; }
         .info-box { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 6px; padding: .75rem 1rem; font-size: .825rem; margin-bottom: 1.25rem; line-height: 1.5; }
     </style>
-</head>
-<body>
+@endpush
 
+@section('content')
 <div class="page-header">
     <a href="{{ route('admin.users.index') }}" class="back">← Back to Users</a>
     <h1>Create New User</h1>
@@ -126,6 +124,5 @@
 
     </form>
 </div>
+@endsection
 
-</body>
-</html>

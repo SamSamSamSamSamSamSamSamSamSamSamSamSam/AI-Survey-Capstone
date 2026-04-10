@@ -1,12 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Details — Admin</title>
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; background: #f3f4f6; color: #111; padding: 2rem; }
+@extends('admin.layouts.app')
+@section('title', 'User Details')
+
+@push('styles')
+<style>
+        /* *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: sans-serif; background: #f3f4f6; color: #111; padding: 2rem; } */
         .page-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
         .page-header h1 { font-size: 1.3rem; }
         .back { font-size: .875rem; color: #4f46e5; text-decoration: none; }
@@ -33,9 +31,9 @@
         .btn-danger:hover { background: #fecaca; }
         .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; border-radius: 6px; padding: .75rem 1rem; margin-bottom: 1rem; font-size: .875rem; }
     </style>
-</head>
-<body>
+@endpush
 
+@section('content')
 <div class="page-header">
     <a href="{{ route('admin.users.index') }}" class="back">← Back to Users</a>
     <h1>User Details</h1>
@@ -105,6 +103,5 @@
     </div>
 
 </div>
+@endsection
 
-</body>
-</html>

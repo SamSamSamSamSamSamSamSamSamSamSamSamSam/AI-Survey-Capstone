@@ -1,12 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit User — Admin</title>
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; background: #f3f4f6; color: #111; padding: 2rem; }
+@extends('admin.layouts.app')
+@section('title', 'Edit User')
+
+@push('styles')
+<style>
+        /* *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; } */
+        /* body { font-family: sans-serif; background: #f3f4f6; color: #111; padding: 2rem; } */
         .page-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
         .page-header h1 { font-size: 1.3rem; }
         .back { font-size: .875rem; color: #4f46e5; text-decoration: none; }
@@ -30,9 +28,9 @@
         .btn-secondary:hover { background: #d1d5db; }
         .meta { font-size: .8rem; color: #9ca3af; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid #f3f4f6; }
     </style>
-</head>
-<body>
+@endpush
 
+@section('content')
 <div class="page-header">
     <a href="{{ route('admin.users.index') }}" class="back">← Back to Users</a>
     <h1>Edit User</h1>
@@ -128,6 +126,4 @@
         Last updated: {{ $user->updated_at->format('M d, Y h:i A') }}
     </div>
 </div>
-
-</body>
-</html>
+@endsection

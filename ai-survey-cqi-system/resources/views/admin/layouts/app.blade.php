@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Admin') — CQI System</title>
+    <title>@yield('title', 'Admin') | CQI System</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: sans-serif; background: #f1f5f9; color: #111; display: flex; min-height: 100vh; }
@@ -97,6 +97,7 @@
 
         .empty-state { text-align: center; padding: 3rem; color: #9ca3af; font-size: .9rem; }
     </style>
+    @stack('styles')
 </head>
 <body>
 
@@ -110,6 +111,20 @@
         <p class="nav-section">Users</p>
         <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">User Management</a>
 
+        <p class="nav-section">Surveys</p>
+        <a href="{{ route('admin.surveys.index') }}"
+        class="nav-link {{ request()->routeIs('admin.surveys.*') ? 'active' : '' }}">
+            Surveys
+        </a>
+        <a href="{{ route('admin.survey-templates.index') }}"
+        class="nav-link {{ request()->routeIs('admin.survey-templates.*') ? 'active' : '' }}">
+            Templates
+        </a>
+        <a href="{{ route('admin.question-categories.index') }}"
+        class="nav-link {{ request()->routeIs('admin.question-categories.*') ? 'active' : '' }}">
+            Categories
+        </a>
+
         <p class="nav-section">Academic</p>
         <a href="{{ route('admin.programs.index') }}"  class="nav-link {{ request()->routeIs('admin.programs.*')  ? 'active' : '' }}">Programs</a>
         <a href="{{ route('admin.curricula.index') }}"  class="nav-link {{ request()->routeIs('admin.curricula.*')  ? 'active' : '' }}">Curricula</a>
@@ -120,6 +135,16 @@
 
         <p class="nav-section">System</p>
         <a href="{{ route('admin.dashboard') }}" class="nav-link">Dashboard</a>
+
+        <p class="nav-section">Analytics & CQI</p>
+        <a href="{{ route('admin.analytics.index') }}"
+        class="nav-link {{ request()->routeIs('admin.analytics.*') ? 'active' : '' }}">
+            Faculty Analytics
+        </a>
+        <a href="{{ route('admin.cqi-reports.index') }}"
+        class="nav-link {{ request()->routeIs('admin.cqi-reports.*') ? 'active' : '' }}">
+            CQI Reports
+        </a>
     </nav>
     <div class="sidebar-footer">
         {{ auth()->user()->name }}
