@@ -15,26 +15,57 @@ return new class extends Migration
 
             $table->ulid('id')->primary(); // ULID PK
 
-            $table->ulid('offering_id');
-            $table->ulid('generated_by'); // FK to users
+            $table->enum('scope_type', ['survey', 'offering', 'faculty']);
+
+            $table->ulid('survey_id')->nullable()->index();
+            $table->ulid('faculty_id')->nullable()->index();
+            $table->ulid('offering_id')->nullable()->index();
+            $table->ulid('generated_by')->index(); // user who generated the report
 
             $table->string('title');
-            $table->text('report_text')->nullable();
-            $table->json('statistics')->nullable();
+            $table->longText('report_text'); // Full AI-generated structured content (JSON)
+            $table->json('statistics')->nullable(); // Snapshot of analytics at generation time
+            $table->string('model_name')->nullable();
+            $table->string('model_version')->nullable();
             $table->string('pdf_path')->nullable();
+            $table->boolean('is_regenerated')->default(false);
 
             $table->timestamps();
             $table->softDeletes(); // deleted_at
 
             // Foreign key constraints
+            $table->foreign('survey_id')
+                  ->references('id')->on('surveys')
+                  ->nullOnDelete();
+
             $table->foreign('offering_id')
-                  ->references('id')
-                  ->on('course_offerings')
-                  ->cascadeOnDelete();
+                  ->references('id')->on('course_offerings')
+                  ->nullOnDelete();
+
+            $table->foreign('faculty_id')
+                  ->references('id')->on('users')
+                  ->nullOnDelete();
 
             $table->foreign('generated_by')
                   ->references('id')
                   ->on('users')
+                  ->cascadeOnDelete();
+        });
+
+        Schema::create('cqi_report_logs', function (Blueprint $table) {
+            $table->ulid('id')->primary();
+            $table->ulid('report_id')->index();
+            $table->ulid('performed_by');
+            $table->string('action'); // generated, regenerated, downloaded, sent_to_faculty
+            $table->text('notes')->nullable();
+            $table->timestamps();
+
+            $table->foreign('report_id')
+                  ->references('id')->on('cqi_reports')
+                  ->cascadeOnDelete();
+
+            $table->foreign('performed_by')
+                  ->references('id')->on('users')
                   ->cascadeOnDelete();
         });
     }
@@ -45,5 +76,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('cqi_reports');
+        Schema::dropIfExists('cqi_report_logs');
     }
 };

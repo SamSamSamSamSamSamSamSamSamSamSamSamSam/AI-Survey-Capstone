@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Faculty\DashboardController as FacultyDashboard;
 use App\Http\Controllers\Student\DashboardController as StudentDashboard;
 use App\Http\Controllers\Survey\SurveyTakeController;
+use App\Http\Controllers\Faculty\MyReportsController;
 use Illuminate\Support\Facades\Route;
 // use App\Http\Controllers\Admin\UserController;
 
@@ -64,12 +65,17 @@ Route::middleware('auth')->group(function () {
                          require __DIR__ . '/admin_users.php';
                          require __DIR__ . '/academic.php';
                          require __DIR__ . '/survey.php';
+                         require __DIR__ . '/cqi.php';
           });
 
           Route::middleware('role:faculty')
                ->prefix('faculty')->name('faculty.')
                ->group(function () {
                     Route::get('/dashboard', [FacultyDashboard::class, 'index'])->name('dashboard');
+                    
+                    Route::get('my-reports',                       [MyReportsController::class, 'index'])   ->name('reports.index');
+                    Route::get('my-reports/{cqiReport}',           [MyReportsController::class, 'show'])    ->name('reports.show');
+                    Route::get('my-reports/{cqiReport}/download',  [MyReportsController::class, 'download'])->name('reports.download');
           });
 
           Route::middleware('role:student')

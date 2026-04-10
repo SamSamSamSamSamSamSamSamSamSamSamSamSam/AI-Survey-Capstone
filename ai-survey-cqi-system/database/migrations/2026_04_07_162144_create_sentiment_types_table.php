@@ -15,7 +15,7 @@ return new class extends Migration
 
             $table->id(); // Auto-increment PK
 
-            $table->string('label')->unique();
+            $table->string('label')->unique(); // positive, neutral, negative
 
             $table->timestamps();
         });

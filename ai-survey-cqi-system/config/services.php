@@ -35,8 +35,18 @@ return [
         ],
     ],
 
+     // ── NLP Sentiment Server (Flask) ────────────────────────────────────────
+    'nlp' => [
+        'url'           => env('NLP_SERVER_URL',     'http://127.0.0.1:5000'),
+        'timeout'       => env('NLP_SERVER_TIMEOUT', 30),
+        'model_name'    => env('NLP_MODEL_NAME',     'distilbert'),
+        'model_version' => env('NLP_MODEL_VERSION',  '5.0.0'),
+    ],
+
+    // ── Gemini AI ────────────────────────────────────────────────────────────
     'gemini' => [
-        'key' => env('GEMINI_API_KEY'), // Gemini API key from environment variable
+        'api_key' => env('GEMINI_API_KEY', 'AIzaSyBI_guj9G9ByDo0lgsoi8BWvWjnITXKGTU'),
+        'model'   => env('GEMINI_MODEL',   'gemini-2.5-flash'),
     ],
 
 ];

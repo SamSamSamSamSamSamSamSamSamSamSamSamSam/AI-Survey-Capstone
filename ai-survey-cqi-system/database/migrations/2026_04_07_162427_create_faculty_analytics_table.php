@@ -15,21 +15,24 @@ return new class extends Migration
 
             $table->ulid('id')->primary(); // ULID PK
 
-            $table->ulid('offering_id');
-            $table->ulid('survey_id');
-
-            $table->decimal('avg_rating', 5, 2)->nullable(); // e.g., 4.75
+            $table->ulid('offering_id')->index();
+            $table->ulid('survey_id')->index();
+            $table->ulid('faculty_id')->index();
+            
+            $table->decimal('avg_rating', 4, 2)->nullable(); // e.g., 4.75
             $table->integer('response_count')->default(0);
-            $table->decimal('positive_sentiment_percent', 5, 2)->default(0.00);
-            $table->decimal('neutral_sentiment_percent', 5, 2)->default(0.00);
-            $table->decimal('negative_sentiment_percent', 5, 2)->default(0.00);
-
+            $table->decimal('positive_sentiment_percent', 5, 2)->nullable();
+            $table->decimal('neutral_sentiment_percent', 5, 2)->nullable();
+            $table->decimal('negative_sentiment_percent', 5, 2)->nullable();
+            
             $table->json('top_keywords')->nullable();
             $table->json('category_scores')->nullable();
 
             $table->timestamp('last_computed_at')->nullable();
 
             $table->timestamps();
+
+            $table->unique(['survey_id']); // one analytics record per survey
 
             // Foreign key constraints
             $table->foreign('offering_id')
@@ -40,6 +43,10 @@ return new class extends Migration
             $table->foreign('survey_id')
                   ->references('id')
                   ->on('surveys')
+                  ->cascadeOnDelete();
+            
+            $table->foreign('faculty_id')
+                  ->references('id')->on('users')
                   ->cascadeOnDelete();
         });
     }

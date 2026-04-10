@@ -154,6 +154,11 @@ class SurveyController extends Controller
 
         $survey->update(['is_active' => ! $survey->is_active]);
 
+        $survey->refresh();
+        if (! $survey->is_active) {
+            \App\Jobs\ComputeFacultyAnalyticsJob::dispatch($survey->id);
+        }
+
         return back()->with('success', 'Survey ' . ($survey->is_active ? 'activated' : 'deactivated') . '.');
     }
 

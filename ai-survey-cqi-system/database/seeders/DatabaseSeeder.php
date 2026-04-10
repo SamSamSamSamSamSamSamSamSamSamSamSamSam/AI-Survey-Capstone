@@ -24,7 +24,8 @@ class DatabaseSeeder extends Seeder
             ProspectusSeeder::class,
             CourseOfferingSeeder::class,
             EnrollmentSeeder::class,
-            SurveyReferenceSeeder::class,
+            SurveyReferenceSeeder::class, // Seeder for University's official survey templates and categories
+            SentimentTypeSeeder::class, // Must be seeded before any sentiment-related data
         ]);
     }
 }

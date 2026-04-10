@@ -120,6 +120,8 @@ class SurveyTakeController extends Controller
             }
 
             $attempt->submit();
+
+            \App\Jobs\AnalyzeSentimentJob::dispatch($attempt->id);
         });
 
         return redirect()->route('survey.index')

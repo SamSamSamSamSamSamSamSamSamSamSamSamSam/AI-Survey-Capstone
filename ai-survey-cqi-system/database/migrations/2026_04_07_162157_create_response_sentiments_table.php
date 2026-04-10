@@ -18,10 +18,11 @@ return new class extends Migration
             $table->ulid('response_id')->index();
             $table->unsignedBigInteger('sentiment_type_id')->index();
 
-            $table->float('sentiment_score', 8, 4); // e.g., 0.7532
+            $table->decimal('sentiment_score', 5, 4);
             $table->string('model_name');
             $table->string('model_version');
-
+            $table->integer('processing_time_ms')->nullable();
+            $table->timestamp('processed_at')->nullable();
             $table->timestamps();
 
             // Foreign key constraints
@@ -34,6 +35,8 @@ return new class extends Migration
                   ->references('id')
                   ->on('sentiment_types')
                   ->restrictOnDelete();
+            
+            $table->unique(['response_id', 'model_version']);
         });
     }
 

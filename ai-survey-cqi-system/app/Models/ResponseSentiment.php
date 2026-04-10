@@ -16,18 +16,22 @@ class ResponseSentiment extends Model
         'sentiment_score',
         'model_name',
         'model_version',
+        'processing_time_ms',
+        'processed_at',
     ];
 
     protected $casts = [
-        'sentiment_score' => 'float',
+        'sentiment_score'    => 'float',
+        'processing_time_ms' => 'integer',
+        'processed_at'       => 'datetime',
     ];
 
     protected static function boot(): void
     {
         parent::boot();
-        static::creating(function (ResponseSentiment $model) {
-            if (empty($model->{$model->getKeyName()})) {
-                $model->{$model->getKeyName()} = (string) Str::ulid();
+        static::creating(function ($m) {
+            if (empty($m->{$m->getKeyName()})) {
+                $m->{$m->getKeyName()} = (string) \Illuminate\Support\Str::ulid();
             }
         });
     }
