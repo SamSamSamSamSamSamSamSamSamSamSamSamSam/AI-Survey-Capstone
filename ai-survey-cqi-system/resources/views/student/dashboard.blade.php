@@ -9,6 +9,9 @@
         .topbar h1 { font-size: 1.1rem; }
         .badge { background: #d1fae5; color: #065f46; font-size: .72rem; font-weight: 700; padding: .2rem .55rem; border-radius: 999px; margin-left: .4rem; }
         .user-meta { font-size: .85rem; color: #6b7280; }
+        .btn { display: inline-block; padding: .5rem 1rem; border-radius: 6px; text-decoration: none; font-size: .9rem; }
+        .btn-primary { background: #3b82f6; color: #fff; }
+        .btn-primary:hover { background: #2563eb; }
         .btn-logout { background: none; border: 1px solid #e5e7eb; padding: .4rem .9rem; border-radius: 6px; font-size: .85rem; cursor: pointer; color: #374151; }
         .btn-logout:hover { background: #f3f4f6; }
         .card { background: #fff; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,.06); color: #6b7280; font-size: .9rem; }
@@ -34,6 +37,11 @@
 
 <div class="card">
     Student panel coming soon — your enrolled courses and pending surveys will appear here.
+</div>
+
+<div class="card" style="margin-top: 1rem;">
+    {{-- Take survey link --}}
+    <a href="{{ route('survey.index') }}" class="btn btn-primary">Take Survey</a>
 </div>
 
 </body>

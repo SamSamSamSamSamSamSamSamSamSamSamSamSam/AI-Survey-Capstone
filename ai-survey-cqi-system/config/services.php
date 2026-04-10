@@ -45,8 +45,9 @@ return [
 
     // ── Gemini AI ────────────────────────────────────────────────────────────
     'gemini' => [
-        'api_key' => env('GEMINI_API_KEY', 'AIzaSyBI_guj9G9ByDo0lgsoi8BWvWjnITXKGTU'),
+        'api_key' => env('GEMINI_API_KEY', ''),
         'model'   => env('GEMINI_MODEL',   'gemini-2.5-flash'),
+        'key'     => env('GEMINI_API_KEY',     ''),
     ],
 
 ];

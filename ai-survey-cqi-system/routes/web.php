@@ -7,6 +7,7 @@ use App\Http\Controllers\Faculty\DashboardController as FacultyDashboard;
 use App\Http\Controllers\Student\DashboardController as StudentDashboard;
 use App\Http\Controllers\Survey\SurveyTakeController;
 use App\Http\Controllers\Faculty\MyReportsController;
+use App\Http\Controllers\Admin\GeminiTestController;
 use Illuminate\Support\Facades\Route;
 // use App\Http\Controllers\Admin\UserController;
 
@@ -60,6 +61,9 @@ Route::middleware('auth')->group(function () {
                ->prefix('admin')->name('admin.')
                ->group(function () {
                     Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
+
+                    //Gemini Test Route
+                    Route::get('/gemini/test', [GeminiTestController::class, 'test'])->name('gemini.test');
 
                          // ↓ User management routes go here (from user-management module)
                          require __DIR__ . '/admin_users.php';
