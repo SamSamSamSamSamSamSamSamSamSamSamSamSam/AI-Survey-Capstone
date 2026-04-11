@@ -149,7 +149,7 @@
     {{-- Pagination --}}
     @if($users->hasPages())
         <div class="dash-card__body border-top d-flex justify-content-center py-3">
-            {{ $users->onEachSide(1)->links('vendor.pagination.cpagination') }}
+            {{ $users->onEachSide(1)->links('vendor.pagination.bootstrap-5') }}
         </div>
     @endif
 

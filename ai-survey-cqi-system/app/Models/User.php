@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Notifications\Messages\MailMessage;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -79,5 +82,25 @@ class User extends Authenticatable implements MustVerifyEmail
             'student' => route('student.dashboard'),
             default   => route('no-role.error'), // add a route for users without roles later
         };
+    }
+
+
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new class extends VerifyEmail {
+            public function toMail($notifiable)
+            {
+                $verificationUrl = $this->verificationUrl($notifiable);
+
+                return (new MailMessage)
+                    ->subject('Verify Your DCISM AI Survey Account')
+                    ->greeting('Hello, ' . $notifiable->name . '!')
+                    ->line('Welcome to the AI Survey System.')
+                    ->line('Please click the button below to verify your email address and complete your onboarding.')
+                    ->action('Verify Email Address', $verificationUrl)
+                    ->line('If you did not create an account, you can safely ignore this email.')
+                    ->salutation('Best regards, ' . config('app.name'));
+            }
+        });
     }
 }
