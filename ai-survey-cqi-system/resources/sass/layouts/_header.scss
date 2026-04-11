@@ -1,0 +1,30 @@
+.topbar {
+
+  background: var(--cqi-surface);
+
+  padding: 1rem 1.75rem;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  border-bottom: 1px solid rgba(0,0,0,.05);
+
+}
+
+.topbar-title {
+
+  font-size: 1.2rem;
+  font-weight: 600;
+
+}
+
+.topbar-user {
+
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  font-size: .85rem;
+
+}

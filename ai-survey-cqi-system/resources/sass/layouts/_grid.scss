@@ -1,0 +1,26 @@
+body {
+
+  background: var(--cqi-bg);
+  color: var(--cqi-text);
+
+}
+
+/* Content wrapper */
+
+.main-content {
+
+  margin-left: $sidebar-width;
+  padding: 2rem;
+
+}
+
+/* Card surfaces */
+
+.card {
+
+  background: var(--cqi-card-bg);
+  border: none;
+  border-radius: $card-radius;
+  box-shadow: $card-shadow;
+
+}

@@ -2,35 +2,54 @@
 // app.scss  —  Main SCSS entry point
 // =============================================================================
 
-// 1. Variable overrides — must come BEFORE Bootstrap
-@import 'variables';
+/* ========================================
+   ABSTRACTS
+======================================== */
+@import "abstracts/functions";
+@import "abstracts/variables";
+@import "abstracts/mixins";
 
-// 2. Bootstrap full source
-@import 'bootstrap/scss/bootstrap';
-
-// 3. Bootstrap Icons (npm install bootstrap-icons)
+/* ========================================
+   BOOTSTRAP
+======================================== */
+@import "vendors/bootstrap";
 $bootstrap-icons-font-dir: "bootstrap-icons/font/fonts"; // fix needed for correct font path
 @import 'bootstrap-icons/font/bootstrap-icons';
 
-// 4. Layout partials
-@import 'layouts/sidebar';
-@import 'layouts/layout';
-@import 'layouts/pagination';
+/* ========================================
+   BASE
+======================================== */
+@import "base/theme";
+@import "base/reset";
+@import "base/typography";
 
-// 5. Shared components — loaded globally, available on every page
-@import 'components/page-header';
-@import 'components/search';
-@import 'components/badges';
-@import 'components/buttons';
+/* ========================================
+   LAYOUTS
+======================================== */
+@import "layouts/app";
+@import "layouts/grid";
+@import "layouts/sidebar";
+@import "layouts/header";
 
-// 6. Page-specific partials
-// Previously compiled separately via @push('styles') in each blade view.
-// Now bundled here so all styles go through a single Vite entry point.
-// Admin page styles
-@import 'pages/admin/department';
-@import 'pages/admin/dashboard';
-@import 'pages/admin/users';
-@import 'pages/admin/cqi';
-// Student page styles
+/* ========================================
+   COMPONENTS
+======================================== */
+@import "components/buttons";
+@import "components/cards";
+@import "components/forms";
+@import "components/breadcrumbs";
+@import "components/status";
+@import "components/ai-loading";
+@import "components/alerts";
+@import "components/theme-toggle";
 
-// Teacher page styles
+/* ========================================
+   PAGES
+======================================== */
+@import "pages/login";
+@import "pages/admin";
+@import "pages/faculty";
+
+/* ========================================
+   NAMESPACE
+======================================== */

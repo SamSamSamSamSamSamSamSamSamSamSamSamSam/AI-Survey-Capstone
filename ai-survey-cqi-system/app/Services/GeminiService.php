@@ -13,7 +13,7 @@ class GeminiService
 
     public function __construct()
     {
-        $this->apiKey  = config('services.gemini.api_key', 'AIzaSyBI_guj9G9ByDo0lgsoi8BWvWjnITXKGTU');
+        $this->apiKey  = config('services.gemini.api_key', '');
         $this->model   = config('services.gemini.model', 'gemini-2.5-flash');
         $this->baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
     }

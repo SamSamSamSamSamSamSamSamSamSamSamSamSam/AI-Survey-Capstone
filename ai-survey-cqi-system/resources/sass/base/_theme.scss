@@ -1,0 +1,43 @@
+/* =====================================
+   THEME VARIABLES
+===================================== */
+
+:root {
+
+  /* BACKGROUNDS */
+
+  --cqi-bg: #{$bg-light};
+  --cqi-surface: #{$surface-light};
+
+  /* TEXT */
+
+  --cqi-text: #{$text-light};
+
+  /* SIDEBAR */
+
+  --cqi-sidebar-bg: #{$brand-primary};
+  --cqi-sidebar-text: #ffffff;
+
+  /* CARD */
+
+  --cqi-card-bg: #ffffff;
+
+}
+
+/* ================================
+   DARK MODE
+================================ */
+
+[data-bs-theme="dark"] {
+
+  --cqi-bg: #{$bg-dark};
+  --cqi-surface: #{$surface-dark};
+
+  --cqi-text: #{$text-dark};
+
+  --cqi-sidebar-bg: #0b2c47;
+  --cqi-sidebar-text: #e2e8f0;
+
+  --cqi-card-bg: #1e293b;
+
+}

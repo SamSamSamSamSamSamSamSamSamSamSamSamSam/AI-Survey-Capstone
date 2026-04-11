@@ -13,13 +13,21 @@ use Illuminate\Support\Facades\Route;
 
 // ---------------------------------------------------------------------------
 // Redirect root to login
+// update: if authenticated, redirect to their dashboard instead of login page
 // ---------------------------------------------------------------------------
-Route::get('/', fn () => redirect()->route('login'))->name('home');
+Route::get('/', function () {
+    if (auth()->check()) {
+        return redirect()->to(auth()->user()->dashboardRoute());
+    }
+
+    return redirect()->route('login');
+})->name('home');
 
 // ---------------------------------------------------------------------------
 // Guest-only routes
+// update: use middleware to redirect authenticated users away from login page
 // ---------------------------------------------------------------------------
-Route::middleware('guest')->group(function () {
+Route::middleware('redirect.authenticated')->group(function () {
     Route::get('/login',  [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
 });

@@ -1,0 +1,278 @@
+// =============================================================================
+// layouts/_sidebar.scss
+// Sidebar + overlay styles
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Layout wrapper — flex row that holds sidebar + main
+// -----------------------------------------------------------------------------
+.layout-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+// -----------------------------------------------------------------------------
+// Sidebar
+// -----------------------------------------------------------------------------
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1030;
+    width: $sidebar-width;
+    background-color: $sidebar-bg;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.12);
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: $transition-base;
+
+    // Custom scrollbar
+    &::-webkit-scrollbar          { width: 4px; }
+    &::-webkit-scrollbar-track    { background: transparent; }
+    &::-webkit-scrollbar-thumb    { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
+}
+
+.sidebar-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+// -----------------------------------------------------------------------------
+// Brand
+// -----------------------------------------------------------------------------
+.sidebar-brand-wrap {
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid $sidebar-border;
+    flex-shrink: 0;
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    color: $sidebar-text;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: 0.02em;
+
+    &:hover { color: $sidebar-text; }
+}
+
+.sidebar-brand-logo {
+    height: 36px;
+    width: 36px;
+    object-fit: contain;
+    margin-right: 0.65rem;
+    flex-shrink: 0;
+}
+
+.sidebar-brand-text {
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+// -----------------------------------------------------------------------------
+// User info — compact horizontal row in the footer
+// -----------------------------------------------------------------------------
+.sidebar-user {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.85rem 0.65rem;
+    min-width: 0; // allow text truncation inside flex children
+}
+
+.sidebar-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: $primary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba($primary, 0.35);
+}
+
+.sidebar-user-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.sidebar-user-name {
+    color: $sidebar-text;
+    font-weight: 600;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+    margin-bottom: 0.2rem;
+}
+
+// Role badges — base styles from components/_badges.scss (loaded via app.scss)
+// Sidebar uses the --on-dark modifier for light text on dark background
+
+// -----------------------------------------------------------------------------
+// Navigation
+// -----------------------------------------------------------------------------
+.sidebar-nav {
+    flex: 1;
+    padding: 0.75rem 0.75rem 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu-item {
+    margin-bottom: 2px;
+
+    // Stagger animation on page load
+    @for $i from 1 through 10 {
+        &:nth-child(#{$i}) .sidebar-menu-link {
+            animation-delay: #{$i * 0.05}s;
+        }
+    }
+}
+
+.sidebar-menu-link {
+    display: flex;
+    align-items: center;
+    padding: 0.7rem 0.85rem;
+    border-radius: $border-radius;
+    color: $sidebar-muted;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: $transition-base;
+    white-space: nowrap;
+    overflow: hidden;
+    animation: sidebarFadeIn 0.3s ease-out both;
+
+    &:hover {
+        color: $sidebar-text;
+        background-color: $sidebar-hover-bg;
+        transform: translateX(3px);
+    }
+
+    &.is-active {
+        color: $sidebar-text;
+        background-color: $primary;
+        box-shadow: 0 3px 10px rgba($primary, 0.35);
+    }
+}
+
+.sidebar-menu-icon {
+    font-size: 1.1rem;
+    margin-right: 0.7rem;
+    flex-shrink: 0;
+    width: 1.2rem;
+    text-align: center;
+}
+
+.sidebar-menu-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+// Section divider labels (non-clickable group headings)
+.sidebar-menu-section {
+    list-style: none;
+    padding: 0.85rem 0.85rem 0.3rem;
+    margin-top: 0.25rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba($sidebar-text, 0.4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    user-select: none;
+}
+
+// -----------------------------------------------------------------------------
+// Sidebar footer / logout
+// -----------------------------------------------------------------------------
+.sidebar-footer {
+    padding: 0.75rem;
+    border-top: 1px solid $sidebar-border;
+    flex-shrink: 0;
+}
+
+.sidebar-logout-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    border-radius: $border-radius;
+    color: $sidebar-muted;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: transparent;
+    transition: $transition-base;
+    cursor: pointer;
+
+    &:hover {
+        color: #fff;
+        background-color: rgba($danger, 0.2);
+        border-color: rgba($danger, 0.45);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Mobile overlay
+// -----------------------------------------------------------------------------
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1025;
+    background-color: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+
+    &.is-visible {
+        display: block;
+        opacity: 1;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// Animations
+// -----------------------------------------------------------------------------
+@keyframes sidebarFadeIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+// -----------------------------------------------------------------------------
+// Responsive — mobile
+// -----------------------------------------------------------------------------
+@include media-breakpoint-down(md) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &.is-open {
+            transform: translateX(0);
+        }
+    }
+}
