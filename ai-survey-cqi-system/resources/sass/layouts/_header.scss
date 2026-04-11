@@ -1,30 +1,151 @@
+// ============================================================
+// _header.scss  (topbar)
+// ============================================================
+
 .topbar {
-
-  background: var(--cqi-surface);
-
-  padding: 1rem 1.75rem;
-
+  position: sticky;
+  top: 0;
+  height: $topbar-height;
+  background: $light-topbar-bg;
+  border-bottom: 1px solid $light-border;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 100;
+  transition: background .25s ease, border-color .25s ease;
 
-  border-bottom: 1px solid rgba(0,0,0,.05);
+  [data-bs-theme="dark"] & {
+    background: $dark-topbar-bg;
+    border-color: $dark-border;
+  }
+}
 
+// ---- Left: hamburger + title + breadcrumbs ----
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.sidebar-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  border-radius: $radius-md;
+  border: 1px solid $light-border;
+  background: transparent;
+  color: $light-text-muted;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .15s, color .15s;
+
+  &:hover { background: $light-bg; color: $light-text-primary; }
+
+  [data-bs-theme="dark"] & {
+    border-color: $dark-border;
+    color: $dark-text-muted;
+    &:hover { background: rgba(255,255,255,.05); color: $dark-text-primary; }
+  }
+
+  @media (max-width: 991.98px) { display: flex; }
+}
+
+.topbar-title-group {
+  min-width: 0;
 }
 
 .topbar-title {
+  font-family: $font-heading;
+  font-size: 1rem;
+  font-weight: 700;
+  color: $light-text-primary;
+  margin: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
-  font-size: 1.2rem;
-  font-weight: 600;
-
+  [data-bs-theme="dark"] & { color: $dark-text-primary; }
 }
 
-.topbar-user {
+// ---- Breadcrumbs ----
+.breadcrumbs {
+  .breadcrumb {
+    margin: 0;
+    font-size: .75rem;
+    --bs-breadcrumb-divider-color: #{$light-text-muted};
+    --bs-breadcrumb-item-active-color: #{$light-text-muted};
+  }
 
+  .breadcrumb-item a {
+    color: $brand-action;
+    &:hover { text-decoration: underline; }
+  }
+
+  [data-bs-theme="dark"] & {
+    .breadcrumb {
+      --bs-breadcrumb-divider-color: #{$dark-text-muted};
+      --bs-breadcrumb-item-active-color: #{$dark-text-muted};
+    }
+  }
+}
+
+// ---- Right: user area ----
+.topbar-right {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 12px;
+  flex-shrink: 0;
+}
 
-  font-size: .85rem;
+.topbar-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: $radius-md;
+  border: 1px solid $light-border;
+  background: transparent;
+  cursor: pointer;
+  transition: background .15s;
 
+  &:hover { background: $light-bg; }
+
+  [data-bs-theme="dark"] & {
+    border-color: $dark-border;
+    &:hover { background: rgba(255,255,255,.05); }
+  }
+}
+
+.topbar-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $brand-action, $brand-accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.topbar-user-name {
+  font-size: .8rem;
+  font-weight: 500;
+  color: $light-text-primary;
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  [data-bs-theme="dark"] & { color: $dark-text-primary; }
+}
+
+.topbar-user-id {
+  font-size: .7rem;
+  color: $light-text-muted;
+
+  [data-bs-theme="dark"] & { color: $dark-text-muted; }
 }

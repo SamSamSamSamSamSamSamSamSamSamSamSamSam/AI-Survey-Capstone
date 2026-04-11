@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class CourseOffering extends Model
 {
@@ -18,6 +18,7 @@ class CourseOffering extends Model
         'subject_id',
         'semester_id',
         'teacher_id',
+        'block_id',
         'group_number',
         'offering_type_id',
     ];
@@ -36,50 +37,24 @@ class CourseOffering extends Model
     // Relationships
     // -------------------------------------------------------------------------
 
-    public function subject()
-    {
-        return $this->belongsTo(Subject::class);
-    }
-
-    public function semester()
-    {
-        return $this->belongsTo(Semester::class);
-    }
-
-    public function teacher()
-    {
-        return $this->belongsTo(User::class, 'teacher_id');
-    }
-
-    public function offeringType()
-    {
-        return $this->belongsTo(OfferingType::class);
-    }
-
-    public function enrollments()
-    {
-        return $this->hasMany(Enrollment::class, 'offering_id');
-    }
-
-    public function surveys()
-    {
-        return $this->hasMany(Survey::class, 'offering_id');
-    }
+    public function subject()      { return $this->belongsTo(Subject::class); }
+    public function semester()     { return $this->belongsTo(Semester::class); }
+    public function teacher()      { return $this->belongsTo(User::class, 'teacher_id'); }
+    public function block()        { return $this->belongsTo(Block::class); }
+    public function offeringType() { return $this->belongsTo(OfferingType::class); }
+    public function enrollments()  { return $this->hasMany(Enrollment::class, 'offering_id'); }
+    public function surveys()      { return $this->hasMany(Survey::class, 'offering_id'); }
 
     // -------------------------------------------------------------------------
     // Scopes
     // -------------------------------------------------------------------------
 
-    /**
-     * Only offerings for the currently active semester.
-     * Does NOT restrict historical data — call without scope for full history.
-     */
     public function scopeCurrentSemester($query)
     {
         $active = Semester::current();
         return $active
             ? $query->where('semester_id', $active->id)
-            : $query->whereRaw('1 = 0'); // no active semester → return nothing
+            : $query->whereRaw('1 = 0');
     }
 
     public function scopeForSemester($query, int|string $semesterId)
@@ -94,6 +69,12 @@ class CourseOffering extends Model
     public function getDisplayNameAttribute(): string
     {
         $group = $this->group_number ? " (Group {$this->group_number})" : '';
-        return "{$this->subject->course_code} — {$this->subject->name}{$group}";
+        $block = $this->block ? " [{$this->block->name}]" : '';
+        return "{$this->subject->course_code} — {$this->subject->name}{$group}{$block}";
+    }
+
+    public function isBlockOffering(): bool
+    {
+        return $this->block_id !== null;
     }
 }

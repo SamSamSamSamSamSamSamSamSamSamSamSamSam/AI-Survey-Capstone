@@ -1,26 +1,33 @@
-body {
+// ============================================================
+// _grid.scss  (app shell layout)
+// ============================================================
 
-  background: var(--cqi-bg);
-  color: var(--cqi-text);
-
+.app-wrapper {
+  display: flex;
+  min-height: 100vh;
 }
 
-/* Content wrapper */
-
-.main-content {
-
+.main {
   margin-left: $sidebar-width;
-  padding: 2rem;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: $light-bg;
+  transition: background .25s ease;
 
+  [data-bs-theme="dark"] & { background: $dark-bg; }
+
+  @media (max-width: 991.98px) {
+    margin-left: 0;
+  }
 }
 
-/* Card surfaces */
+.content {
+  flex: 1;
+  padding: 24px;
 
-.card {
-
-  background: var(--cqi-card-bg);
-  border: none;
-  border-radius: $card-radius;
-  box-shadow: $card-shadow;
-
+  @media (max-width: 575.98px) {
+    padding: 16px;
+  }
 }

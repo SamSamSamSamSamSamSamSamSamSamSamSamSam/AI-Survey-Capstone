@@ -1,107 +1,179 @@
-@extends('admin.layouts.app')
+@extends('layouts.app')
 @section('title', 'User Details')
 
-@push('styles')
-<style>
-        /* *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; background: #f3f4f6; color: #111; padding: 2rem; } */
-        .page-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
-        .page-header h1 { font-size: 1.3rem; }
-        .back { font-size: .875rem; color: #4f46e5; text-decoration: none; }
-        .back:hover { text-decoration: underline; }
-        .card { background: #fff; border-radius: 8px; padding: 2rem; max-width: 600px; box-shadow: 0 1px 6px rgba(0,0,0,.07); }
-        .detail-row { display: flex; padding: .65rem 0; border-bottom: 1px solid #f3f4f6; font-size: .9rem; }
-        .detail-row:last-of-type { border-bottom: none; }
-        .detail-label { width: 160px; flex-shrink: 0; color: #6b7280; font-weight: 500; }
-        .detail-value { flex: 1; color: #111; }
-        .badge { display: inline-block; padding: .2rem .55rem; border-radius: 999px; font-size: .72rem; font-weight: 600; margin-right: .3rem; }
-        .badge-admin   { background: #fee2e2; color: #dc2626; }
-        .badge-faculty { background: #dbeafe; color: #1d4ed8; }
-        .badge-student { background: #d1fae5; color: #065f46; }
-        .badge-default { background: #f3f4f6; color: #374151; }
-        .actions { display: flex; gap: .65rem; flex-wrap: wrap; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid #f3f4f6; }
-        .btn { padding: .5rem 1.1rem; border-radius: 6px; font-size: .875rem; cursor: pointer; text-decoration: none; border: none; }
-        .btn-primary { background: #4f46e5; color: #fff; }
-        .btn-primary:hover { background: #4338ca; }
-        .btn-secondary { background: #e5e7eb; color: #374151; }
-        .btn-secondary:hover { background: #d1d5db; }
-        .btn-warning { background: #fef3c7; color: #92400e; }
-        .btn-warning:hover { background: #fde68a; }
-        .btn-danger { background: #fee2e2; color: #dc2626; }
-        .btn-danger:hover { background: #fecaca; }
-        .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; border-radius: 6px; padding: .75rem 1rem; margin-bottom: 1rem; font-size: .875rem; }
-    </style>
-@endpush
-
-@section('content')
-<div class="page-header">
-    <a href="{{ route('admin.users.index') }}" class="back">← Back to Users</a>
-    <h1>User Details</h1>
-</div>
-
-@if (session('success'))
-    <div class="alert-success" style="max-width:600px; margin-bottom:1.25rem;">{{ session('success') }}</div>
-@endif
-
-<div class="card">
-
-    <div class="detail-row">
-        <span class="detail-label">ID Number</span>
-        <span class="detail-value">{{ $user->user_id_number }}</span>
-    </div>
-    <div class="detail-row">
-        <span class="detail-label">Full Name</span>
-        <span class="detail-value">{{ $user->name }}</span>
-    </div>
-    <div class="detail-row">
-        <span class="detail-label">Email</span>
-        <span class="detail-value">{{ $user->email }}</span>
-    </div>
-    <div class="detail-row">
-        <span class="detail-label">Roles</span>
-        <span class="detail-value">
-            @forelse ($user->roles as $role)
-                <span class="badge badge-{{ $role->name }}">{{ ucfirst($role->name) }}</span>
-            @empty
-                <span class="badge badge-default">No Role</span>
-            @endforelse
-        </span>
-    </div>
-    <div class="detail-row">
-        <span class="detail-label">Email Verified</span>
-        <span class="detail-value">
-            {{ $user->email_verified_at ? $user->email_verified_at->format('M d, Y h:i A') : 'Not verified' }}
-        </span>
-    </div>
-    <div class="detail-row">
-        <span class="detail-label">Status</span>
-        <span class="detail-value">{{ $user->trashed() ? 'Deactivated' : 'Active' }}</span>
-    </div>
-    <div class="detail-row">
-        <span class="detail-label">Created</span>
-        <span class="detail-value">{{ $user->created_at->format('M d, Y h:i A') }}</span>
-    </div>
-
-    <div class="actions">
-        <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-primary">Edit</a>
-
-        {{-- Reset Password --}}
-        <form method="POST" action="{{ route('admin.users.reset-password', $user->id) }}" onsubmit="return confirm('Send a new password to {{ $user->email }}?')">
-            @csrf
-            @method('PATCH')
-            <button type="submit" class="btn btn-warning">Reset Password</button>
-        </form>
-
-        {{-- Soft Delete --}}
-        @if (! $user->trashed() && $user->id !== auth()->id())
-            <form method="POST" action="{{ route('admin.users.destroy', $user->id) }}" onsubmit="return confirm('Deactivate this user?')">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-danger">Deactivate</button>
-            </form>
-        @endif
-    </div>
-
-</div>
+@section('breadcrumbs')
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.users.index') }}">Users</a></li>
+    <li class="breadcrumb-item active">{{ $user->name }}</li>
+</ol>
 @endsection
 
+@section('content')
+
+<div class="page-header">
+    <div>
+        <h2 class="page-heading">User Details</h2>
+        <p class="page-subheading">Viewing profile for <strong>{{ $user->name }}</strong></p>
+    </div>
+    <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back to Users
+    </a>
+</div>
+
+<div class="show-page-layout">
+
+    {{-- ===== LEFT: Profile card ===== --}}
+    <div class="show-profile-card">
+
+        {{-- Avatar --}}
+        <div class="profile-avatar">
+            {{ strtoupper(substr($user->name, 0, 2)) }}
+        </div>
+
+        <h3 class="profile-name">{{ $user->name }}</h3>
+        <p class="profile-id">{{ $user->user_id_number }}</p>
+
+        <div class="profile-roles">
+            @forelse ($user->roles as $role)
+                <span class="role-pill role-pill--{{ $role->name }}">{{ ucfirst($role->name) }}</span>
+            @empty
+                <span class="role-pill role-pill--none">No Role</span>
+            @endforelse
+        </div>
+
+        <div class="profile-status mt-3">
+            @if ($user->trashed())
+                <span class="status-pill status-pill--inactive">
+                    <i class="bi bi-x-circle me-1"></i>Deactivated
+                </span>
+            @else
+                <span class="status-pill status-pill--active">
+                    <i class="bi bi-check-circle me-1"></i>Active
+                </span>
+            @endif
+        </div>
+
+    </div>
+
+    {{-- ===== RIGHT: Details + Actions ===== --}}
+    <div class="show-details-col">
+
+        {{-- Detail card --}}
+        <div class="card mb-3">
+            <div class="card-body p-0">
+
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="bi bi-person-badge me-2 text-muted"></i>ID Number
+                    </span>
+                    <span class="detail-value text-mono">{{ $user->user_id_number }}</span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="bi bi-person me-2 text-muted"></i>Full Name
+                    </span>
+                    <span class="detail-value">{{ $user->name }}</span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="bi bi-envelope me-2 text-muted"></i>Email
+                    </span>
+                    <span class="detail-value">{{ $user->email }}</span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="bi bi-shield-check me-2 text-muted"></i>Email Verified
+                    </span>
+                    <span class="detail-value">
+                        @if ($user->email_verified_at)
+                            <span class="verified-badge verified-badge--yes">
+                                <i class="bi bi-check-circle-fill"></i>
+                                {{ $user->email_verified_at->format('M d, Y h:i A') }}
+                            </span>
+                        @else
+                            <span class="verified-badge verified-badge--no">
+                                <i class="bi bi-dash-circle"></i> Not verified
+                            </span>
+                        @endif
+                    </span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="bi bi-calendar me-2 text-muted"></i>Created
+                    </span>
+                    <span class="detail-value text-muted-sm">
+                        {{ $user->created_at->format('M d, Y h:i A') }}
+                    </span>
+                </div>
+
+                <div class="detail-row detail-row--last">
+                    <span class="detail-label">
+                        <i class="bi bi-clock-history me-2 text-muted"></i>Last Updated
+                    </span>
+                    <span class="detail-value text-muted-sm">
+                        {{ $user->updated_at->format('M d, Y h:i A') }}
+                    </span>
+                </div>
+
+            </div>
+        </div>
+
+        {{-- Actions card --}}
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">Actions</h6>
+                <div class="d-flex flex-wrap gap-2">
+
+                    @if (! $user->trashed())
+                        <a href="{{ route('admin.users.edit', $user->id) }}"
+                           class="btn btn-primary btn-sm">
+                            <i class="bi bi-pencil me-1"></i> Edit User
+                        </a>
+
+                        <form method="POST"
+                              action="{{ route('admin.users.reset-password', $user->id) }}"
+                              data-confirm="Send a new password to {{ $user->email }}?">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="btn btn-sm btn-warning">
+                                <i class="bi bi-key me-1"></i> Reset Password
+                            </button>
+                        </form>
+
+                        @if ($user->id !== auth()->id())
+                            <form method="POST"
+                                  action="{{ route('admin.users.destroy', $user->id) }}"
+                                  data-confirm="Deactivate {{ $user->name }}? They will lose system access.">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-person-dash me-1"></i> Deactivate
+                                </button>
+                            </form>
+                        @endif
+
+                    @else
+                        <form method="POST" action="{{ route('admin.users.restore', $user->id) }}">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="btn btn-sm btn-success">
+                                <i class="bi bi-person-check me-1"></i> Restore User
+                            </button>
+                        </form>
+                    @endif
+
+                </div>
+            </div>
+        </div>
+
+    </div>{{-- /.show-details-col --}}
+
+</div>{{-- /.show-page-layout --}}
+
+@endsection
+
+@push('scripts')
+<script src="{{ asset('js/modules/confirm-action.js') }}"></script>
+@endpush

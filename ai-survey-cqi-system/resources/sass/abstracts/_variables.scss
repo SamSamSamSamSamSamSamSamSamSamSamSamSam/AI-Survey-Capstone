@@ -1,37 +1,69 @@
-/* =========================================
-   CQI SYSTEM DESIGN TOKENS
-========================================= */
+// ============================================================
+// _variables.scss
+// Brand tokens & Bootstrap overrides
+// ============================================================
 
-/* ---------- BRAND COLORS ---------- */
+// --- Brand Palette ---
+$brand-primary:       #0a3d62;   // Deep Navy
+$brand-action:        #3498db;   // Bright Blue
+$brand-accent:        #70a1ff;   // Sky Blue
+$brand-success:       #2980b9;   // Steel Blue
+$brand-surface-light: #f1f4f8;   // Alice Blue
+$brand-dark-bg:       #0f172a;   // Midnight Blue
 
-$brand-primary: #0a3d62;        // Deep Navy
-$brand-accent: #3498db;         // Bright Blue
-$brand-highlight: #70a1ff;      // Sky Blue
-$brand-success: #2980b9;        // Steel Blue
+// --- Light Mode Tokens ---
+$light-bg:            $brand-surface-light;
+$light-surface:       #ffffff;
+$light-sidebar-bg:    $brand-primary;
+$light-sidebar-text:  rgba(255, 255, 255, 0.75);
+$light-sidebar-active:#ffffff;
+$light-topbar-bg:     #ffffff;
+$light-border:        #e2e8f0;
+$light-text-primary:  #1e293b;
+$light-text-muted:    #64748b;
 
-/* ---------- BACKGROUNDS ---------- */
+// --- Dark Mode Tokens ---
+$dark-bg:             $brand-dark-bg;
+$dark-surface:        #1e293b;
+$dark-sidebar-bg:     #0b1628;
+$dark-sidebar-text:   rgba(255, 255, 255, 0.65);
+$dark-sidebar-active: #ffffff;
+$dark-topbar-bg:      #1e293b;
+$dark-border:         rgba(255, 255, 255, 0.08);
+$dark-text-primary:   #e2e8f0;
+$dark-text-muted:     #94a3b8;
 
-$bg-light: #f1f4f8;             // Alice Blue
-$bg-dark: #0f172a;              // Midnight Blue
+// --- Layout ---
+$sidebar-width:       260px;
+$topbar-height:       64px;
+$sidebar-collapsed:   72px;
 
-/* ---------- SURFACES ---------- */
+// --- Typography ---
+$font-heading:        'DM Sans', sans-serif;
+$font-body:           'IBM Plex Sans', sans-serif;
+$font-mono:           'IBM Plex Mono', monospace;
 
-$surface-light: #ffffff;
-$surface-dark: #1e293b;
+// --- Radii ---
+$radius-sm:   6px;
+$radius-md:   10px;
+$radius-lg:   14px;
+$radius-xl:   20px;
 
-/* ---------- TYPOGRAPHY ---------- */
+// --- Shadows ---
+$shadow-card: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
+$shadow-elevated: 0 4px 24px rgba(10, 61, 98, 0.12);
 
-$text-light: #1e293b;
-$text-dark: #e2e8f0;
+// --- Bootstrap Overrides ---
+$primary:   $brand-action;
+$success:   #22c55e;
+$danger:    #ef4444;
+$warning:   #f59e0b;
+$info:      $brand-accent;
 
-/* ---------- LAYOUT ---------- */
+$border-radius:    $radius-sm;
+$border-radius-lg: $radius-md;
+$border-radius-xl: $radius-lg;
 
-$sidebar-width: 260px;
-$header-height: 64px;
-
-/* ---------- UI ---------- */
-
-$card-radius: 12px;
-$transition-speed: 0.2s;
-
-$card-shadow: 0 4px 10px rgba(0,0,0,0.05);
+$font-family-sans-serif: $font-body;
+$headings-font-family:   $font-heading;
+$headings-font-weight:   600;

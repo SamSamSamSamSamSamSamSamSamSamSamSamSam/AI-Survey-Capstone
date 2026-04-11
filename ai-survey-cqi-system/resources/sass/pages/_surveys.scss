@@ -1,0 +1,424 @@
+// ============================================================
+// _surveys.scss  — Admin survey management pages
+// ============================================================
+
+// ---- Shared helpers (reused from _users) ----
+// .page-header, .page-heading, .page-subheading → defined in _users.scss
+// .data-table, .table-pagination, .empty-state   → defined in _users.scss
+// .role-pill, .status-pill, .btn-icon            → defined in _users.scss
+
+// ---- Count badge ----
+.count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 99px;
+    font-size: .72rem;
+    font-weight: 700;
+    background: rgba($brand-action, .1);
+    color: $brand-action;
+
+    &--responses {
+        background: rgba(#22c55e, .1);
+        color: #16a34a;
+    }
+
+    [data-bs-theme="dark"] & {
+        background: rgba($brand-accent, .15);
+        color: $brand-accent;
+
+        &--responses { background: rgba(#22c55e,.18); color: #4ade80; }
+    }
+}
+
+// ---- Archived status pill ----
+.status-pill--archived {
+    background: rgba($light-text-muted, .1);
+    color: $light-text-muted;
+
+    [data-bs-theme="dark"] & {
+        background: rgba($dark-text-muted, .15);
+        color: $dark-text-muted;
+    }
+}
+
+// ---- Form label optional tag ----
+.form-label-optional {
+    font-size: .72rem;
+    font-weight: 400;
+    color: $light-text-muted;
+    margin-left: 4px;
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+// ---- Form divider ----
+.form-divider {
+    border-color: $light-border;
+    margin: 20px 0;
+    opacity: 1;
+
+    [data-bs-theme="dark"] & { border-color: $dark-border; }
+}
+
+// ============================================================
+// Survey show page
+// ============================================================
+
+// ---- Status banners ----
+.survey-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: $radius-md;
+    font-size: .875rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+
+    i { font-size: 1rem; flex-shrink: 0; }
+
+    &--active {
+        background: rgba(#22c55e, .08);
+        border: 1px solid rgba(#22c55e, .25);
+        color: #15803d;
+
+        [data-bs-theme="dark"] & {
+            background: rgba(#22c55e, .12);
+            border-color: rgba(#22c55e, .3);
+            color: #4ade80;
+        }
+    }
+
+    &--inactive {
+        background: rgba($brand-action, .07);
+        border: 1px solid rgba($brand-action, .18);
+        color: darken($brand-action, 5%);
+
+        [data-bs-theme="dark"] & {
+            background: rgba($brand-accent, .1);
+            border-color: rgba($brand-accent, .2);
+            color: $brand-accent;
+        }
+    }
+}
+
+// ---- Meta grid ----
+.survey-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 16px;
+    align-items: start;
+
+    @media (max-width: 767.98px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+// ---- Card section label ----
+.card-section-label {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: $light-text-muted;
+    margin-bottom: 12px;
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+// ---- Survey description ----
+.survey-description {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid $light-border;
+    font-size: .85rem;
+    color: $light-text-muted;
+    line-height: 1.6;
+
+    [data-bs-theme="dark"] & {
+        border-color: $dark-border;
+        color: $dark-text-muted;
+    }
+}
+
+// ---- Stats display ----
+.survey-stats {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 8px 0;
+}
+
+.survey-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    &__value {
+        font-family: $font-heading;
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: $brand-action;
+        line-height: 1;
+
+        &--muted { color: $light-text-muted; [data-bs-theme="dark"] & { color: $dark-text-muted; } }
+
+        [data-bs-theme="dark"] & { color: $brand-accent; }
+    }
+
+    &__label {
+        font-size: .75rem;
+        color: $light-text-muted;
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+}
+
+.survey-stat-divider {
+    width: 1px;
+    height: 48px;
+    background: $light-border;
+    [data-bs-theme="dark"] & { background: $dark-border; }
+}
+
+// ---- Question type badges ----
+.question-type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 99px;
+    font-size: .72rem;
+    font-weight: 600;
+
+    &--rating {
+        background: rgba($brand-action, .1);
+        color: $brand-action;
+        [data-bs-theme="dark"] & { background: rgba($brand-accent,.18); color: $brand-accent; }
+    }
+
+    &--open {
+        background: rgba(#a855f7, .1);
+        color: #7c3aed;
+        [data-bs-theme="dark"] & { background: rgba(#a855f7,.18); color: #c084fc; }
+    }
+}
+
+// ---- Category tag ----
+.category-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: $radius-sm;
+    background: $light-bg;
+    border: 1px solid $light-border;
+    font-size: .72rem;
+    color: $light-text-muted;
+
+    [data-bs-theme="dark"] & {
+        background: rgba(255,255,255,.05);
+        border-color: $dark-border;
+        color: $dark-text-muted;
+    }
+}
+
+// ---- Drag handle ----
+.drag-handle {
+    cursor: grab;
+    color: $light-text-muted;
+    font-size: 1rem;
+    text-align: center;
+    user-select: none;
+
+    &:active { cursor: grabbing; }
+}
+
+tr.dragging {
+    opacity: .4;
+    background: rgba($brand-action, .04) !important;
+}
+
+tr.drag-over td {
+    background: rgba($brand-action, .06) !important;
+}
+
+// ============================================================
+// Attempts / responses page
+// ============================================================
+
+// ---- Meta strip ----
+.attempts-meta-strip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 18px;
+    background: $light-surface;
+    border: 1px solid $light-border;
+    border-radius: $radius-md;
+    font-size: .85rem;
+
+    [data-bs-theme="dark"] & {
+        background: $dark-surface;
+        border-color: $dark-border;
+    }
+
+    &__item {
+        color: $light-text-muted;
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+
+        strong { color: $light-text-primary; [data-bs-theme="dark"] & { color: $dark-text-primary; } }
+
+        &--count {
+            margin-left: auto;
+            font-weight: 600;
+            color: $brand-action;
+            [data-bs-theme="dark"] & { color: $brand-accent; }
+        }
+    }
+
+    &__sep {
+        width: 1px;
+        height: 16px;
+        background: $light-border;
+        [data-bs-theme="dark"] & { background: $dark-border; }
+    }
+}
+
+// ---- Attempt card ----
+.attempt-card {
+    @include card-base;
+    overflow: hidden;
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 14px 20px;
+        background: $light-bg;
+        border-bottom: 1px solid $light-border;
+
+        [data-bs-theme="dark"] & {
+            background: rgba(255,255,255,.03);
+            border-color: $dark-border;
+        }
+    }
+
+    &__timestamp {
+        font-size: .78rem;
+        color: $light-text-muted;
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+
+    &__body {
+        padding: 4px 0;
+    }
+}
+
+// ---- Response rows ----
+.response-row {
+    padding: 14px 20px;
+    border-bottom: 1px solid $light-border;
+
+    &:last-child { border-bottom: none; }
+
+    [data-bs-theme="dark"] & { border-color: $dark-border; }
+
+    &__meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 5px;
+    }
+
+    &__num {
+        font-size: .72rem;
+        font-weight: 700;
+        color: $light-text-muted;
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+
+    &__question {
+        font-size: .875rem;
+        color: $light-text-primary;
+        margin: 0 0 10px;
+        line-height: 1.5;
+        [data-bs-theme="dark"] & { color: $dark-text-primary; }
+    }
+}
+
+// ---- Rating display ----
+.rating-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.rating-dot {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .75rem;
+    font-weight: 700;
+    background: $light-border;
+    color: $light-text-muted;
+    transition: background .15s;
+
+    &--filled {
+        background: $brand-action;
+        color: #fff;
+    }
+
+    [data-bs-theme="dark"] & {
+        background: rgba(255,255,255,.08);
+        color: $dark-text-muted;
+
+        &--filled { background: $brand-accent; color: $brand-primary; }
+    }
+}
+
+.rating-label {
+    font-size: .8rem;
+    color: $light-text-muted;
+    margin-left: 4px;
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+// ---- Open-ended response ----
+.open-response {
+    background: $light-bg;
+    border: 1px solid $light-border;
+    border-left: 3px solid $brand-action;
+    border-radius: $radius-sm;
+    padding: 10px 14px;
+    font-size: .875rem;
+    color: $light-text-primary;
+    font-style: italic;
+    line-height: 1.6;
+
+    [data-bs-theme="dark"] & {
+        background: rgba(255,255,255,.03);
+        border-color: $dark-border;
+        border-left-color: $brand-accent;
+        color: $dark-text-primary;
+    }
+}
+
+// ---- Sentiment badge ----
+.sentiment-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 8px;
+    padding: 2px 9px;
+    border-radius: 99px;
+    font-size: .7rem;
+    font-weight: 600;
+
+    &--positive { background: rgba(#22c55e,.1); color: #15803d; [data-bs-theme="dark"] & { background: rgba(#22c55e,.18); color: #4ade80; } }
+    &--negative { background: rgba(#ef4444,.1); color: #dc2626; [data-bs-theme="dark"] & { background: rgba(#ef4444,.18); color: #f87171; } }
+    &--neutral  { background: rgba($light-text-muted,.1); color: $light-text-muted; [data-bs-theme="dark"] & { background: rgba($dark-text-muted,.15); color: $dark-text-muted; } }
+}

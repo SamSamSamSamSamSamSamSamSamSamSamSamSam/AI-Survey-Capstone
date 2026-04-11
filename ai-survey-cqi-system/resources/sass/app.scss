@@ -1,55 +1,50 @@
-// =============================================================================
-// app.scss  —  Main SCSS entry point
-// =============================================================================
+// ============================================================
+// app.scss — THE MAIN HUB
+// Load order matters: abstracts → vendors → base → layouts → components → pages
+// ============================================================
 
-/* ========================================
-   ABSTRACTS
-======================================== */
-@import "abstracts/functions";
-@import "abstracts/variables";
-@import "abstracts/mixins";
+// 1. Abstracts (no CSS output — variables/mixins/functions only)
+@import 'abstracts/variables';
+@import 'abstracts/mixins';
+// @import 'abstracts/functions';  // add when needed
 
-/* ========================================
-   BOOTSTRAP
-======================================== */
-@import "vendors/bootstrap";
-$bootstrap-icons-font-dir: "bootstrap-icons/font/fonts"; // fix needed for correct font path
-@import 'bootstrap-icons/font/bootstrap-icons';
+// 2. Vendors (Bootstrap — uses our overridden variables above)
+@import 'vendors/bootstrap';
 
-/* ========================================
-   BASE
-======================================== */
-@import "base/theme";
-@import "base/reset";
-@import "base/typography";
+// 3. Base
+@import 'base/reset';
+@import 'base/typography';
 
-/* ========================================
-   LAYOUTS
-======================================== */
-@import "layouts/app";
-@import "layouts/grid";
-@import "layouts/sidebar";
-@import "layouts/header";
+// 4. Layouts
+@import 'layouts/grid';
+@import 'layouts/sidebar';
+@import 'layouts/header';
+// @import 'layouts/footer';  // add when needed
 
-/* ========================================
-   COMPONENTS
-======================================== */
-@import "components/buttons";
-@import "components/cards";
-@import "components/forms";
-@import "components/breadcrumbs";
-@import "components/status";
-@import "components/ai-loading";
-@import "components/alerts";
-@import "components/theme-toggle";
+// 5. Components
+@import 'components/buttons';
+@import 'components/cards';
+@import 'components/forms';
+// @import 'components/navbar';  // merged into sidebar for now
 
-/* ========================================
-   PAGES
-======================================== */
-@import "pages/login";
-@import "pages/admin";
-@import "pages/faculty";
+// 6. Pages
+@import 'pages/admin';
+@import 'pages/login';
+@import 'pages/users';
+@import 'pages/surveys';
+@import 'pages/survey-templates';
+@import 'pages/question-categories';
+// @import 'pages/faculty';  // add when building faculty views
 
-/* ========================================
-   NAMESPACE
-======================================== */
+// ============================================================
+// Global alert tweaks
+// ============================================================
+.alert {
+  border-radius: $radius-md;
+  font-size: .875rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  i { margin-top: 1px; flex-shrink: 0; }
+}

@@ -7,11 +7,19 @@ use App\Http\Controllers\Admin\ProspectusController;
 use App\Http\Controllers\Admin\SemesterController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\CurriculumController;
+use App\Http\Controllers\Admin\SemesterSetupController;
 use Illuminate\Support\Facades\Route;
 
 // ---------------------------------------------------------------------------
 // ADD inside the admin route group (middleware: auth, verified, role:admin)
 // ---------------------------------------------------------------------------
+
+// Semester Setup Wizard
+Route::get('semester-setup', [SemesterSetupController::class, 'index'])->name('semester-setup.index');
+Route::post('semester-setup/students',   [SemesterSetupController::class, 'importStudents'])  ->name('semester-setup.import-students');
+Route::post('semester-setup/blocks',     [SemesterSetupController::class, 'importBlocks'])    ->name('semester-setup.import-blocks');
+Route::post('semester-setup/offerings',  [SemesterSetupController::class, 'importOfferings']) ->name('semester-setup.import-offerings');
+Route::post('semester-setup/enrollments',[SemesterSetupController::class, 'importEnrollments'])->name('semester-setup.import-enrollments');
 
 Route::resource('programs', ProgramController::class)->except(['show']);
 Route::get('programs/{program}', [ProgramController::class, 'show'])->name('programs.show');

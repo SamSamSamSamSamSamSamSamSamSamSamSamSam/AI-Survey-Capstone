@@ -1,0 +1,27 @@
+// ============================================================
+// _reset.scss  (complements Bootstrap Reboot)
+// ============================================================
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background-color: $light-bg;
+  color: $light-text-primary;
+  transition: background-color .25s ease, color .25s ease;
+
+  &[data-bs-theme="dark"] {
+    background-color: $dark-bg;
+    color: $dark-text-primary;
+  }
+}
+
+a { text-decoration: none; }
+
+img, svg { display: block; max-width: 100%; }
+
+// Remove number spinners
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }

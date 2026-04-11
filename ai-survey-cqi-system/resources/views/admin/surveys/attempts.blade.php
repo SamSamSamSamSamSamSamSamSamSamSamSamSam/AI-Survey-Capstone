@@ -1,66 +1,107 @@
-@extends('admin.layouts.app')
+@extends('layouts.app')
 @section('title', 'Responses — ' . $survey->title)
 
+@section('breadcrumbs')
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.surveys.index') }}">Surveys</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.surveys.show', $survey->id) }}">{{ Str::limit($survey->title, 30) }}</a></li>
+    <li class="breadcrumb-item active">Responses</li>
+</ol>
+@endsection
+
 @section('content')
+
 <div class="page-header">
-    <h1>Responses</h1>
-    <a href="{{ route('admin.surveys.show', $survey->id) }}" class="btn btn-secondary">← Back to Survey</a>
+    <div>
+        <h2 class="page-heading">Survey Responses</h2>
+        <p class="page-subheading">
+            {{ $survey->title }} ·
+            {{ $survey->offering->subject->course_code }} ·
+            {{ $survey->offering->semester->full_label }}
+        </p>
+    </div>
+    <a href="{{ route('admin.surveys.show', $survey->id) }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back to Survey
+    </a>
 </div>
 
-{{-- Survey meta --}}
-<div class="alert alert-info" style="font-size:.875rem;margin-bottom:1.25rem;">
-    <strong>{{ $survey->title }}</strong> &nbsp;·&nbsp;
-    {{ $survey->offering->subject->course_code }} — {{ $survey->offering->subject->name }} &nbsp;·&nbsp;
-    {{ $survey->offering->semester->full_label }} &nbsp;·&nbsp;
-    Target: {{ ucfirst($survey->targetRole->name) }}
-    <span style="float:right;font-weight:600;">{{ $attempts->total() }} response(s)</span>
+{{-- ===== META STRIP ===== --}}
+<div class="attempts-meta-strip mb-4">
+    <div class="attempts-meta-strip__item">
+        <i class="bi bi-people me-1"></i>
+        Target: <strong>{{ ucfirst($survey->targetRole->name) }}</strong>
+    </div>
+    <div class="attempts-meta-strip__sep"></div>
+    <div class="attempts-meta-strip__item">
+        <i class="bi bi-person-workspace me-1"></i>
+        {{ $survey->offering->teacher->name }}
+    </div>
+    <div class="attempts-meta-strip__sep"></div>
+    <div class="attempts-meta-strip__item attempts-meta-strip__item--count">
+        <i class="bi bi-chat-left-text me-1"></i>
+        {{ $attempts->total() }} response(s)
+    </div>
 </div>
 
 @if ($attempts->isEmpty())
     <div class="card">
-        <p class="empty-state">No submitted responses yet.</p>
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="bi bi-chat-left-dots"></i></div>
+            <p class="empty-state-text">No submitted responses yet.</p>
+        </div>
     </div>
 @else
+
     @foreach ($attempts as $attempt)
-    <div class="card" style="margin-bottom:1rem;">
+    <div class="attempt-card mb-3">
 
         {{-- Attempt header --}}
-        <div style="padding:.7rem 1rem;background:#f9fafb;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
-            <div>
-                <span style="font-weight:600;font-size:.9rem;">{{ $attempt->respondent->name }}</span>
-                <span style="color:#6b7280;font-size:.8rem;margin-left:.5rem;">{{ $attempt->respondent->user_id_number }}</span>
+        <div class="attempt-card__header">
+            <div class="d-flex align-items-center gap-3">
+                <div class="user-avatar-sm">
+                    {{ strtoupper(substr($attempt->respondent->name, 0, 2)) }}
+                </div>
+                <div>
+                    <div class="fw-500" style="font-size: .9rem;">
+                        {{ $attempt->respondent->name }}
+                    </div>
+                    <div class="text-muted-sm text-mono">
+                        {{ $attempt->respondent->user_id_number }}
+                    </div>
+                </div>
             </div>
-            <span style="font-size:.78rem;color:#6b7280;">
-                Submitted {{ $attempt->submitted_at->format('M d, Y h:i A') }}
-            </span>
+            <div class="attempt-card__timestamp">
+                <i class="bi bi-clock me-1"></i>
+                {{ $attempt->submitted_at->format('M d, Y h:i A') }}
+            </div>
         </div>
 
         {{-- Responses --}}
-        <div style="padding:1rem;">
+        <div class="attempt-card__body">
             @foreach ($attempt->responses->sortBy('question.order') as $response)
-            <div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid #f3f4f6;">
-                <div style="font-size:.78rem;color:#6b7280;margin-bottom:.25rem;">
-                    Q{{ $response->question->order }}
+            <div class="response-row">
+
+                {{-- Question meta --}}
+                <div class="response-row__meta">
+                    <span class="response-row__num">Q{{ $response->question->order }}</span>
                     @if ($response->question->category)
-                        &nbsp;·&nbsp; <span style="background:#f3f4f6;padding:.1rem .4rem;border-radius:4px;">{{ $response->question->category }}</span>
+                        <span class="category-tag">{{ $response->question->category }}</span>
                     @endif
                 </div>
-                <div style="font-size:.875rem;color:#374151;margin-bottom:.4rem;">
-                    {{ $response->question->question_text }}
-                </div>
 
+                {{-- Question text --}}
+                <p class="response-row__question">{{ $response->question->question_text }}</p>
+
+                {{-- Answer --}}
                 @if ($response->question->isRating())
-                    {{-- Star-like rating display --}}
-                    <div style="display:flex;gap:.3rem;align-items:center;">
+                    <div class="rating-display">
                         @for ($i = 1; $i <= 5; $i++)
-                            <span style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;
-                                {{ $i <= $response->rating_value
-                                    ? 'background:#4f46e5;color:#fff;'
-                                    : 'background:#e5e7eb;color:#9ca3af;' }}">
+                            <div class="rating-dot {{ $i <= $response->rating_value ? 'rating-dot--filled' : '' }}">
                                 {{ $i }}
-                            </span>
+                            </div>
                         @endfor
-                        <span style="font-size:.8rem;color:#6b7280;margin-left:.5rem;">
+                        <span class="rating-label">
                             {{ match((int)$response->rating_value) {
                                 1 => 'Strongly Disagree',
                                 2 => 'Disagree',
@@ -72,24 +113,25 @@
                         </span>
                     </div>
                 @else
-                    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:.6rem .85rem;font-size:.875rem;color:#374151;font-style:italic;">
+                    <div class="open-response">
                         {{ $response->text_response ?: '(no response)' }}
                     </div>
-                    {{-- Sentiment badge if analysed --}}
                     @if ($response->sentiment)
                         @php
                             $label = $response->sentiment->sentimentType->label;
-                            $badgeStyle = match($label) {
-                                'positive' => 'background:#d1fae5;color:#065f46;',
-                                'negative' => 'background:#fee2e2;color:#b91c1c;',
-                                default    => 'background:#f3f4f6;color:#374151;',
+                            $type  = match($label) {
+                                'positive' => 'positive',
+                                'negative' => 'negative',
+                                default    => 'neutral',
                             };
                         @endphp
-                        <span style="display:inline-block;margin-top:.4rem;padding:.15rem .55rem;border-radius:999px;font-size:.7rem;font-weight:600;{{ $badgeStyle }}">
-                            {{ ucfirst($label) }} ({{ number_format($response->sentiment->sentiment_score * 100, 1) }}%)
+                        <span class="sentiment-badge sentiment-badge--{{ $type }}">
+                            {{ ucfirst($label) }}
+                            ({{ number_format($response->sentiment->sentiment_score * 100, 1) }}%)
                         </span>
                     @endif
                 @endif
+
             </div>
             @endforeach
         </div>
@@ -97,6 +139,12 @@
     </div>
     @endforeach
 
-    <div class="pagination">{{ $attempts->links('pagination::simple-tailwind') }}</div>
+    @if ($attempts->hasPages())
+        <div class="table-pagination mt-2">
+            {{ $attempts->links() }}
+        </div>
+    @endif
+
 @endif
+
 @endsection

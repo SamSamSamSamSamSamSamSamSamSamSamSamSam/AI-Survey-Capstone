@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             CurriculumSeeder::class,
             SubjectSeeder::class,
             OfferingTypeSeeder::class,
-            StudentStatusSeeder::class, // Moved up to satisfy Enrollment dependencies
+            EnrollmentTypeSeeder::class,
             SemesterSeeder::class,
             ProspectusSeeder::class,
             CourseOfferingSeeder::class,

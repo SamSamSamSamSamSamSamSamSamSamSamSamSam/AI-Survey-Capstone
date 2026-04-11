@@ -85,6 +85,9 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(false);
 
+            $table->dateTime('start_date')->nullable();
+            $table->dateTime('end_date')->nullable();
+
             $table->timestamps();
             $table->softDeletes(); // deleted_at
 

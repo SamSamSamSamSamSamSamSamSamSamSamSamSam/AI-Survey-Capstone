@@ -1,11 +1,7 @@
 /* Bootstrap variable overrides */
 
-$primary: $brand-primary;
-$link-color: $brand-accent;
-$success: $brand-success;
-
-$body-bg: $bg-light;
-$body-color: $text-light;
-
 /* Import bootstrap */
 @import "bootstrap/scss/bootstrap";
+
+$bootstrap-icons-font-dir: "bootstrap-icons/font/fonts"; // fix needed for correct font path
+@import 'bootstrap-icons/font/bootstrap-icons';

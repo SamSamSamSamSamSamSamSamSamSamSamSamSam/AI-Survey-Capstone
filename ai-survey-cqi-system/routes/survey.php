@@ -4,11 +4,16 @@ use App\Http\Controllers\Admin\QuestionCategoryController;
 use App\Http\Controllers\Admin\SurveyController;
 use App\Http\Controllers\Admin\SurveyQuestionController;
 use App\Http\Controllers\Admin\SurveyTemplateController;
+use App\Http\Controllers\Admin\GlobalSurveyController;
 use Illuminate\Support\Facades\Route;
 
 // ---------------------------------------------------------------------------
 // ADMIN group (middleware: auth, verified, role:admin)
 // ---------------------------------------------------------------------------
+
+// Global Survey Assignment
+Route::get('surveys/global-assign',  [GlobalSurveyController::class, 'create'])->name('surveys.global-assign');
+Route::post('surveys/global-assign', [GlobalSurveyController::class, 'store']) ->name('surveys.global-assign.store');
 
 // Surveys
 Route::resource('surveys', SurveyController::class);

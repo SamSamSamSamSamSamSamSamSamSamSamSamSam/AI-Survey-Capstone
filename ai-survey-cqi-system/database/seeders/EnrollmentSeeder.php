@@ -6,7 +6,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Enrollment;
 use App\Models\CourseOffering;
 use App\Models\User;
-use App\Models\StudentStatus;
+use App\Models\EnrollmentType;
 
 class EnrollmentSeeder extends Seeder
 {
@@ -14,7 +14,7 @@ class EnrollmentSeeder extends Seeder
     {
         $students = User::whereHas('roles', function($query) {
             $query->where('name', 'student');})->get();
-        $statuses = StudentStatus::all();
+        $enrollmentTypes = EnrollmentType::all();
         $offerings = CourseOffering::all();
 
         foreach ($students as $student) {
@@ -30,7 +30,7 @@ class EnrollmentSeeder extends Seeder
                         'offering_id' => $offering->id,
                     ],
                     [
-                        'student_status_id' => $statuses->random()->id,
+                        'enrollment_type_id' => $enrollmentTypes->random()->id,
                     ]
                 );
             }

@@ -28,6 +28,7 @@ class CourseOfferingFactory extends Factory
             'subject_id' => $this->faker->randomElement($subjects)->id,
             'semester_id' => $this->faker->randomElement($semesters)->id,
             'teacher_id' => $this->faker->randomElement($teachers)->id,
+            'block_id' => null, // Can be assigned later if needed
             'group_number' => $this->faker->numberBetween(1, 10),
             'offering_type_id' => $this->faker->randomElement($offeringTypes)->id,
         ];

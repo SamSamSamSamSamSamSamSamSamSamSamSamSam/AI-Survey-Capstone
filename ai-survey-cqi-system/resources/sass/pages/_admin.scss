@@ -1,85 +1,193 @@
+// ============================================================
+// _admin.scss  (dashboard & shared admin patterns)
+// ============================================================
+
+// ---- Dashboard header ----
 .dashboard-header {
-
-  margin-bottom: 1.5rem;
-
+  margin-bottom: 24px;
 }
 
 .dashboard-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $light-text-primary;
+  margin: 0 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 
-  font-size: 1.4rem;
-  font-weight: 600;
-
+  [data-bs-theme="dark"] & { color: $dark-text-primary; }
 }
 
 .dashboard-subtitle {
-
   font-size: .85rem;
-  opacity: .7;
+  color: $light-text-muted;
+  margin: 0;
 
+  [data-bs-theme="dark"] & { color: $dark-text-muted; }
 }
-
-/* ROLE BADGE */
 
 .role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  background: rgba($brand-action, .12);
+  color: $brand-action;
+  vertical-align: middle;
 
-  background: rgba($brand-accent, .15);
-  color: $brand-accent;
-
-  font-size: .7rem;
-  padding: .2rem .5rem;
-  border-radius: 999px;
-
-  margin-left: .5rem;
-
+  [data-bs-theme="dark"] & {
+    background: rgba($brand-accent, .18);
+    color: $brand-accent;
+  }
 }
 
-/* KPI CARDS */
-
-.kpi-card {
-
-  .kpi-label {
-    font-size: .8rem;
-    opacity: .7;
-  }
-
-  .kpi-value {
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin-top: .25rem;
-  }
-
-}
-
-/* STATUS LIST */
-
+// ---- Status list ----
 .status-list {
-
   list-style: none;
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 
   li {
     display: flex;
     align-items: center;
-    gap: .5rem;
-    margin-bottom: .6rem;
-    font-size: .85rem;
-  }
+    gap: 10px;
+    font-size: .875rem;
+    color: $light-text-primary;
 
+    [data-bs-theme="dark"] & { color: $dark-text-primary; }
+  }
 }
 
 .status-dot {
-
-  width: 8px;
-  height: 8px;
+  width: 9px; height: 9px;
   border-radius: 50%;
+  flex-shrink: 0;
 
+  &.success  { background: #22c55e; box-shadow: 0 0 0 3px rgba(#22c55e,.2); }
+  &.pending  { background: $brand-accent; box-shadow: 0 0 0 3px rgba($brand-accent,.2); }
+  &.warning  { background: #f59e0b; box-shadow: 0 0 0 3px rgba(#f59e0b,.2); }
+  &.danger   { background: #ef4444; box-shadow: 0 0 0 3px rgba(#ef4444,.2); }
 }
 
-.status-dot.success {
-  background: #22c55e;
+// ============================================================
+// Skeleton / AI-loading states
+// ============================================================
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
 }
 
-.status-dot.pending {
-  background: $brand-accent;
+.ai-skeleton {
+  @include skeleton-pulse;
+  width: 100%;
+  min-height: 20px;
+  border-radius: $radius-md;
+}
+
+.skeleton-line {
+  @include skeleton-pulse;
+  height: 14px;
+  border-radius: 99px;
+  margin-bottom: 8px;
+
+  &:last-child { width: 65%; }
+}
+
+.skeleton-card {
+  @include card-base;
+  padding: 20px;
+
+  .skeleton-line { @include skeleton-pulse; height: 14px; border-radius: 99px; margin-bottom: 10px; }
+}
+
+// AI Processing banner
+.ai-processing-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba($brand-action, .08);
+  border: 1px solid rgba($brand-action, .2);
+  border-radius: $radius-md;
+  margin-bottom: 20px;
+
+  .spinner-border { width: 1rem; height: 1rem; border-width: 2px; color: $brand-action; }
+
+  span {
+    font-size: .875rem;
+    font-weight: 500;
+    color: $brand-action;
+  }
+
+  [data-bs-theme="dark"] & {
+    background: rgba($brand-accent, .1);
+    border-color: rgba($brand-accent, .25);
+    span { color: $brand-accent; }
+    .spinner-border { color: $brand-accent; }
+  }
+}
+
+// ============================================================
+// _login.scss  (inline — login page specific)
+// ============================================================
+
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $light-bg;
+  padding: 20px;
+
+  [data-bs-theme="dark"] & { background: $dark-bg; }
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  @include card-base;
+  padding: 36px;
+
+  .auth-logo {
+    font-family: $font-heading;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $brand-primary;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .auth-logo-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: $brand-action;
+    }
+
+    [data-bs-theme="dark"] & { color: $brand-accent; }
+  }
+
+  h2 {
+    font-size: 1.375rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: $light-text-primary;
+    [data-bs-theme="dark"] & { color: $dark-text-primary; }
+  }
+
+  .auth-subtitle {
+    font-size: .875rem;
+    color: $light-text-muted;
+    margin-bottom: 28px;
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+  }
 }

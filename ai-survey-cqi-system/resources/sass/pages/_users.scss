@@ -1,0 +1,456 @@
+// ============================================================
+// _users.scss  — Admin user management pages
+// ============================================================
+
+// ============================================================
+// Shared page chrome
+// ============================================================
+
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.page-heading {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: $light-text-primary;
+    margin: 0 0 4px;
+    letter-spacing: -.02em;
+
+    [data-bs-theme="dark"] & { color: $dark-text-primary; }
+}
+
+.page-subheading {
+    font-size: .85rem;
+    color: $light-text-muted;
+    margin: 0;
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+// ============================================================
+// Filter card
+// ============================================================
+
+.filter-card {
+    .card-body { padding: 16px 20px; }
+}
+
+// ============================================================
+// Data table
+// ============================================================
+
+.data-table {
+    font-size: .875rem;
+
+    thead tr {
+        border-bottom: 2px solid $light-border;
+
+        [data-bs-theme="dark"] & { border-color: $dark-border; }
+    }
+
+    thead th {
+        font-size: .72rem;
+        font-weight: 700;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+        color: $light-text-muted;
+        padding: 10px 16px;
+        white-space: nowrap;
+        background: transparent;
+        border: none;
+
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+
+    tbody td {
+        padding: 12px 16px;
+        border-bottom: 1px solid $light-border;
+        color: $light-text-primary;
+        vertical-align: middle;
+
+        [data-bs-theme="dark"] & {
+            border-color: $dark-border;
+            color: $dark-text-primary;
+        }
+    }
+
+    tbody tr {
+        transition: background .12s;
+
+        &:hover td {
+            background: rgba($brand-action, .03);
+            [data-bs-theme="dark"] & { background: rgba(255,255,255,.03); }
+        }
+
+        &:last-child td { border-bottom: none; }
+    }
+
+    tbody tr.row-muted td {
+        opacity: .5;
+    }
+}
+
+.table-pagination {
+    padding: 12px 16px;
+    border-top: 1px solid $light-border;
+
+    [data-bs-theme="dark"] & { border-color: $dark-border; }
+}
+
+// ---- User cell with mini avatar ----
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-avatar-sm {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $brand-action, $brand-accent);
+    color: #fff;
+    font-size: .7rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    letter-spacing: .02em;
+}
+
+.text-mono   { font-family: $font-mono; font-size: .82rem; }
+.text-muted-sm { font-size: .82rem; color: $light-text-muted; [data-bs-theme="dark"] & { color: $dark-text-muted; } }
+.fw-500      { font-weight: 500; }
+
+// ---- Role pills ----
+.role-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 9px;
+    border-radius: 99px;
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    margin-right: 3px;
+
+    &--admin   { background: rgba(#ef4444, .1); color: #dc2626; }
+    &--faculty { background: rgba($brand-action, .1); color: $brand-action; }
+    &--student { background: rgba(#22c55e, .1); color: #16a34a; }
+    &--none    { background: $light-border; color: $light-text-muted; }
+
+    [data-bs-theme="dark"] & {
+        &--admin   { background: rgba(#ef4444, .2); color: #f87171; }
+        &--faculty { background: rgba($brand-action, .2); color: $brand-accent; }
+        &--student { background: rgba(#22c55e, .2); color: #4ade80; }
+        &--none    { background: $dark-border; color: $dark-text-muted; }
+    }
+}
+
+// ---- Status pills ----
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: .72rem;
+    font-weight: 600;
+
+    &--active   { background: rgba(#22c55e, .1); color: #16a34a; }
+    &--inactive { background: rgba(#ef4444, .1); color: #dc2626; }
+
+    [data-bs-theme="dark"] & {
+        &--active   { background: rgba(#22c55e, .2); color: #4ade80; }
+        &--inactive { background: rgba(#ef4444, .2); color: #f87171; }
+    }
+}
+
+// ---- Verified badge ----
+.verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: .78rem;
+    font-weight: 500;
+
+    &--yes { color: #16a34a; [data-bs-theme="dark"] & { color: #4ade80; } }
+    &--no  { color: $light-text-muted; [data-bs-theme="dark"] & { color: $dark-text-muted; } }
+}
+
+// ---- Icon action buttons ----
+.table-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+}
+
+.btn-icon {
+    width: 32px; height: 32px;
+    padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: $radius-md;
+    background: $light-bg;
+    border: 1px solid $light-border;
+    color: $light-text-muted;
+    font-size: .875rem;
+    transition: all .15s;
+
+    &:hover { background: $light-surface; color: $brand-action; border-color: $brand-action; }
+
+    &--warning {
+        &:hover { color: #d97706; border-color: #fde68a; background: #fffbeb; }
+    }
+    &--danger {
+        &:hover { color: #dc2626; border-color: #fecaca; background: #fef2f2; }
+    }
+    &--success {
+        &:hover { color: #16a34a; border-color: #bbf7d0; background: #f0fdf4; }
+    }
+
+    [data-bs-theme="dark"] & {
+        background: rgba(255,255,255,.05);
+        border-color: $dark-border;
+        color: $dark-text-muted;
+
+        &:hover { background: rgba(255,255,255,.1); color: $brand-accent; border-color: $brand-accent; }
+    }
+}
+
+// ---- Empty state ----
+.empty-state {
+    padding: 56px 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.empty-state-icon {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: rgba($brand-action, .08);
+    color: $brand-action;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+
+    [data-bs-theme="dark"] & { background: rgba($brand-accent, .12); color: $brand-accent; }
+}
+
+.empty-state-text {
+    font-size: .9rem;
+    color: $light-text-muted;
+    margin: 0;
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+// ============================================================
+// Form pages (create / edit)
+// ============================================================
+
+.form-page-layout {
+    max-width: 640px;
+}
+
+.form-card {
+    @include card-base;
+    padding: 28px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-top: 4px;
+}
+
+.form-meta {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid $light-border;
+    font-size: .775rem;
+    color: $light-text-muted;
+
+    [data-bs-theme="dark"] & {
+        border-color: $dark-border;
+        color: $dark-text-muted;
+    }
+}
+
+// ---- Info notice ----
+.info-notice {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: rgba($brand-action, .07);
+    border: 1px solid rgba($brand-action, .2);
+    border-radius: $radius-md;
+    padding: 12px 16px;
+    font-size: .825rem;
+    color: darken($brand-action, 8%);
+    line-height: 1.6;
+
+    &__icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+    [data-bs-theme="dark"] & {
+        background: rgba($brand-accent, .1);
+        border-color: rgba($brand-accent, .25);
+        color: $brand-accent;
+    }
+}
+
+// ---- Role checkboxes ----
+.roles-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.role-checkbox {
+    cursor: pointer;
+
+    &__input {
+        position: absolute;
+        opacity: 0;
+        width: 0; height: 0;
+
+        &:checked + .role-checkbox__label {
+            border-color: $brand-action;
+            background: rgba($brand-action, .08);
+
+            &--admin   { border-color: #dc2626; background: rgba(#ef4444, .08); color: #dc2626; }
+            &--faculty { border-color: $brand-action; background: rgba($brand-action, .08); color: $brand-action; }
+            &--student { border-color: #16a34a; background: rgba(#22c55e, .08); color: #16a34a; }
+        }
+
+        &:focus + .role-checkbox__label {
+            box-shadow: 0 0 0 3px rgba($brand-action, .2);
+        }
+    }
+
+    &__label {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 14px;
+        border-radius: 99px;
+        border: 1px solid $light-border;
+        font-size: .82rem;
+        font-weight: 500;
+        color: $light-text-primary;
+        transition: all .15s;
+        user-select: none;
+
+        &:hover { border-color: $brand-action; }
+
+        [data-bs-theme="dark"] & {
+            border-color: $dark-border;
+            color: $dark-text-primary;
+        }
+    }
+}
+
+// ============================================================
+// Show / detail page
+// ============================================================
+
+.show-page-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 20px;
+    align-items: start;
+
+    @media (max-width: 767.98px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+// ---- Profile card ----
+.show-profile-card {
+    @include card-base;
+    padding: 28px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $brand-primary, $brand-action);
+    color: #fff;
+    font-size: 1.4rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+    letter-spacing: .02em;
+}
+
+.profile-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: $light-text-primary;
+    margin: 0 0 4px;
+
+    [data-bs-theme="dark"] & { color: $dark-text-primary; }
+}
+
+.profile-id {
+    font-family: $font-mono;
+    font-size: .8rem;
+    color: $light-text-muted;
+    margin: 0 0 12px;
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+.profile-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+}
+
+// ---- Detail rows ----
+.show-details-col {}
+
+.detail-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 14px 20px;
+    border-bottom: 1px solid $light-border;
+    gap: 16px;
+    font-size: .875rem;
+
+    &--last { border-bottom: none; }
+
+    [data-bs-theme="dark"] & { border-color: $dark-border; }
+}
+
+.detail-label {
+    flex-shrink: 0;
+    width: 180px;
+    font-size: .8rem;
+    font-weight: 600;
+    color: $light-text-muted;
+    display: flex;
+    align-items: center;
+    padding-top: 1px;
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+.detail-value {
+    flex: 1;
+    color: $light-text-primary;
+    word-break: break-word;
+
+    [data-bs-theme="dark"] & { color: $dark-text-primary; }
+}

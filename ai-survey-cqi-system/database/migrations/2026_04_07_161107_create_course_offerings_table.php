@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('course_offerings', function (Blueprint $table) {
 
-            $table->ulid('id')->primary(); // ULID PK
+            $table->ulid('id')->primary(); 
 
             $table->unsignedBigInteger('subject_id');
-            $table->unsignedBigInteger('semester_id')->index(); // INDEX(semester_id)
-            $table->ulid('teacher_id')->index();              // INDEX(teacher_id)
+            $table->unsignedBigInteger('semester_id')->index(); 
+            $table->ulid('teacher_id')->index();       
+            $table->unsignedBigInteger('block_id')->nullable()->index();       
             $table->unsignedInteger('group_number')->nullable();
             $table->unsignedBigInteger('offering_type_id')->nullable();
 
@@ -44,6 +45,12 @@ return new class extends Migration
                   ->references('id')
                   ->on('offering_types')
                   ->nullOnDelete();
+
+            $table->foreign('block_id')
+                  ->references('id')->on('blocks')
+                  ->cascadeOnDelete();
+
+            $table->unique(['group_number', 'semester_id', 'subject_id'], 'uniq_offering');
         });
     }
 

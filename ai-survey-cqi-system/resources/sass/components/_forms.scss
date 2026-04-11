@@ -1,0 +1,46 @@
+// ============================================================
+// _forms.scss
+// ============================================================
+
+.form-label {
+  font-size: .8125rem;
+  font-weight: 600;
+  color: $light-text-primary;
+  margin-bottom: 5px;
+
+  [data-bs-theme="dark"] & { color: $dark-text-primary; }
+}
+
+.form-control,
+.form-select {
+  border-color: $light-border;
+  border-radius: $radius-md;
+  font-size: .875rem;
+  color: $light-text-primary;
+  background-color: $light-surface;
+  transition: border-color .18s, box-shadow .18s;
+
+  &:focus {
+    border-color: $brand-action;
+    box-shadow: 0 0 0 3px rgba($brand-action, .15);
+  }
+
+  &::placeholder { color: lighten($light-text-muted, 10%); }
+
+  [data-bs-theme="dark"] & {
+    background-color: rgba(255,255,255,.05);
+    border-color: $dark-border;
+    color: $dark-text-primary;
+
+    &:focus {
+      border-color: $brand-action;
+      box-shadow: 0 0 0 3px rgba($brand-action, .2);
+    }
+  }
+}
+
+.form-text {
+  font-size: .75rem;
+  color: $light-text-muted;
+  [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}

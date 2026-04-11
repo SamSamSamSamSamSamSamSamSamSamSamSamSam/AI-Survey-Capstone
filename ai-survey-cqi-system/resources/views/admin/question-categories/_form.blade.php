@@ -1,13 +1,26 @@
-{{-- resources/views/admin/question-categories/_form.blade.php --}}
-<div class="form-group">
-    <label class="form-label">Category Name <span style="color:#dc2626">*</span></label>
-    <input type="text" name="name" class="form-control {{ $errors->has('name') ? 'is-invalid' : '' }}"
+<div class="mb-4">
+    <label for="name" class="form-label">
+        Category Name <span class="text-danger">*</span>
+    </label>
+    <input type="text" name="name" id="name"
+           class="form-control @error('name') is-invalid @enderror"
            value="{{ old('name', $questionCategory->name ?? '') }}"
-           placeholder="e.g. Teaching Effectiveness">
-    @error('name') <p class="invalid-feedback">{{ $message }}</p> @enderror
+           placeholder="e.g. Teaching Effectiveness"
+           required>
+    @error('name')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
 </div>
-<div class="form-group">
-    <label class="form-label">Description</label>
-    <textarea name="description" rows="2" class="form-control"
-              placeholder="Optional description…">{{ old('description', $questionCategory->description ?? '') }}</textarea>
+
+<div class="mb-4">
+    <label for="description" class="form-label">
+        Description
+        <span class="form-label-optional">optional</span>
+    </label>
+    <textarea name="description" id="description" rows="3"
+            class="form-control @error('description') is-invalid @enderror"
+            placeholder="Optional description…">{{ old('description', $questionCategory->description ?? '') }}</textarea>
+    @error('description')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
 </div>

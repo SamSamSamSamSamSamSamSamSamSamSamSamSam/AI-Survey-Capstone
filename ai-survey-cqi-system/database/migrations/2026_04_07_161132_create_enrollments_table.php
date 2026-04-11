@@ -17,7 +17,7 @@ return new class extends Migration
 
             $table->ulid('offering_id')->index(); // UQ + INDEX
             $table->ulid('student_id')->index();  // UQ + INDEX
-            $table->unsignedBigInteger('student_status_id');
+            $table->unsignedBigInteger('enrollment_type_id')->index();
 
             $table->timestamps();
 
@@ -32,9 +32,8 @@ return new class extends Migration
                   ->on('users')
                   ->cascadeOnDelete();
 
-            $table->foreign('student_status_id')
-                  ->references('id')
-                  ->on('student_statuses')
+            $table->foreign('enrollment_type_id')
+                  ->references('id')->on('enrollment_types')
                   ->restrictOnDelete();
 
             // Unique constraint to prevent duplicate enrollments

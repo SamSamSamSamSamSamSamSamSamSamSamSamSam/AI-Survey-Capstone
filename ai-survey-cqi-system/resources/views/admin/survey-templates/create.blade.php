@@ -1,20 +1,41 @@
-@extends('admin.layouts.app')
+@extends('layouts.app')
 @section('title', 'Create Survey Template')
+
+@section('breadcrumbs')
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.survey-templates.index') }}">Templates</a></li>
+    <li class="breadcrumb-item active">Create</li>
+</ol>
+@endsection
+
 @section('content')
+
 <div class="page-header">
-    <h1>Create Survey Template</h1>
-    <a href="{{ route('admin.survey-templates.index') }}" class="btn btn-secondary">← Back</a>
+    <div>
+        <h2 class="page-heading">Create Survey Template</h2>
+        <p class="page-subheading">Define a reusable set of questions for future surveys.</p>
+    </div>
+    <a href="{{ route('admin.survey-templates.index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back to Templates
+    </a>
 </div>
-<div class="card" style="max-width:600px;">
-    <div class="card-body">
-        <form method="POST" action="{{ route('admin.survey-templates.store') }}">
+
+<div class="form-page-layout">
+    <div class="form-card">
+        <form method="POST" action="{{ route('admin.survey-templates.store') }}" novalidate>
             @csrf
             @include('admin.survey-templates._form')
-            <div class="actions" style="margin-top:1.5rem;">
-                <button type="submit" class="btn btn-primary">Create Template</button>
-                <a href="{{ route('admin.survey-templates.index') }}" class="btn btn-secondary">Cancel</a>
+            <div class="form-actions mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> Create Template
+                </button>
+                <a href="{{ route('admin.survey-templates.index') }}" class="btn btn-outline-secondary">
+                    Cancel
+                </a>
             </div>
         </form>
     </div>
 </div>
+
 @endsection

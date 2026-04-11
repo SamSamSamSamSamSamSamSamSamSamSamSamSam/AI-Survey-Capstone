@@ -13,7 +13,7 @@ class Enrollment extends Model
     protected $fillable = [
         'offering_id',
         'student_id',
-        'student_status_id',
+        'enrollment_type_id',
     ];
 
     protected static function boot(): void
@@ -26,22 +26,7 @@ class Enrollment extends Model
         });
     }
 
-    // -------------------------------------------------------------------------
-    // Relationships
-    // -------------------------------------------------------------------------
-
-    public function offering()
-    {
-        return $this->belongsTo(CourseOffering::class, 'offering_id');
-    }
-
-    public function student()
-    {
-        return $this->belongsTo(User::class, 'student_id');
-    }
-
-    public function studentStatus()
-    {
-        return $this->belongsTo(StudentStatus::class);
-    }
+    public function offering()        { return $this->belongsTo(CourseOffering::class, 'offering_id'); }
+    public function student()         { return $this->belongsTo(User::class, 'student_id'); }
+    public function enrollmentType()  { return $this->belongsTo(EnrollmentType::class); }
 }

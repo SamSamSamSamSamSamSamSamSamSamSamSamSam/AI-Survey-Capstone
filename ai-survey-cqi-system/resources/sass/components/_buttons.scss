@@ -1,0 +1,54 @@
+// ============================================================
+// _buttons.scss
+// ============================================================
+
+.btn {
+  font-family: $font-body;
+  font-weight: 500;
+  border-radius: $radius-md;
+  transition: all .18s ease;
+}
+
+.btn-primary {
+  background-color: $brand-action;
+  border-color: $brand-action;
+
+  &:hover {
+    background-color: darken($brand-action, 8%);
+    border-color: darken($brand-action, 8%);
+    box-shadow: 0 4px 12px rgba($brand-action, .35);
+  }
+}
+
+.btn-navy {
+  background-color: $brand-primary;
+  border-color: $brand-primary;
+  color: #fff;
+
+  &:hover {
+    background-color: lighten($brand-primary, 5%);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba($brand-primary, .35);
+  }
+}
+
+.btn-outline-secondary {
+  border-color: $light-border;
+  color: $light-text-muted;
+
+  &:hover {
+    background-color: $light-bg;
+    border-color: $light-border;
+    color: $light-text-primary;
+  }
+
+  [data-bs-theme="dark"] & {
+    border-color: $dark-border;
+    color: $dark-text-muted;
+
+    &:hover {
+      background-color: rgba(255,255,255,.06);
+      color: $dark-text-primary;
+    }
+  }
+}

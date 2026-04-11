@@ -1,0 +1,89 @@
+$text-secondary: #6c757d;
+$light-border: #dee2e6;
+$dark-border: #495057;
+$light-text-primary: #212529;
+$text-light: #6c757d;
+
+.category-icon {
+    width: 36px; height: 36px;
+    border-radius: $radius-md;
+    background: rgba($brand-action, .1);
+    color: $brand-action;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .95rem;
+    flex-shrink: 0;
+
+    &--lg {
+        width: 48px; height: 48px;
+        border-radius: $radius-lg;
+        font-size: 1.25rem;
+    }
+
+    [data-bs-theme="dark"] & {
+        background: rgba($brand-accent, .15);
+        color: $brand-accent;
+    }
+}
+
+.usage-container {
+    display: inline-flex;
+    align-items: center;
+    background: rgba($primary, 0.08); // Subtle brand tint
+    border-radius: 50px;
+    padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+    border: 1px solid rgba($primary, 0.15);
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+        background: rgba($primary, 0.12);
+        transform: translateY(-1px);
+    }
+
+    .total-count {
+        background: $primary;
+        color: #fff;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: 700;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+        box-shadow: 0 2px 4px rgba($primary, 0.3);
+    }
+
+    .breakdown {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.1;
+
+        .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            color: $primary;
+            opacity: 0.8;
+        }
+
+        .details {
+            font-size: 0.75rem;
+            color: $text-light; // Or your custom text variable
+            opacity: 0.6;
+        }
+    }
+    
+    [data-bs-theme="dark"] {
+    .usage-container {
+        background: rgba($primary, 0.15); // Slightly brighter for dark background
+        border-color: rgba($primary, 0.3);
+        
+        .details {
+            color: #adb5bd; // Lighter gray for dark mode readability
+        }
+    }
+}
+}
+

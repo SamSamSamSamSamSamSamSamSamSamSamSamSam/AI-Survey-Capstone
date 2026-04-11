@@ -1,0 +1,71 @@
+// ============================================================
+// _mixins.scss
+// ============================================================
+
+@mixin dark {
+  [data-bs-theme="dark"] & {
+    @content;
+  }
+}
+
+@mixin sidebar-link-base {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border-radius: $radius-md;
+  font-size: .875rem;
+  font-weight: 500;
+  color: $light-sidebar-text;
+  text-decoration: none;
+  transition: background .18s ease, color .18s ease;
+  white-space: nowrap;
+  overflow: hidden;
+
+  i { font-size: 1rem; flex-shrink: 0; }
+
+  &:hover {
+    background: rgba(255,255,255,.08);
+    color: $light-sidebar-active;
+  }
+
+  &.active {
+    background: rgba(255,255,255,.14);
+    color: $light-sidebar-active;
+    font-weight: 600;
+  }
+}
+
+@mixin card-base {
+  background: $light-surface;
+  border: 1px solid $light-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+
+  @include dark {
+    background: $dark-surface;
+    border-color: $dark-border;
+  }
+}
+
+@mixin skeleton-pulse {
+  background: linear-gradient(
+    90deg,
+    rgba(0,0,0,.06) 25%,
+    rgba(0,0,0,.03) 50%,
+    rgba(0,0,0,.06) 75%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.6s ease infinite;
+  border-radius: $radius-sm;
+
+  [data-bs-theme="dark"] & {
+    background: linear-gradient(
+      90deg,
+      rgba(255,255,255,.06) 25%,
+      rgba(255,255,255,.03) 50%,
+      rgba(255,255,255,.06) 75%
+    );
+    background-size: 400% 100%;
+  }
+}
