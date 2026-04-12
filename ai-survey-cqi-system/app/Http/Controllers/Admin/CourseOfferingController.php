@@ -78,7 +78,7 @@ class CourseOfferingController extends Controller
 
     public function show(CourseOffering $offering): View
     {
-        $offering->load(['subject', 'semester', 'teacher', 'offeringType', 'enrollments.student', 'enrollments.studentStatus']);
+        $offering->load(['subject', 'semester', 'teacher', 'offeringType', 'enrollments.student', 'enrollments.enrollmentType']);
         return view('admin.offerings.show', compact('offering'));
     }
 

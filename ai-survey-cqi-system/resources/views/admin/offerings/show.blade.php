@@ -51,7 +51,7 @@
                 <tr>
                     <td>{{ $enrollment->student->user_id_number }}</td>
                     <td>{{ $enrollment->student->name }}</td>
-                    <td><span class="badge badge-active">{{ ucfirst($enrollment->studentStatus->name) }}</span></td>
+                    <td><span class="badge badge-active" style="color: black">{{ ucfirst($enrollment->enrollmentType->name) }}</span></td>
                     <td style="font-size:.8rem;">{{ $enrollment->created_at->format('M d, Y') }}</td>
                     <td>
                         <form method="POST" action="{{ route('admin.offerings.enrollments.destroy', [$offering->id, $enrollment->id]) }}" onsubmit="return confirm('Remove this student from the offering?')">

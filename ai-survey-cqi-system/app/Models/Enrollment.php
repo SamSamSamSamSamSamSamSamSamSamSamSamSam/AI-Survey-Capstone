@@ -28,5 +28,5 @@ class Enrollment extends Model
 
     public function offering()        { return $this->belongsTo(CourseOffering::class, 'offering_id'); }
     public function student()         { return $this->belongsTo(User::class, 'student_id'); }
-    public function enrollmentType()  { return $this->belongsTo(EnrollmentType::class); }
+    public function enrollmentType()  { return $this->belongsTo(EnrollmentType::class, 'enrollment_type_id'); }
 }
