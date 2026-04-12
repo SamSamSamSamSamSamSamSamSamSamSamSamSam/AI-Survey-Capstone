@@ -9,10 +9,12 @@ export default defineConfig({
                 'resources/sass/app.scss',
                 'resources/js/app.js',
 
+                'resources/js/modules/auth.js'
+
                 // Page-specific JS — loaded only where needed via @push('scripts')
-                'resources/js/admin/dashboard.js',
-                'resources/js/admin/department.js',
-                'resources/js/admin/users.js',
+                // 'resources/js/admin/dashboard.js',
+                // 'resources/js/admin/department.js',
+                // 'resources/js/admin/users.js',
 
                 // Page-specific SCSS — loaded only where needed via @push('styles')
                 // 'resources/sass/pages/admin/dashboard.scss',

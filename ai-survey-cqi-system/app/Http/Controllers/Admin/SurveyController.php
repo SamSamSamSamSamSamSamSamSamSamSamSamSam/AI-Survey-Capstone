@@ -124,6 +124,11 @@ class SurveyController extends Controller
 
     public function update(Request $request, Survey $survey): RedirectResponse
     {
+        // BLOCK if active
+        if ($survey->is_active) {
+            return back()->with('error', 'Cannot modify survey while it is active.');
+        }
+    
         // For editing, we usually update just the one specific survey record
         $request->validate([
             'offering_id'    => ['required', 'exists:course_offerings,id'],

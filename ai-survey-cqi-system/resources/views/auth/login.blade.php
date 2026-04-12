@@ -23,6 +23,10 @@
             {{-- Decorative grid --}}
             <div class="auth-left-grid"></div>
 
+            {{-- Decorative glow orbs --}}
+            <div class="auth-left-orb auth-left-orb--1"></div>
+            <div class="auth-left-orb auth-left-orb--2"></div>
+
             <div class="auth-left-body">
 
                 <div class="auth-left-brand">
@@ -40,10 +44,82 @@
                 </div>
 
                 <div class="auth-left-pills">
-                    <span class="auth-pill"><i class="bi bi-check2"></i> AI-Powered Analysis</span>
-                    <span class="auth-pill"><i class="bi bi-check2"></i> Role-Based Access</span>
-                    <span class="auth-pill"><i class="bi bi-check2"></i> CQI Report Generation</span>
+                    <span class="auth-pill">
+                        <span class="auth-pill-icon"><i class="bi bi-stars"></i></span>
+                        AI-Powered Analysis
+                    </span>
+                    <span class="auth-pill">
+                        <span class="auth-pill-icon"><i class="bi bi-shield-check"></i></span>
+                        Role-Based Access
+                    </span>
+                    <span class="auth-pill">
+                        <span class="auth-pill-icon"><i class="bi bi-file-earmark-bar-graph"></i></span>
+                        CQI Report Generation
+                    </span>
                 </div>
+
+                {{-- Glassmorphic feature card slideshow --}}
+                <div class="auth-feature-slideshow" id="authFeatureSlideshow">
+                    <div class="auth-feature-slides-wrap">
+
+                        <div class="auth-feature-slide is-active">
+                            <div class="auth-feature-card">
+                                <div class="auth-feature-card-icon">
+                                    <i class="bi bi-cpu"></i>
+                                </div>
+                                <div class="auth-feature-card-body">
+                                    <div class="auth-feature-card-title">AI Insights</div>
+                                    <div class="auth-feature-card-desc">Smart analytics surfaced from every survey response</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="auth-feature-slide">
+                            <div class="auth-feature-card">
+                                <div class="auth-feature-card-icon">
+                                    <i class="bi bi-shield-check"></i>
+                                </div>
+                                <div class="auth-feature-card-body">
+                                    <div class="auth-feature-card-title">Secure Access</div>
+                                    <div class="auth-feature-card-desc">Role-based permissions for every user type</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="auth-feature-slide">
+                            <div class="auth-feature-card">
+                                <div class="auth-feature-card-icon">
+                                    <i class="bi bi-file-earmark-bar-graph"></i>
+                                </div>
+                                <div class="auth-feature-card-body">
+                                    <div class="auth-feature-card-title">CQI Reports</div>
+                                    <div class="auth-feature-card-desc">Generate comprehensive quality improvement reports</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="auth-feature-slide">
+                            <div class="auth-feature-card">
+                                <div class="auth-feature-card-icon">
+                                    <i class="bi bi-graph-up-arrow"></i>
+                                </div>
+                                <div class="auth-feature-card-body">
+                                    <div class="auth-feature-card-title">Real-time Feedback</div>
+                                    <div class="auth-feature-card-desc">Track survey completion and results instantly</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>{{-- /.auth-feature-slides-wrap --}}
+
+                    <div class="auth-feature-dots" role="tablist" aria-label="Feature slideshow">
+                        <button class="auth-feature-dot is-active" data-index="0" aria-label="Slide 1" role="tab" aria-selected="true"></button>
+                        <button class="auth-feature-dot" data-index="1" aria-label="Slide 2" role="tab" aria-selected="false"></button>
+                        <button class="auth-feature-dot" data-index="2" aria-label="Slide 3" role="tab" aria-selected="false"></button>
+                        <button class="auth-feature-dot" data-index="3" aria-label="Slide 4" role="tab" aria-selected="false"></button>
+                    </div>
+
+                </div>{{-- /.auth-feature-slideshow --}}
 
             </div>
 
@@ -66,6 +142,17 @@
             </div>
 
             <div class="auth-right-inner">
+
+                {{-- Department brand (always visible) --}}
+                <div class="auth-dept-brand">
+                    <div class="auth-dept-logo-row">
+                        <span class="auth-dept-name">DCISM</span>
+                        <img src="{{ asset('images/dcism_logo.png') }}"
+                             alt="DCISM — Department of Computer, Information Sciences and Mathematics logo"
+                             class="auth-dept-logo-img">
+                    </div>
+                    <p class="auth-dept-subtitle">Department of Computer, Information Sciences and Mathematics</p>
+                </div>
 
                 {{-- Logo (mobile only) --}}
                 <div class="auth-mobile-brand d-lg-none">
@@ -115,10 +202,10 @@
                                 autofocus
                                 required
                             >
-                            @error('login')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
                         </div>
+                        @error('login')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     {{-- Password --}}
@@ -140,10 +227,10 @@
                                     tabindex="-1">
                                 <i class="bi bi-eye" id="pwIcon"></i>
                             </button>
-                            @error('password')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
                         </div>
+                        @error('password')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     {{-- Remember me --}}
@@ -159,7 +246,10 @@
 
                     {{-- Submit --}}
                     <button type="submit" class="btn btn-primary w-100 auth-submit-btn" id="loginBtn">
-                        <span class="btn-text">Sign In</span>
+                        <span class="btn-text">
+                            Sign In
+                            <i class="bi bi-arrow-right ms-1"></i>
+                        </span>
                         <span class="btn-loading d-none">
                             <span class="spinner-border spinner-border-sm me-2"></span>
                             Signing in…
@@ -169,6 +259,7 @@
                 </form>
 
                 <p class="auth-footer-note">
+                    <i class="bi bi-info-circle me-1"></i>
                     Your account is provided by your system administrator.
                 </p>
 
@@ -183,5 +274,5 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/modules/auth.js') }}"></script>
+@vite(['resources/js/modules/auth.js'])
 @endpush

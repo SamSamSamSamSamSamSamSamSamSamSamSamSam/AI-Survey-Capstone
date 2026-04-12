@@ -27,7 +27,7 @@
         <form method="POST" action="{{ route('admin.surveys.update', $survey->id) }}" novalidate>
             @csrf @method('PUT')
 
-            @include('admin.surveys._form')
+            @include('admin.surveys._form-edit')
 
             <div class="form-actions mt-2">
                 <button type="submit" class="btn btn-primary">

@@ -57,15 +57,30 @@
                         </td>
                         <td>{{ $cat->description ?? '—' }}</td>
                         <td class="align-middle">
-                            <div class="usage-container" title="Total questions using this category">
-                                <div class="total-count">
+                            <div class="usage-container">
+
+                                {{-- Total --}}
+                                <span class="total-count">
                                     {{ $cat->survey_questions_count + $cat->template_questions_count }}
+                                </span>
+
+                                {{-- Pill + Labels --}}
+                                <div class="pill-wrapper">
+                                    <div class="split-pill">
+                                        <span class="pill-left">
+                                            {{ $cat->survey_questions_count }}
+                                        </span>
+                                        <span class="pill-right">
+                                            {{ $cat->template_questions_count }}
+                                        </span>
+                                    </div>
+
+                                    <div class="pill-labels muted">
+                                        <span class="label-left">Survey</span>
+                                        <span class="label-right">Template</span>
+                                    </div>
                                 </div>
-                                <div class="breakdown">
-                                    <span class="details">
-                                        {{ $cat->survey_questions_count }} Survey · {{ $cat->template_questions_count }} Template
-                                    </span>
-                                </div>
+
                             </div>
                         </td>
                         <td class="text-end">

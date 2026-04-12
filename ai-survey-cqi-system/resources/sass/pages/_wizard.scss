@@ -1,0 +1,641 @@
+// ============================================================
+// _wizard.scss  — Semester Setup Wizard + Global Assign
+// ============================================================
+
+// ============================================================
+// Wizard layout
+// ============================================================
+
+.wizard-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 20px;
+    align-items: start;
+
+    @media (max-width: 991.98px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+// ============================================================
+// Progress rail (left sidebar)
+// ============================================================
+
+.wizard-rail {
+    @include card-base;
+    overflow: hidden;
+    position: sticky;
+    top: calc(#{$topbar-height} + 16px);
+
+    &__header {
+        background: $brand-primary;
+        padding: 18px 20px;
+        position: relative;
+
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, $brand-accent, $brand-action);
+        }
+    }
+
+    &__title {
+        font-family: $font-heading;
+        font-size: .9rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 2px;
+    }
+
+    &__semester {
+        font-size: .75rem;
+        color: rgba(255,255,255,.65);
+    }
+
+    &__footer {
+        padding: 14px 16px;
+        border-top: 1px solid $light-border;
+
+        [data-bs-theme="dark"] & { border-color: $dark-border; }
+    }
+
+    &__progress-label {
+        font-size: .7rem;
+        font-weight: 600;
+        color: $light-text-muted;
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+
+    &__progress-pct {
+        font-size: .7rem;
+        font-weight: 700;
+        color: $brand-action;
+        [data-bs-theme="dark"] & { color: $brand-accent; }
+    }
+
+    &__progress-track {
+        height: 5px;
+        background: $light-border;
+        border-radius: 99px;
+        overflow: hidden;
+        [data-bs-theme="dark"] & { background: $dark-border; }
+    }
+
+    &__progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, $brand-primary, $brand-action);
+        border-radius: 99px;
+        transition: width .5s cubic-bezier(.4,0,.2,1);
+    }
+}
+
+// ---- Step items ----
+.wizard-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+    border-bottom: 1px solid $light-border;
+    text-decoration: none;
+    transition: background .12s;
+
+    &:last-of-type { border-bottom: none; }
+
+    [data-bs-theme="dark"] & { border-color: $dark-border; }
+
+    &:hover { background: rgba($brand-action, .04); }
+
+    &--active {
+        background: rgba($brand-action, .07);
+        border-left: 3px solid $brand-action;
+        padding-left: 13px;
+
+        [data-bs-theme="dark"] & {
+            background: rgba($brand-accent, .1);
+            border-left-color: $brand-accent;
+        }
+    }
+
+    &--done {
+        background: rgba(#22c55e, .04);
+        [data-bs-theme="dark"] & { background: rgba(#22c55e, .06); }
+    }
+
+    &__dot {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .8rem;
+        font-weight: 700;
+        flex-shrink: 0;
+        transition: all .15s;
+
+        &--pending {
+            background: $light-bg;
+            border: 2px solid $light-border;
+            color: $light-text-muted;
+
+            [data-bs-theme="dark"] & {
+                background: rgba(255,255,255,.05);
+                border-color: $dark-border;
+                color: $dark-text-muted;
+            }
+        }
+
+        &--active {
+            background: $brand-action;
+            color: #fff;
+            box-shadow: 0 0 0 4px rgba($brand-action, .2);
+
+            [data-bs-theme="dark"] & {
+                background: $brand-accent;
+                color: $brand-primary;
+                box-shadow: 0 0 0 4px rgba($brand-accent, .2);
+            }
+        }
+
+        &--done {
+            background: #22c55e;
+            color: #fff;
+        }
+    }
+
+    &__info {
+        min-width: 0;
+    }
+
+    &__label {
+        display: block;
+        font-size: .845rem;
+        font-weight: 500;
+        color: $light-text-primary;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        [data-bs-theme="dark"] & { color: $dark-text-primary; }
+    }
+
+    &__count {
+        display: block;
+        font-size: .72rem;
+        color: $light-text-muted;
+
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+}
+
+// ============================================================
+// Wizard content cards
+// ============================================================
+
+.wizard-content {}
+
+.wizard-card {
+    @include card-base;
+    overflow: hidden;
+
+    &__header {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 20px 24px;
+        border-bottom: 1px solid $light-border;
+
+        [data-bs-theme="dark"] & { border-color: $dark-border; }
+    }
+
+    &__num {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        background: $brand-action;
+        color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .82rem;
+        font-weight: 700;
+        flex-shrink: 0;
+        margin-top: 2px;
+
+        [data-bs-theme="dark"] & { background: $brand-accent; color: $brand-primary; }
+    }
+
+    &__title {
+        font-family: $font-heading;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: $light-text-primary;
+        margin: 0 0 3px;
+
+        [data-bs-theme="dark"] & { color: $dark-text-primary; }
+    }
+
+    &__subtitle {
+        font-size: .845rem;
+        color: $light-text-muted;
+        margin: 0;
+        line-height: 1.55;
+
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+
+    &__body {
+        padding: 24px;
+    }
+}
+
+// ============================================================
+// CSV spec box
+// ============================================================
+
+.csv-spec {
+    background: $light-bg;
+    border: 1px solid $light-border;
+    border-radius: $radius-md;
+    overflow: hidden;
+    margin-bottom: 20px;
+
+    [data-bs-theme="dark"] & {
+        background: rgba(255,255,255,.03);
+        border-color: $dark-border;
+    }
+
+    &__header {
+        padding: 10px 16px;
+        background: rgba($brand-action, .06);
+        border-bottom: 1px solid $light-border;
+        font-size: .78rem;
+        font-weight: 600;
+        color: $light-text-primary;
+        display: flex;
+        align-items: center;
+
+        [data-bs-theme="dark"] & {
+            background: rgba($brand-accent, .08);
+            border-color: $dark-border;
+            color: $dark-text-primary;
+        }
+    }
+
+    &__filename {
+        display: inline-block;
+        background: rgba($brand-action, .1);
+        color: $brand-action;
+        padding: 1px 8px;
+        border-radius: $radius-sm;
+        font-family: $font-mono;
+        font-size: .75rem;
+        margin-left: 4px;
+
+        [data-bs-theme="dark"] & { background: rgba($brand-accent,.15); color: $brand-accent; }
+    }
+
+    &__table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: .8rem;
+
+        th {
+            padding: 7px 14px;
+            background: $light-bg;
+            color: $light-text-muted;
+            font-weight: 700;
+            font-size: .7rem;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            text-align: left;
+            border-bottom: 1px solid $light-border;
+
+            [data-bs-theme="dark"] & {
+                background: rgba(255,255,255,.03);
+                color: $dark-text-muted;
+                border-color: $dark-border;
+            }
+        }
+
+        td {
+            padding: 8px 14px;
+            color: $light-text-primary;
+            border-bottom: 1px solid rgba($light-border, .6);
+            vertical-align: top;
+
+            &:last-child { border-bottom: none; }
+
+            code {
+                background: rgba($brand-action, .08);
+                color: $brand-action;
+                padding: 1px 6px;
+                border-radius: $radius-sm;
+                font-family: $font-mono;
+                font-size: .78rem;
+
+                [data-bs-theme="dark"] & {
+                    background: rgba($brand-accent,.12);
+                    color: $brand-accent;
+                }
+            }
+
+            [data-bs-theme="dark"] & {
+                color: $dark-text-primary;
+                border-color: rgba($dark-border, .5);
+            }
+        }
+
+        tr:last-child td { border-bottom: none; }
+    }
+
+    &__optional {
+        display: inline-block;
+        font-size: .67rem;
+        font-weight: 600;
+        background: $light-border;
+        color: $light-text-muted;
+        padding: 1px 5px;
+        border-radius: 3px;
+        margin-left: 3px;
+        vertical-align: middle;
+
+        [data-bs-theme="dark"] & { background: $dark-border; color: $dark-text-muted; }
+    }
+
+    &__note {
+        padding: 8px 14px;
+        font-size: .775rem;
+        color: $light-text-muted;
+        border-top: 1px solid $light-border;
+        margin: 0;
+
+        [data-bs-theme="dark"] & { border-color: $dark-border; color: $dark-text-muted; }
+    }
+}
+
+// ============================================================
+// Upload zone
+// ============================================================
+
+.upload-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed $light-border;
+    border-radius: $radius-lg;
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    gap: 4px;
+
+    &:hover {
+        border-color: $brand-action;
+        background: rgba($brand-action, .03);
+    }
+
+    &--selected {
+        border-color: $brand-action;
+        border-style: solid;
+        background: rgba($brand-action, .04);
+    }
+
+    [data-bs-theme="dark"] & {
+        border-color: $dark-border;
+        &:hover { border-color: $brand-accent; background: rgba($brand-accent,.05); }
+        &--selected { border-color: $brand-accent; background: rgba($brand-accent,.06); }
+    }
+
+    &__icon {
+        font-size: 2rem;
+        color: $light-text-muted;
+        margin-bottom: 4px;
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+
+    &__text {
+        font-size: .875rem;
+        color: $light-text-muted;
+        margin: 0;
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+
+    &__filename {
+        font-size: .78rem;
+        color: $light-text-muted;
+        margin-top: 4px;
+
+        &--selected { color: $brand-action; font-weight: 600; [data-bs-theme="dark"] & { color: $brand-accent; } }
+
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+
+    &__input {
+        display: none;
+    }
+}
+
+// ============================================================
+// Wizard actions row
+// ============================================================
+
+.wizard-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.wizard-skip-link {
+    font-size: .845rem;
+    color: $light-text-muted;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+
+    &:hover { color: $brand-action; }
+
+    [data-bs-theme="dark"] & {
+        color: $dark-text-muted;
+        &:hover { color: $brand-accent; }
+    }
+}
+
+// ============================================================
+// Completion summary box
+// ============================================================
+
+.wizard-complete-box {
+    background: rgba(#22c55e, .06);
+    border: 1px solid rgba(#22c55e, .25);
+    border-radius: $radius-lg;
+    overflow: hidden;
+
+    [data-bs-theme="dark"] & {
+        background: rgba(#22c55e, .08);
+        border-color: rgba(#22c55e, .2);
+    }
+
+    &__header {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        background: rgba(#22c55e, .08);
+        font-size: .875rem;
+        font-weight: 700;
+        color: #15803d;
+        border-bottom: 1px solid rgba(#22c55e, .15);
+
+        [data-bs-theme="dark"] & { color: #4ade80; }
+    }
+
+    &__stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+        padding: 16px 20px;
+
+        @media (max-width: 575.98px) { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    &__stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 8px 0;
+    }
+
+    &__val {
+        font-family: $font-heading;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: $brand-action;
+        line-height: 1;
+
+        [data-bs-theme="dark"] & { color: $brand-accent; }
+    }
+
+    &__lbl {
+        font-size: .72rem;
+        font-weight: 600;
+        color: $light-text-muted;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+
+    .btn { border-radius: 0 0 $radius-lg $radius-lg; }
+}
+
+// ============================================================
+// Global assign page
+// ============================================================
+
+.global-assign-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 20px;
+    align-items: start;
+
+    @media (max-width: 991.98px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+// ---- Template display box ----
+.global-assign-template-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: $light-bg;
+    border: 1px solid $light-border;
+    border-radius: $radius-md;
+
+    [data-bs-theme="dark"] & {
+        background: rgba(255,255,255,.04);
+        border-color: $dark-border;
+    }
+
+    &__icon {
+        width: 32px; height: 32px;
+        border-radius: $radius-sm;
+        background: rgba(#f59e0b, .12);
+        color: #d97706;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .85rem;
+        flex-shrink: 0;
+
+        [data-bs-theme="dark"] & { background: rgba(#f59e0b,.18); color: #fbbf24; }
+    }
+}
+
+// ---- Offering count ----
+.global-assign-count {
+    font-family: $font-heading;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $brand-action;
+    line-height: 1;
+
+    [data-bs-theme="dark"] & { color: $brand-accent; }
+}
+
+// ---- How it works list ----
+.wizard-howto-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    li {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: .845rem;
+        color: $light-text-primary;
+        line-height: 1.55;
+
+        [data-bs-theme="dark"] & { color: $dark-text-primary; }
+    }
+
+    &__dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        margin-top: 5px;
+
+        &--blue  { background: $brand-action; }
+        &--green { background: #22c55e; }
+        &--amber { background: #f59e0b; }
+    }
+}
+
+// ---- Info notice warning/danger variants ----
+.info-notice--warning {
+    background: rgba(#f59e0b, .08);
+    border-color: rgba(#f59e0b, .25);
+    color: #b45309;
+
+    [data-bs-theme="dark"] & {
+        background: rgba(#f59e0b, .1);
+        border-color: rgba(#f59e0b, .2);
+        color: #fbbf24;
+    }
+}
+
+.info-notice--danger {
+    background: rgba(#ef4444, .07);
+    border-color: rgba(#ef4444, .2);
+    color: #dc2626;
+
+    [data-bs-theme="dark"] & {
+        background: rgba(#ef4444, .1);
+        border-color: rgba(#ef4444, .2);
+        color: #f87171;
+    }
+}

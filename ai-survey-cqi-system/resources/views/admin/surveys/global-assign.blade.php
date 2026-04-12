@@ -1,135 +1,241 @@
-@extends('admin.layouts.app')
+@extends('layouts.app')
 @section('title', 'Global Survey Assignment')
 
+@section('breadcrumbs')
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.surveys.index') }}">Surveys</a></li>
+    <li class="breadcrumb-item active">Global Assignment</li>
+</ol>
+@endsection
+
 @section('content')
+
 <div class="page-header">
-    <h1>Global Survey Assignment</h1>
-    <a href="{{ route('admin.surveys.index') }}" class="btn btn-secondary">← Back to Surveys</a>
+    <div>
+        <h2 class="page-heading">Global Survey Assignment</h2>
+        <p class="page-subheading">Deploy evaluation surveys to all course offerings at once.</p>
+    </div>
+    <a href="{{ route('admin.surveys.index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back to Surveys
+    </a>
 </div>
 
 @if (! $activeSemester)
-    <div class="alert" style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;">
-        No active semester is set. Please activate a semester before assigning surveys globally.
+
+    <div class="info-notice info-notice--warning">
+        <i class="bi bi-exclamation-triangle-fill info-notice__icon"></i>
+        <div>
+            No active semester is set. Please activate a semester before assigning surveys globally.
+        </div>
     </div>
+
 @else
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
+<div class="global-assign-grid">
 
-        {{-- Form --}}
-        <div class="card">
-            <div style="padding:.75rem 1rem;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-weight:600;font-size:.875rem;">
-                Configure &amp; Launch
-            </div>
-            <div class="card-body">
+    {{-- ===== LEFT: Configure & Launch ===== --}}
+    <div class="card">
+        <div class="template-card-header">
+            <i class="bi bi-rocket-takeoff me-2 text-muted"></i>
+            Configure &amp; Launch
+        </div>
+        <div class="card-body">
 
-                @if (! $officialTemplate)
-                    <div class="alert" style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:7px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.875rem;">
-                        No official template found. Please create and mark a template as the official questionnaire first.
-                        <a href="{{ route('admin.survey-templates.create') }}" style="font-weight:600;">Create Template →</a>
+            {{-- No official template warning --}}
+            @if (! $officialTemplate)
+                <div class="info-notice info-notice--danger mb-4">
+                    <i class="bi bi-exclamation-triangle-fill info-notice__icon"></i>
+                    <div>
+                        No official template found. Please create and mark a template as the
+                        official questionnaire first.
+                        <a href="{{ route('admin.survey-templates.create') }}" class="fw-600 ms-1">
+                            Create Template →
+                        </a>
                     </div>
-                @endif
+                </div>
+            @endif
 
-                <form method="POST" action="{{ route('admin.surveys.global-assign.store') }}">
-                    @csrf
+            <form method="POST"
+                  action="{{ route('admin.surveys.global-assign.store') }}"
+                  id="globalAssignForm"
+                  data-confirm="Create surveys for all {{ $offeringsWithoutSurvey }} offering(s)? They will be activated immediately.">
+                @csrf
 
-                    {{-- Template info (read-only) --}}
-                    <div class="form-group">
-                        <label class="form-label">Template</label>
-                        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:.6rem .85rem;font-size:.875rem;">
-                            @if ($officialTemplate)
-                                ⭐ <strong>{{ $officialTemplate->name }}</strong>
-                                <span style="color:#6b7280;font-size:.8rem;">({{ $officialTemplate->questions_count ?? '—' }} questions)</span>
-                            @else
-                                <span style="color:#9ca3af;">No official template set</span>
-                            @endif
-                        </div>
-                        <p class="form-text">Always uses the official university questionnaire template.</p>
+                {{-- Template (read-only display) --}}
+                <div class="mb-4">
+                    <label class="form-label">Template</label>
+                    <div class="global-assign-template-display">
+                        @if ($officialTemplate)
+                            <div class="global-assign-template-display__icon">
+                                <i class="bi bi-star-fill"></i>
+                            </div>
+                            <div>
+                                <div class="fw-500">{{ $officialTemplate->name }}</div>
+                                <div class="text-muted-sm">
+                                    {{ $officialTemplate->questions_count ?? '—' }} questions
+                                </div>
+                            </div>
+                        @else
+                            <span class="text-muted-sm">No official template set</span>
+                        @endif
                     </div>
+                    <div class="form-text">Always uses the official university questionnaire.</div>
+                </div>
 
-                    {{-- Target role --}}
-                    <div class="form-group">
-                        <label class="form-label">Target Role <span style="color:#dc2626">*</span></label>
-                        <select name="target_role_id" class="form-control {{ $errors->has('target_role_id') ? 'is-invalid' : '' }}">
-                            <option value="">Who will take these surveys?</option>
-                            @foreach ($roles as $role)
-                                <option value="{{ $role->id }}"
-                                        @selected(old('target_role_id') == $role->id || $role->name === 'student')>
-                                    {{ ucfirst($role->name) }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('target_role_id') <p class="invalid-feedback">{{ $message }}</p> @enderror
-                    </div>
+                {{-- Target role --}}
+                <div class="mb-4">
+                    <label class="form-label" for="target_role_id">
+                        Target Role <span class="text-danger">*</span>
+                    </label>
+                    <select name="target_role_id" id="target_role_id"
+                            class="form-select @error('target_role_id') is-invalid @enderror">
+                        <option value="">Who will take these surveys?</option>
+                        @foreach ($roles as $role)
+                            <option value="{{ $role->id }}"
+                                @selected(old('target_role_id') == $role->id || $role->name === 'student')>
+                                {{ ucfirst($role->name) }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('target_role_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
-                    {{-- Survey period --}}
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                        <div class="form-group">
-                            <label class="form-label">Start Date &amp; Time <span style="color:#dc2626">*</span></label>
-                            <input type="datetime-local" name="start_date"
-                                   class="form-control {{ $errors->has('start_date') ? 'is-invalid' : '' }}"
-                                   value="{{ old('start_date') }}">
-                            @error('start_date') <p class="invalid-feedback">{{ $message }}</p> @enderror
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">End Date &amp; Time <span style="color:#dc2626">*</span></label>
-                            <input type="datetime-local" name="end_date"
-                                   class="form-control {{ $errors->has('end_date') ? 'is-invalid' : '' }}"
-                                   value="{{ old('end_date') }}">
-                            @error('end_date') <p class="invalid-feedback">{{ $message }}</p> @enderror
-                        </div>
-                    </div>
-
-                    {{-- Skip existing --}}
-                    <div class="form-group">
-                        <label style="display:flex;align-items:center;gap:.5rem;font-size:.875rem;cursor:pointer;">
-                            <input type="hidden" name="skip_existing" value="0">
-                            <input type="checkbox" name="skip_existing" value="1" checked>
-                            <span>Skip offerings that already have a survey</span>
+                {{-- Survey period --}}
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <label class="form-label" for="start_date">
+                            Start Date &amp; Time <span class="text-danger">*</span>
                         </label>
+                        <input type="datetime-local" name="start_date" id="start_date"
+                               class="form-control @error('start_date') is-invalid @enderror"
+                               value="{{ old('start_date') }}">
+                        @error('start_date')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
+                    <div class="col-6">
+                        <label class="form-label" for="end_date">
+                            End Date &amp; Time <span class="text-danger">*</span>
+                        </label>
+                        <input type="datetime-local" name="end_date" id="end_date"
+                               class="form-control @error('end_date') is-invalid @enderror"
+                               value="{{ old('end_date') }}">
+                        @error('end_date')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
 
-                    <button type="submit" class="btn btn-primary"
-                            @disabled(! $officialTemplate)
-                            onclick="return confirm('Create surveys for all {{ $offeringsWithoutSurvey }} offering(s)? This will activate them immediately.')">
-                        🚀 Assign Surveys to All Offerings
-                    </button>
-                </form>
+                {{-- Skip existing toggle --}}
+                <div class="mb-4">
+                    <label class="toggle-option">
+                        <input type="hidden" name="skip_existing" value="0">
+                        <input type="checkbox" name="skip_existing" value="1"
+                               class="toggle-option__input" checked>
+                        <div class="toggle-option__body">
+                            <span class="toggle-option__icon toggle-option__icon--active">
+                                <i class="bi bi-skip-forward-fill"></i>
+                            </span>
+                            <div>
+                                <p class="toggle-option__title">Skip existing surveys</p>
+                                <p class="toggle-option__hint">
+                                    Offerings that already have a survey won't be affected.
+                                </p>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+
+                <button type="submit"
+                        class="btn btn-primary w-100"
+                        @disabled(! $officialTemplate)>
+                    <i class="bi bi-rocket-takeoff me-2"></i>
+                    Assign Surveys to All Offerings
+                </button>
+
+            </form>
+        </div>
+    </div>
+
+    {{-- ===== RIGHT: Summary + How it works ===== --}}
+    <div class="d-flex flex-column gap-3">
+
+        {{-- Active semester summary --}}
+        <div class="card">
+            <div class="template-card-header">
+                <i class="bi bi-calendar3 me-2 text-muted"></i>
+                Active Semester Summary
+            </div>
+            <div class="card-body p-0">
+                <div class="detail-row">
+                    <span class="detail-label">
+                        <i class="bi bi-calendar-check me-2 text-muted"></i>Semester
+                    </span>
+                    <span class="detail-value fw-500">{{ $activeSemester->full_label }}</span>
+                </div>
+                <div class="detail-row detail-row--last">
+                    <span class="detail-label">
+                        <i class="bi bi-easel me-2 text-muted"></i>Offerings without survey
+                    </span>
+                    <span class="detail-value">
+                        @if ($offeringsWithoutSurvey > 0)
+                            <span class="global-assign-count">
+                                {{ $offeringsWithoutSurvey }}
+                            </span>
+                            <span class="text-muted-sm ms-2">will receive a survey</span>
+                        @else
+                            <span class="status-pill status-pill--active">
+                                <i class="bi bi-check-circle me-1"></i>All covered
+                            </span>
+                        @endif
+                    </span>
+                </div>
             </div>
         </div>
 
-        {{-- Summary panel --}}
-        <div>
-            <div class="card" style="margin-bottom:1rem;">
-                <div style="padding:.75rem 1rem;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-weight:600;font-size:.875rem;">
-                    Active Semester Summary
-                </div>
-                <div class="card-body">
-                    <table style="font-size:.875rem;width:100%;">
-                        <tr>
-                            <td style="color:#6b7280;padding:.3rem 0;">Semester</td>
-                            <td><strong>{{ $activeSemester->full_label }}</strong></td>
-                        </tr>
-                        <tr>
-                            <td style="color:#6b7280;padding:.3rem 0;">Offerings without survey</td>
-                            <td>
-                                <span style="font-size:1.5rem;font-weight:700;color:#4f46e5;">{{ $offeringsWithoutSurvey }}</span>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
+        {{-- How it works --}}
+        <div class="card">
+            <div class="template-card-header">
+                <i class="bi bi-info-circle me-2 text-muted"></i>
+                How This Works
             </div>
-
-            <div class="alert alert-info" style="font-size:.85rem;line-height:1.6;">
-                <strong>How this works:</strong><br>
-                • One survey is created per course offering using the official template.<br>
-                • Questions are copied from the template into each survey.<br>
-                • All surveys are immediately <strong>activated</strong> with the period you set.<br>
-                • Surveys auto-deactivate when the end date passes (scheduled command).<br>
-                • When deactivated, analytics computation is triggered automatically.
+            <div class="card-body">
+                <ul class="wizard-howto-list">
+                    <li>
+                        <span class="wizard-howto-list__dot wizard-howto-list__dot--blue"></span>
+                        One survey is created per course offering using the official template.
+                    </li>
+                    <li>
+                        <span class="wizard-howto-list__dot wizard-howto-list__dot--blue"></span>
+                        Questions are copied from the template into each survey.
+                    </li>
+                    <li>
+                        <span class="wizard-howto-list__dot wizard-howto-list__dot--green"></span>
+                        All surveys are immediately <strong>activated</strong> with the period you set.
+                    </li>
+                    <li>
+                        <span class="wizard-howto-list__dot wizard-howto-list__dot--amber"></span>
+                        Surveys auto-deactivate when the end date passes (scheduled command).
+                    </li>
+                    <li>
+                        <span class="wizard-howto-list__dot wizard-howto-list__dot--amber"></span>
+                        When deactivated, analytics computation is triggered automatically.
+                    </li>
+                </ul>
             </div>
         </div>
 
     </div>
 
+</div>{{-- /.global-assign-grid --}}
+
 @endif
+
 @endsection
+
+@push('scripts')
+<script src="{{ asset('js/modules/confirm-action.js') }}"></script>
+@endpush

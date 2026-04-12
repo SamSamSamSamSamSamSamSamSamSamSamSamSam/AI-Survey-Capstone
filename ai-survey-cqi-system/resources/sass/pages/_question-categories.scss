@@ -3,6 +3,11 @@ $light-border: #dee2e6;
 $dark-border: #495057;
 $light-text-primary: #212529;
 $text-light: #6c757d;
+$right-pill-bg: #cce1fb;
+$left-pill-bg: #60A5FA;
+$right-pill-bg-dark: #b4d6f9;
+$left-pill-bg-dark: #041634;
+$white: #fff;
 
 .category-icon {
     width: 36px; height: 36px;
@@ -28,62 +33,120 @@ $text-light: #6c757d;
 .usage-container {
     display: inline-flex;
     align-items: center;
-    background: rgba($primary, 0.08); // Subtle brand tint
-    border-radius: 50px;
-    padding: 0.25rem 0.75rem 0.25rem 0.25rem;
-    border: 1px solid rgba($primary, 0.15);
-    transition: all 0.2s ease-in-out;
-
-    &:hover {
-        background: rgba($primary, 0.12);
-        transform: translateY(-1px);
-    }
+    gap: 0.75rem;
 
     .total-count {
-        background: $primary;
-        color: #fff;
-        width: 28px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
         font-weight: 700;
-        font-size: 0.85rem;
-        margin-right: 0.5rem;
-        box-shadow: 0 2px 4px rgba($primary, 0.3);
+        font-size: 0.95rem;
+        color: $black;
+        min-width: 28px;
+        text-align: right;
     }
 
-    .breakdown {
+    .pill-wrapper {
         display: flex;
         flex-direction: column;
-        line-height: 1.1;
+        align-items: center;
+    }
 
-        .label {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 600;
-            color: $primary;
-            opacity: 0.8;
-        }
+    .split-pill {
+        display: flex;
+        width: 100px;   // fixed width = consistent UI
+        height: 18px;
+        border-radius: 50px;
+        overflow: hidden;
 
-        .details {
+        span {
+            width: 50%;   // 🔥 exact half split
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 0.75rem;
-            color: $text-light; // Or your custom text variable
-            opacity: 0.6;
+            font-weight: 700;
+            color: #565454;
+        }
+
+        .pill-left {
+            background: $left-pill-bg;
+            border-right: 5px solid rgba(255, 255, 255, 0.4); // divider
+        }
+
+        .pill-right {
+            background: $right-pill-bg;
+            border-left: 5px solid rgba(255, 255, 255, 0.4); // divider
+
         }
     }
-    
-    [data-bs-theme="dark"] {
-    .usage-container {
-        background: rgba($primary, 0.15); // Slightly brighter for dark background
-        border-color: rgba($primary, 0.3);
+
+    .pill-labels {
+        display: flex;
+        width: 100px; // match pill width
+        justify-content: space-between;
+        margin-top: 3px;
+
+        span {
+            width: 50%;  // align exactly under halves
+            text-align: center;
+            font-size: 0.5rem;
+            font-weight: 600;
+            opacity: 0.75;
+        }
+
+        .label-left {
+            color: $black;
+        }
+
+        .label-right {
+            color: $black;
+        }
+    }
+
+    &:hover {
+        transform: translateY(-1px);
+
+        .split-pill {
+            filter: brightness(1.05);
+        }
+    }
         
-        .details {
-            color: #adb5bd; // Lighter gray for dark mode readability
+}
+
+[data-bs-theme="dark"] {
+    .usage-container {
+
+        .total-count {
+            color: lighten($black, 100%);
+        }
+
+        /* Labels */
+        .pill-labels {
+
+            .label-left,
+            .label-right {
+                color: #fff;
+                opacity: 0.85;
+            }
+        }
+
+        /* Darkened pill colors */
+        .split-pill {
+
+            span {
+                color: $white;
+            }
+
+            .pill-left {
+                background: lighten($left-pill-bg-dark, 10%);  
+            }
+
+            .pill-right {
+                background: darken($right-pill-bg-dark, 10%);  
+            }
         }
     }
 }
-}
+
+
+
+
 

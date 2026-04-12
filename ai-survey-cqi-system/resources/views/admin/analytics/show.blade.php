@@ -1,177 +1,358 @@
-@extends('admin.layouts.app')
+@extends('layouts.app')
 @section('title', 'Analytics — ' . $analytic->survey->offering->subject->course_code)
 
+@section('breadcrumbs')
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.analytics.index') }}">Analytics</a></li>
+    <li class="breadcrumb-item active">
+        {{ $analytic->survey->offering->subject->course_code }}
+    </li>
+</ol>
+@endsection
+
 @section('content')
-<div class="page-header">
-    <h1>Analytics Detail</h1>
-    <div class="actions">
+
+{{-- ===== PAGE HEADER ===== --}}
+<div class="page-header flex-wrap gap-2">
+    <div>
+        <h2 class="page-heading">Analytics Detail</h2>
+        <p class="page-subheading">
+            {{ $analytic->survey->offering->subject->course_code }} —
+            {{ $analytic->survey->offering->subject->name }} ·
+            {{ $analytic->survey->offering->teacher->name }} ·
+            {{ $analytic->survey->offering->semester->full_label }}
+        </p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
         @if ($existingReport)
-            <a href="{{ route('admin.cqi-reports.show', $existingReport->id) }}" class="btn btn-secondary">View CQI Report</a>
+            <a href="{{ route('admin.cqi-reports.show', $existingReport->id) }}"
+               class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-clipboard-data me-1"></i> View CQI Report
+            </a>
         @endif
-        <a href="{{ route('admin.analytics.index') }}" class="btn btn-secondary">← Back</a>
+        <a href="{{ route('admin.analytics.index') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back
+        </a>
     </div>
 </div>
 
-{{-- Header info --}}
-<div class="alert alert-info" style="margin-bottom:1.25rem;font-size:.875rem;">
-    <strong>{{ $analytic->survey->offering->subject->course_code }} — {{ $analytic->survey->offering->subject->name }}</strong>
-    &nbsp;·&nbsp; {{ $analytic->survey->offering->teacher->name }}
-    &nbsp;·&nbsp; {{ $analytic->survey->offering->semester->full_label }}
-    &nbsp;·&nbsp; {{ $analytic->response_count }} respondent(s)
-    &nbsp;·&nbsp; Last computed: {{ $analytic->last_computed_at?->format('M d, Y h:i A') }}
-</div>
-
-{{-- Stat cards --}}
-<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;">
-    <div class="card">
-        <div class="card-body" style="text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#4f46e5;">{{ number_format($analytic->avg_rating ?? 0, 2) }}</div>
-            <div style="font-size:.78rem;color:#6b7280;">Overall Avg Rating</div>
-        </div>
+{{-- ===== META STRIP ===== --}}
+<div class="attempts-meta-strip mb-4">
+    <div class="attempts-meta-strip__item">
+        <i class="bi bi-person-workspace me-1"></i>
+        <strong>{{ $analytic->survey->offering->teacher->name }}</strong>
     </div>
-    <div class="card">
-        <div class="card-body" style="text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#065f46;">{{ number_format($analytic->positive_sentiment_percent ?? 0, 1) }}%</div>
-            <div style="font-size:.78rem;color:#6b7280;">Positive Sentiment</div>
-        </div>
+    <div class="attempts-meta-strip__sep"></div>
+    <div class="attempts-meta-strip__item">
+        <i class="bi bi-calendar3 me-1"></i>
+        {{ $analytic->survey->offering->semester->full_label }}
     </div>
-    <div class="card">
-        <div class="card-body" style="text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#92400e;">{{ number_format($analytic->neutral_sentiment_percent ?? 0, 1) }}%</div>
-            <div style="font-size:.78rem;color:#6b7280;">Neutral Sentiment</div>
-        </div>
+    <div class="attempts-meta-strip__sep"></div>
+    <div class="attempts-meta-strip__item">
+        <i class="bi bi-clock me-1"></i>
+        Last computed: {{ $analytic->last_computed_at?->format('M d, Y h:i A') ?? 'Never' }}
     </div>
-    <div class="card">
-        <div class="card-body" style="text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#b91c1c;">{{ number_format($analytic->negative_sentiment_percent ?? 0, 1) }}%</div>
-            <div style="font-size:.78rem;color:#6b7280;">Negative Sentiment</div>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-body" style="text-align:center;">
-            <div style="font-size:2rem;font-weight:700;color:#374151;">{{ $analytic->response_count }}</div>
-            <div style="font-size:.78rem;color:#6b7280;">Total Responses</div>
-        </div>
+    <div class="attempts-meta-strip__item attempts-meta-strip__item--count">
+        <i class="bi bi-people me-1"></i>
+        {{ $analytic->response_count }} respondent(s)
     </div>
 </div>
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
+{{-- ===== KPI CARDS ===== --}}
+<div class="row g-3 mb-4">
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card analytic-kpi-card h-100">
+            <div class="analytic-kpi-card__accent analytic-kpi-card__accent--blue"></div>
+            <div class="card-body">
+                <div class="analytic-kpi-card__label">Overall Avg Rating</div>
+                <div class="analytic-kpi-card__value analytic-kpi-card__value--blue">
+                    {{ number_format($analytic->avg_rating ?? 0, 2) }}
+                    <span class="analytic-kpi-card__scale">/ 5</span>
+                </div>
+                <div class="analytic-kpi-card__bar">
+                    <div class="analytic-kpi-card__bar-fill analytic-kpi-card__bar-fill--blue"
+                         style="width: {{ (($analytic->avg_rating ?? 0) / 5) * 100 }}%">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card analytic-kpi-card h-100">
+            <div class="analytic-kpi-card__accent analytic-kpi-card__accent--green"></div>
+            <div class="card-body">
+                <div class="analytic-kpi-card__label">Positive Sentiment</div>
+                <div class="analytic-kpi-card__value analytic-kpi-card__value--green">
+                    {{ number_format($analytic->positive_sentiment_percent ?? 0, 1) }}<span class="analytic-kpi-card__scale">%</span>
+                </div>
+                <div class="analytic-kpi-card__bar">
+                    <div class="analytic-kpi-card__bar-fill analytic-kpi-card__bar-fill--green"
+                         style="width: {{ $analytic->positive_sentiment_percent ?? 0 }}%">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card analytic-kpi-card h-100">
+            <div class="analytic-kpi-card__accent analytic-kpi-card__accent--amber"></div>
+            <div class="card-body">
+                <div class="analytic-kpi-card__label">Neutral Sentiment</div>
+                <div class="analytic-kpi-card__value analytic-kpi-card__value--amber">
+                    {{ number_format($analytic->neutral_sentiment_percent ?? 0, 1) }}<span class="analytic-kpi-card__scale">%</span>
+                </div>
+                <div class="analytic-kpi-card__bar">
+                    <div class="analytic-kpi-card__bar-fill analytic-kpi-card__bar-fill--amber"
+                         style="width: {{ $analytic->neutral_sentiment_percent ?? 0 }}%">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card analytic-kpi-card h-100">
+            <div class="analytic-kpi-card__accent analytic-kpi-card__accent--red"></div>
+            <div class="card-body">
+                <div class="analytic-kpi-card__label">Negative Sentiment</div>
+                <div class="analytic-kpi-card__value analytic-kpi-card__value--red">
+                    {{ number_format($analytic->negative_sentiment_percent ?? 0, 1) }}<span class="analytic-kpi-card__scale">%</span>
+                </div>
+                <div class="analytic-kpi-card__bar">
+                    <div class="analytic-kpi-card__bar-fill analytic-kpi-card__bar-fill--red"
+                         style="width: {{ $analytic->negative_sentiment_percent ?? 0 }}%">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{{-- ===== CATEGORY + KEYWORDS GRID ===== --}}
+<div class="row g-3 mb-4">
 
     {{-- Category scores --}}
-    <div class="card">
-        <div style="padding:.75rem 1rem;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-weight:600;font-size:.875rem;">Category Scores</div>
-        @if ($analytic->category_scores)
-            <table>
-                <thead><tr><th>Category</th><th>Avg Score</th><th>Interpretation</th></tr></thead>
-                <tbody>
-                    @foreach ($analytic->category_scores as $cat => $score)
-                    @php
-                        $interp = match(true) {
-                            $score >= 4.5 => 'Excellent',
-                            $score >= 4.0 => 'Very Good',
-                            $score >= 3.5 => 'Good',
-                            $score >= 3.0 => 'Fair',
-                            default       => 'Needs Improvement',
-                        };
-                        $color = $score >= 3.5 ? '#065f46' : '#92400e';
-                    @endphp
-                    <tr>
-                        <td style="font-size:.85rem;">{{ $cat }}</td>
-                        <td style="font-weight:600;color:{{ $color }};">{{ number_format($score, 2) }}</td>
-                        <td style="font-size:.8rem;color:{{ $color }};">{{ $interp }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @else
-            <p class="empty-state" style="padding:1.5rem;">No category data.</p>
-        @endif
-    </div>
-
-    {{-- Top keywords --}}
-    <div class="card">
-        <div style="padding:.75rem 1rem;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-weight:600;font-size:.875rem;">Top Keywords from Open-ended Responses</div>
-        <div style="padding:1rem;">
-            @if ($analytic->top_keywords)
-                <div style="display:flex;flex-wrap:wrap;gap:.4rem;">
-                    @foreach ($analytic->top_keywords as $i => $keyword)
-                    <span style="background:{{ $i < 5 ? '#e0e7ff' : '#f3f4f6' }};color:{{ $i < 5 ? '#3730a3' : '#374151' }};padding:.2rem .6rem;border-radius:999px;font-size:.78rem;font-weight:{{ $i < 5 ? '600' : '400' }};">
-                        {{ $keyword }}
-                    </span>
-                    @endforeach
-                </div>
-            @else
-                <p style="color:#9ca3af;font-size:.875rem;">No text responses yet.</p>
-            @endif
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Category Scores</h5>
+                @if ($analytic->category_scores)
+                    <div class="category-score-list">
+                        @foreach ($analytic->category_scores as $cat => $score)
+                        @php
+                            $pct = ($score / 5) * 100;
+                            $interp = match(true) {
+                                $score >= 4.5 => ['label' => 'Excellent',          'cls' => 'high'],
+                                $score >= 4.0 => ['label' => 'Very Good',          'cls' => 'high'],
+                                $score >= 3.5 => ['label' => 'Good',               'cls' => 'mid'],
+                                $score >= 3.0 => ['label' => 'Fair',               'cls' => 'mid'],
+                                default       => ['label' => 'Needs Improvement',  'cls' => 'low'],
+                            };
+                        @endphp
+                        <div class="category-score-row">
+                            <div class="category-score-row__header">
+                                <span class="category-score-row__name">{{ $cat }}</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="category-score-row__interp category-score-row__interp--{{ $interp['cls'] }}">
+                                        {{ $interp['label'] }}
+                                    </span>
+                                    <span class="category-score-row__val">{{ number_format($score, 2) }}</span>
+                                </div>
+                            </div>
+                            <div class="category-score-row__track">
+                                <div class="category-score-row__fill category-score-row__fill--{{ $interp['cls'] }}"
+                                     style="width: 0%"
+                                     data-width="{{ $pct }}%">
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="empty-state" style="padding: 32px 0;">
+                        <div class="empty-state-icon"><i class="bi bi-bar-chart"></i></div>
+                        <p class="empty-state-text">No category data available.</p>
+                    </div>
+                @endif
+            </div>
         </div>
     </div>
+
+    {{-- Keywords --}}
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Top Keywords</h5>
+                <p class="text-muted-sm mb-3">From open-ended responses</p>
+                @if ($analytic->top_keywords)
+                    <div class="keyword-cloud">
+                        @foreach ($analytic->top_keywords as $i => $keyword)
+                            <span class="keyword-tag keyword-tag--{{ $i < 3 ? 'primary' : ($i < 7 ? 'secondary' : 'tertiary') }}">
+                                {{ $keyword }}
+                            </span>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="empty-state" style="padding: 32px 0;">
+                        <div class="empty-state-icon"><i class="bi bi-chat-square-text"></i></div>
+                        <p class="empty-state-text">No text responses yet.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
 </div>
 
-{{-- Open-ended responses with sentiment --}}
+{{-- ===== OPEN-ENDED RESPONSES ===== --}}
 @if ($textResponses->isNotEmpty())
-<div class="card" style="margin-bottom:1.5rem;">
-    <div style="padding:.75rem 1rem;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-weight:600;font-size:.875rem;">Open-ended Responses &amp; Sentiment</div>
-    @foreach ($textResponses as $questionId => $responses)
-    <div style="padding:.75rem 1rem;border-bottom:1px solid #f3f4f6;">
-        <p style="font-weight:600;font-size:.875rem;margin-bottom:.5rem;">{{ $responses->first()->question->question_text }}</p>
-        @foreach ($responses as $resp)
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:.35rem 0;border-bottom:1px solid #f9fafb;">
-            <span style="font-size:.85rem;color:#374151;flex:1;">{{ $resp->text_response }}</span>
-            @if ($resp->sentiment)
-                @php
-                    $label = $resp->sentiment->sentimentType->label;
-                    $bg = match($label) { 'positive' => '#d1fae5', 'negative' => '#fee2e2', default => '#f3f4f6' };
-                    $tc = match($label) { 'positive' => '#065f46', 'negative' => '#b91c1c', default => '#374151' };
-                @endphp
-                <span style="background:{{ $bg }};color:{{ $tc }};padding:.15rem .5rem;border-radius:999px;font-size:.7rem;font-weight:600;margin-left:.75rem;white-space:nowrap;">
-                    {{ ucfirst($label) }} ({{ number_format($resp->sentiment->sentiment_score * 100, 1) }}%)
-                </span>
-            @else
-                <span style="color:#9ca3af;font-size:.72rem;margin-left:.75rem;">Pending</span>
-            @endif
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Open-ended Responses &amp; Sentiment</h5>
+
+        <div class="accordion analytic-accordion" id="responseAccordion">
+            @foreach ($textResponses as $questionId => $responses)
+            @php $accId = 'q-' . $questionId; @endphp
+            <div class="accordion-item analytic-accordion__item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button analytic-accordion__btn {{ $loop->first ? '' : 'collapsed' }}"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#{{ $accId }}">
+                        <span class="analytic-accordion__q-text">
+                            {{ $responses->first()->question->question_text }}
+                        </span>
+                        <span class="analytic-accordion__q-count ms-3">
+                            {{ $responses->count() }} response(s)
+                        </span>
+                    </button>
+                </h2>
+                <div id="{{ $accId }}"
+                     class="accordion-collapse collapse {{ $loop->first ? 'show' : '' }}"
+                     data-bs-parent="#responseAccordion">
+                    <div class="accordion-body analytic-accordion__body">
+                        @foreach ($responses as $resp)
+                        <div class="text-response-row">
+                            <div class="text-response-row__text">
+                                {{ $resp->text_response ?: '(no response)' }}
+                            </div>
+                            @if ($resp->sentiment)
+                                @php
+                                    $label = $resp->sentiment->sentimentType->label;
+                                    $type  = match($label) { 'positive' => 'positive', 'negative' => 'negative', default => 'neutral' };
+                                @endphp
+                                <span class="sentiment-badge sentiment-badge--{{ $type }} flex-shrink-0">
+                                    {{ ucfirst($label) }}
+                                    ({{ number_format($resp->sentiment->sentiment_score * 100, 1) }}%)
+                                </span>
+                            @else
+                                <span class="sentiment-badge sentiment-badge--neutral flex-shrink-0">
+                                    Pending
+                                </span>
+                            @endif
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endforeach
         </div>
-        @endforeach
+
     </div>
-    @endforeach
 </div>
 @endif
 
-{{-- Generate CQI Report --}}
+{{-- ===== GENERATE CQI REPORT ===== --}}
 <div class="card">
-    <div style="padding:.75rem 1rem;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-weight:600;font-size:.875rem;">
-        Generate CQI Report
-    </div>
     <div class="card-body">
+
+        <div class="d-flex align-items-start gap-3 mb-3">
+            <div class="kpi-icon kpi-icon--blue" style="flex-shrink:0;">
+                <i class="bi bi-robot"></i>
+            </div>
+            <div>
+                <h5 class="card-title mb-1">Generate CQI Report</h5>
+                <p class="text-muted-sm mb-0">
+                    Use Gemini AI to generate a Continuous Quality Improvement report
+                    based on collected survey responses and sentiment data.
+                </p>
+            </div>
+        </div>
+
         @if ($existingReport)
-            <div class="alert alert-info" style="margin-bottom:1rem;">
-                A CQI report already exists for this survey.
-                <a href="{{ route('admin.cqi-reports.show', $existingReport->id) }}" style="font-weight:600;">View it →</a>
-                Generating again will create a new version.
+            <div class="ai-processing-bar mb-3" style="background: rgba(#22c55e, .07); border-color: rgba(#22c55e, .2);">
+                <i class="bi bi-check-circle-fill" style="color: #16a34a; font-size: 1rem;"></i>
+                <span style="color: #15803d;">
+                    A CQI report already exists for this survey.
+                    <a href="{{ route('admin.cqi-reports.show', $existingReport->id) }}" class="fw-600">View it →</a>
+                    Generating again will create a new version.
+                </span>
             </div>
         @endif
 
         @if (! $analytic->survey->is_active)
-            <form method="POST" action="{{ route('admin.cqi-reports.generate') }}">
+            <form method="POST" action="{{ route('admin.cqi-reports.generate') }}"
+                  id="generateCqiForm"
+                  data-confirm="Generate a CQI report using Gemini AI? This may take up to a minute.">
                 @csrf
                 <input type="hidden" name="survey_id" value="{{ $analytic->survey_id }}">
-                <div class="form-group" style="max-width:300px;">
+
+                <div class="mb-3" style="max-width: 320px;">
                     <label class="form-label">Report Scope</label>
-                    <select name="scope_type" class="form-control">
-                        <option value="survey">Survey (this survey only)</option>
-                        <option value="offering">Offering (all surveys in this offering)</option>
-                        <option value="faculty">Faculty (all surveys for this faculty)</option>
+                    <select name="scope_type" class="form-select">
+                        <option value="survey">Survey — this survey only</option>
+                        <option value="offering">Offering — all surveys in this offering</option>
+                        <option value="faculty">Faculty — all surveys for this faculty</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary"
-                        onclick="return confirm('Generate CQI report using Gemini AI? This may take a minute.')">
-                    🤖 Generate CQI Report
+
+                <button type="submit" class="btn btn-primary" id="generateBtn">
+                    <i class="bi bi-robot me-2"></i> Generate CQI Report
                 </button>
             </form>
         @else
-            <div class="alert" style="background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;">
-                The survey must be <strong>deactivated</strong> before generating a CQI report.
+            <div class="info-notice">
+                <i class="bi bi-lock-fill info-notice__icon"></i>
+                <div>
+                    The survey must be <strong>deactivated</strong> before generating a CQI report.
+                    This ensures all responses have been collected.
+                </div>
             </div>
         @endif
+
     </div>
 </div>
+
 @endsection
+
+@push('scripts')
+<script src="{{ asset('js/modules/confirm-action.js') }}"></script>
+<script>
+(function () {
+    // ---- Animate category bar fills on page load ----
+    document.querySelectorAll('.category-score-row__fill').forEach(function (el) {
+        const target = el.dataset.width;
+        requestAnimationFrame(function () {
+            setTimeout(function () {
+                el.style.width = target;
+            }, 120);
+        });
+    });
+
+    // ---- Generate CQI: show AI loading state on submit ----
+    const genForm = document.getElementById('generateCqiForm');
+    const genBtn  = document.getElementById('generateBtn');
+    if (genForm && genBtn) {
+        genForm.addEventListener('submit', function () {
+            genBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Generating with AI…';
+            genBtn.disabled = true;
+        });
+    }
+})();
+</script>
+@endpush
