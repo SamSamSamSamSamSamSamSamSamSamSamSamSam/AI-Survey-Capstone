@@ -62,38 +62,41 @@ class SurveyController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'offering_id'    => ['required', 'exists:course_offerings,id'],
+            // Changed to expect an array of IDs
+            'offering_id'    => ['required', 'array'], 
+            'offering_id.*'  => ['exists:course_offerings,id'],
             'target_role_id' => ['required', 'exists:roles,id'],
             'template_id'    => ['nullable', 'exists:survey_templates,id'],
             'title'          => ['required', 'string', 'max:255'],
             'description'    => ['nullable', 'string'],
         ]);
 
-        $survey = DB::transaction(function () use ($request) {
-            $survey = Survey::create([
-                'offering_id'    => $request->offering_id,
-                'created_by'     => Auth::id(),
-                'target_role_id' => $request->target_role_id,
-                'template_id'    => $request->template_id,
-                'title'          => $request->title,
-                'description'    => $request->description,
-                'is_active'      => false,
-            ]);
+        DB::transaction(function () use ($request) {
+            // Loop through each selected course offering
+            foreach ($request->offering_id as $id) {
+                $survey = Survey::create([
+                    'offering_id'    => $id,
+                    'created_by'     => Auth::id(),
+                    'target_role_id' => $request->target_role_id,
+                    'template_id'    => $request->template_id,
+                    'title'          => $request->title,
+                    'description'    => $request->description,
+                    'is_active'      => false,
+                ]);
 
-            // Auto-copy template questions if a template was selected
-            if ($request->template_id) {
-                $template = SurveyTemplate::with('questions')->find($request->template_id);
-                $template?->copyQuestionsTo($survey);
+                // Auto-copy template questions if a template was selected
+                if ($request->template_id) {
+                    $template = SurveyTemplate::with('questions')->find($request->template_id);
+                    $template?->copyQuestionsTo($survey);
+                }
             }
-
-            return $survey;
         });
 
-        $msg = $request->template_id
-            ? 'Survey created with template questions copied. Review before activating.'
-            : 'Survey created. Add questions before activating.';
+        $count = count($request->offering_id);
+        $msg = "Successfully created {$count} surveys.";
 
-        return redirect()->route('admin.surveys.show', $survey->id)->with('success', $msg);
+        // Redirect to the index since we created multiple surveys
+        return redirect()->route('admin.surveys.index')->with('success', $msg);
     }
 
     public function show(Survey $survey): View
@@ -121,6 +124,7 @@ class SurveyController extends Controller
 
     public function update(Request $request, Survey $survey): RedirectResponse
     {
+        // For editing, we usually update just the one specific survey record
         $request->validate([
             'offering_id'    => ['required', 'exists:course_offerings,id'],
             'target_role_id' => ['required', 'exists:roles,id'],

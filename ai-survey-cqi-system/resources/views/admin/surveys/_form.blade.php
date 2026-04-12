@@ -3,26 +3,27 @@
      Shared by create.blade.php and edit.blade.php
      ============================================================ --}}
 
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+
 {{-- Course Offering --}}
 <div class="mb-4">
     <label class="form-label" for="offering_id">
-        Course Offering <span class="text-danger">*</span>
+        Course Offerings <span class="text-danger">*</span>
     </label>
-    <select name="offering_id" id="offering_id"
-            class="form-select @error('offering_id') is-invalid @enderror">
-        <option value="">Select offering…</option>
+    <select name="offering_id[]" id="searchable-select"
+            class="form-select @error('offering_id') is-invalid @enderror"
+            placeholder="Type to add courses..." 
+            multiple autocomplete="off">
         @foreach ($offerings as $offering)
             <option value="{{ $offering->id }}"
-                @selected(old('offering_id', $survey->offering_id ?? '') == $offering->id)>
+                @selected(in_array($offering->id, (array) old('offering_id', isset($survey) ? $survey->offering_id : [])))>
                 {{ $offering->subject->course_code }} — {{ $offering->subject->name }}
-                | {{ $offering->semester->full_label }}
                 | {{ $offering->teacher->name }}
-                @if ($offering->group_number) (Group {{ $offering->group_number }}) @endif
             </option>
         @endforeach
     </select>
     @error('offering_id')
-        <div class="invalid-feedback">{{ $message }}</div>
+        <div class="invalid-feedback d-block">{{ $message }}</div>
     @enderror
 </div>
 
@@ -74,3 +75,17 @@
         <div class="invalid-feedback">{{ $message }}</div>
     @enderror
 </div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<script>
+    new TomSelect("#searchable-select", {
+        plugins: ['remove_button'], // Adds the "X" to remove a selected item
+        create: false,
+        persist: false,
+        onItemAdd: function() {
+            this.setTextboxValue(''); // Clears search text after selecting one
+            this.refreshOptions();
+        }
+    });
+</script>
