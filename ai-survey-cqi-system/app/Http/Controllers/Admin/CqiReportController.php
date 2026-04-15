@@ -13,11 +13,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class CqiReportController extends Controller
-{
-    public function index(Request $request): View
+    class CqiReportController extends Controller
+    {
+    public function index(Request $request): \Illuminate\Contracts\View\View|string
     {
         $semesters          = Semester::orderByDesc('academic_start_year')->get();
         $activeSemester     = Semester::current();
@@ -47,6 +48,11 @@ class CqiReportController extends Controller
         }
 
         $reports = $query->latest()->paginate(15)->withQueryString();
+
+        if ($request->ajax()) {
+            // This returns a string, which caused the TypeError
+            return view('admin.cqi-reports._table', compact('reports'))->render();
+        }
 
         return view('admin.cqi-reports.index', compact('reports', 'semesters', 'activeSemester', 'selectedSemesterId'));
     }

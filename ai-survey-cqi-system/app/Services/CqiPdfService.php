@@ -31,7 +31,7 @@ class CqiPdfService
 
         // Call the Python PDF generator
         $pythonScript = base_path('resources/python/cqi_pdf_generator.py');
-        $venvPython   = base_path('resources/python/myenv/Scripts/python.exe'); // Adjust for your venv path
+        $venvPython   = base_path('resources/python/myvenv/Scripts/python.exe'); // Adjust for your venv path
         $python       = file_exists($venvPython) ? $venvPython : 'python3';
 
         $process = new Process([$python, $pythonScript, $tmpJson, $outputPath]);

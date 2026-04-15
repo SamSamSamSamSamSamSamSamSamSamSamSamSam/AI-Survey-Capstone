@@ -17,7 +17,7 @@
         <h2 class="page-heading">Edit Template</h2>
         <p class="page-subheading">Editing <strong>{{ $surveyTemplate->name }}</strong></p>
     </div>
-    <a href="{{ route('admin.survey-templates.show', $surveyTemplate->id) }}" class="btn btn-outline-secondary btn-sm">
+    <a href="{{ route('admin.survey-templates.index') }}" class="btn btn-outline-secondary btn-sm">
         <i class="bi bi-arrow-left me-1"></i> Back to Template
     </a>
 </div>
@@ -32,7 +32,7 @@
                     <i class="bi bi-check-lg me-1"></i> Save Changes
                 </button>
                 <a href="{{ route('admin.survey-templates.show', $surveyTemplate->id) }}" class="btn btn-outline-secondary">
-                    Cancel
+                    Manage Questions
                 </a>
             </div>
         </form>

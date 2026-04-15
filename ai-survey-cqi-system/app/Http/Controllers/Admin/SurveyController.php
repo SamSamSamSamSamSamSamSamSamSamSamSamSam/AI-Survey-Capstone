@@ -42,7 +42,12 @@ class SurveyController extends Controller
 
         $surveys = $query->latest()->paginate(15)->withQueryString();
 
+        if ($request->ajax()) {
+            return view('admin.surveys._table', compact('surveys'))->render();
+        }
+
         return view('admin.surveys.index', compact('surveys', 'semesters', 'activeSemester', 'selectedSemesterId'));
+
     }
 
     public function create(): View
