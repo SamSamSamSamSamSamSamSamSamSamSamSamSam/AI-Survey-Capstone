@@ -21,26 +21,22 @@ class UserController extends Controller
     // Index — paginated list with search + role filter
     // -------------------------------------------------------------------------
 
-    public function index(Request $request): View
+    public function index(Request $request)
     {
-        $query = User::with('roles')
-                     ->withTrashed(); // so admin can see/restore soft-deleted users
+        $query = User::with('roles')->withTrashed();
 
-        // Search by name, email, or ID number
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('user_id_number', 'like', "%{$search}%");
+                ->orWhere('email', 'like', "%{$search}%")
+                ->orWhere('user_id_number', 'like', "%{$search}%");
             });
         }
 
-        // Filter by role
         if ($role = $request->input('role')) {
             $query->whereHas('roles', fn ($q) => $q->where('name', $role));
         }
 
-        // Filter by status
         if ($request->input('status') === 'deleted') {
             $query->onlyTrashed();
         } elseif ($request->input('status') !== 'all') {
@@ -49,6 +45,11 @@ class UserController extends Controller
 
         $users = $query->latest()->paginate(15)->withQueryString();
         $roles = Role::orderBy('name')->get();
+
+        // If it's an AJAX request, return only the table partial
+        if ($request->ajax()) {
+            return view('admin.users._table', compact('users'))->render();
+        }
 
         return view('admin.users.index', compact('users', 'roles'));
     }
