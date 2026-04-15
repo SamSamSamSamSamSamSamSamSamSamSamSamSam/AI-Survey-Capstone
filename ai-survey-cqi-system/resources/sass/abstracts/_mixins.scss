@@ -1,148 +1,155 @@
-// ============================================================
-// _mixins.scss
-// ============================================================
+// =============================================================================
+// _mixins.scss — CQI System Reusable Mixins
+// =============================================================================
 
-// ---- Dark mode shorthand ------------------------------------
-@mixin dark {
-  [data-bs-theme="dark"] & {
-    @content;
-  }
+// ── Responsive breakpoints ────────────────────────────────────────────────────
+@mixin mobile {
+    @media (max-width: 767.98px) { @content; }
 }
 
-// ---- Flex helpers -------------------------------------------
+@mixin tablet {
+    @media (min-width: 768px) and (max-width: 991.98px) { @content; }
+}
+
+@mixin desktop {
+    @media (min-width: 992px) { @content; }
+}
+
+@mixin sidebar-collapsed {
+    .app-shell.sidebar-collapsed & { @content; }
+}
+
+
+// ── Flex utilities ────────────────────────────────────────────────────────────
 @mixin flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 @mixin flex-between {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 @mixin flex-start {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
 }
 
-// ---- Text overflow -------------------------------------------
-@mixin truncate {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+
+// ── Typography ────────────────────────────────────────────────────────────────
+@mixin text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-// ---- Sidebar nav link base ----------------------------------
-@mixin sidebar-link-base {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border-radius: $radius-md;
-  font-size: $text-base;
-  font-weight: 500;
-  color: $light-sidebar-text;
-  text-decoration: none;
-  transition: background .18s ease, color .18s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  position: relative;
-
-  i {
-    font-size: 1rem;
-    flex-shrink: 0;
-    opacity: .8;
-    transition: opacity .18s;
-  }
-
-  &:hover {
-    background: rgba(255, 255, 255, .08);
-    color: $light-sidebar-active;
-    i { opacity: 1; }
-  }
-
-  &.active {
-    background: rgba(255, 255, 255, .14);
-    color: $light-sidebar-active;
-    font-weight: 600;
-    i { opacity: 1; }
-  }
+@mixin mono {
+    font-family: $font-family-monospace;
+    font-size: $font-size-xs;
+    letter-spacing: 0.025em;
 }
 
-// ---- Card base -----------------------------------------------
-@mixin card-base {
-  background: $light-surface;
-  border: 1px solid $light-border;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-card;
 
-  @include dark {
-    background: $dark-surface;
-    border-color: $dark-border;
-  }
+// ── Transitions ───────────────────────────────────────────────────────────────
+@mixin transition($props: all, $duration: $transition-base) {
+    transition: $props $duration;
 }
 
-// ---- Icon badge (colored icon container) --------------------
-@mixin icon-badge($size: 40px, $radius: $radius-md) {
-  width: $size;
-  height: $size;
-  border-radius: $radius;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+@mixin transition-sidebar {
+    transition: all $transition-sidebar;
 }
 
-// ---- Skeleton shimmer animation ------------------------------
-@mixin skeleton-pulse {
-  background: linear-gradient(
-    90deg,
-    rgba(0, 0, 0, .06) 25%,
-    rgba(0, 0, 0, .03) 50%,
-    rgba(0, 0, 0, .06) 75%
-  );
-  background-size: 400% 100%;
-  animation: skeleton-shimmer 1.6s ease infinite;
-  border-radius: $radius-sm;
 
-  @include dark {
-    background: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, .06) 25%,
-      rgba(255, 255, 255, .03) 50%,
-      rgba(255, 255, 255, .06) 75%
-    );
-    background-size: 400% 100%;
-  }
+// ── Elevation / Shadows ───────────────────────────────────────────────────────
+@mixin elevate($level: 1) {
+    @if $level == 0 { box-shadow: none; }
+    @else if $level == 1 { box-shadow: $box-shadow-sm; }
+    @else if $level == 2 { box-shadow: $box-shadow; }
+    @else if $level == 3 { box-shadow: $box-shadow-md; }
+    @else if $level == 4 { box-shadow: $box-shadow-lg; }
 }
 
-// ---- Focus ring ---------------------------------------------
-@mixin focus-ring($color: $brand-action, $opacity: .2) {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba($color, $opacity);
+
+// ── Focus ring ────────────────────────────────────────────────────────────────
+@mixin focus-ring($color: $primary) {
+    &:focus-visible {
+        outline: 2px solid $color;
+        outline-offset: 2px;
+    }
 }
 
-// ---- Surface card variant -----------------------------------
-@mixin surface($padding: 20px) {
-  @include card-base;
-  padding: $padding;
+
+// ── Status badge ─────────────────────────────────────────────────────────────
+@mixin status-badge($bg, $color) {
+    background-color: $bg;
+    color: $color;
+    font-weight: $font-weight-semibold;
+    font-size: $font-size-xs;
+    padding: .2em .65em;
+    border-radius: $border-radius-pill;
+    display: inline-flex;
+    align-items: center;
+    gap: .3em;
+    letter-spacing: .01em;
+    line-height: 1.5;
 }
 
-// ---- Uppercase label ----------------------------------------
-@mixin label-uppercase($size: .68rem) {
-  font-size: $size;
-  font-weight: 700;
-  letter-spacing: .09em;
-  text-transform: uppercase;
+
+// ── Card base ─────────────────────────────────────────────────────────────────
+@mixin cqi-card {
+    background: var(--cqi-card-bg);
+    border: 1px solid var(--cqi-card-border);
+    border-radius: $border-radius-lg;
+    box-shadow: $box-shadow-sm;
 }
 
-// ---- Responsive breakpoints ---------------------------------
-@mixin respond-to($bp) {
-  @if $bp == sm { @media (max-width: 575.98px) { @content; } }
-  @if $bp == md { @media (max-width: 767.98px) { @content; } }
-  @if $bp == lg { @media (max-width: 991.98px) { @content; } }
-  @if $bp == xl { @media (max-width: 1199.98px) { @content; } }
+
+// ── Sidebar item ─────────────────────────────────────────────────────────────
+@mixin sidebar-item-base {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .5625rem .875rem;
+    border-radius: $border-radius;
+    color: $sidebar-text;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    text-decoration: none;
+    cursor: pointer;
+    position: relative;
+    transition: color $transition-base, background $transition-base;
+    white-space: nowrap;
+    overflow: hidden;
+
+    &:hover {
+        background: $sidebar-bg-hover;
+        color: $sidebar-text-active;
+    }
+
+    &.active {
+        background: $sidebar-bg-active;
+        color: $sidebar-text-active;
+    }
+}
+
+
+// ── Scrollbar styling ─────────────────────────────────────────────────────────
+@mixin custom-scrollbar($width: 5px, $track: transparent, $thumb: rgba(255,255,255,.15)) {
+    scrollbar-width: thin;
+    scrollbar-color: $thumb $track;
+
+    &::-webkit-scrollbar {
+        width: $width;
+        height: $width;
+    }
+
+    &::-webkit-scrollbar-track { background: $track; }
+    &::-webkit-scrollbar-thumb {
+        background: $thumb;
+        border-radius: $border-radius-pill;
+    }
 }

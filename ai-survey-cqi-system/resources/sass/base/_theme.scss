@@ -1,78 +1,141 @@
-// ============================================================
-// _theme.scss
-// CSS Custom Properties — runtime light / dark theming
-// ============================================================
+// =============================================================================
+// _theme.scss — CQI System CSS Custom Properties (Light + Dark Themes)
+// =============================================================================
+// All component SCSS references these tokens via var(--cqi-*).
+// Bootstrap's data-bs-theme handles Bootstrap-native component theming.
+// We layer our own tokens on top for custom components.
+// =============================================================================
 
-:root {
-  // --- Brand ---
-  --cqi-primary:        #{$brand-primary};
-  --cqi-action:         #{$brand-action};
-  --cqi-accent:         #{$brand-accent};
+:root,
+[data-bs-theme="light"] {
+    // ── Surface / Background ──────────────────────────────────────────────────
+    --cqi-body-bg:          #f8fafc;
+    --cqi-body-color:       #1e293b;
+    --cqi-surface:          #ffffff;
+    --cqi-surface-raised:   #ffffff;
+    --cqi-surface-sunken:   #f1f5f9;
 
-  // --- Page surfaces ---
-  --cqi-bg:             #{$light-bg};
-  --cqi-surface:        #{$light-surface};
-  --cqi-surface-2:      #{$light-bg};
+    // ── Card ─────────────────────────────────────────────────────────────────
+    --cqi-card-bg:          #ffffff;
+    --cqi-card-border:      rgba(0, 0, 0, 0.065);
+    --cqi-card-shadow:      0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
 
-  // --- Borders ---
-  --cqi-border:         #{$light-border};
-  --cqi-border-subtle:  #{$light-border-subtle};
+    // ── Border ───────────────────────────────────────────────────────────────
+    --cqi-border-color:     #e2e8f0;
+    --cqi-border-subtle:    rgba(0, 0, 0, 0.06);
 
-  // --- Text ---
-  --cqi-text:           #{$light-text-primary};
-  --cqi-text-secondary: #{$light-text-secondary};
-  --cqi-text-muted:     #{$light-text-muted};
+    // ── Text ─────────────────────────────────────────────────────────────────
+    --cqi-text-primary:     #1e293b;
+    --cqi-text-secondary:   #475569;
+    --cqi-text-muted:       #94a3b8;
+    --cqi-text-disabled:    #cbd5e1;
 
-  // --- Sidebar ---
-  --cqi-sidebar-bg:     #{$light-sidebar-bg};
-  --cqi-sidebar-text:   #{$light-sidebar-text};
+    // ── Topbar ───────────────────────────────────────────────────────────────
+    --cqi-topbar-bg:        #ffffff;
+    --cqi-topbar-border:    #e2e8f0;
+    --cqi-topbar-shadow:    0 1px 0 rgba(0,0,0,.06);
 
-  // --- Topbar ---
-  --cqi-topbar-bg:      #{$light-topbar-bg};
+    // ── Content area ─────────────────────────────────────────────────────────
+    --cqi-content-bg:       #f8fafc;
 
-  // --- Status colors ---
-  --cqi-active:         #{$status-active};
-  --cqi-pending:        #{$status-pending};
-  --cqi-danger:         #{$status-danger};
-  --cqi-completed:      #{$status-completed};
-  --cqi-inactive:       #{$status-inactive};
+    // ── Avatar ───────────────────────────────────────────────────────────────
+    --cqi-avatar-bg:        #2563eb;
+    --cqi-avatar-color:     #ffffff;
 
-  // --- Shadows ---
-  --cqi-shadow-card:    #{$shadow-card};
-  --cqi-shadow-elevated: #{$shadow-elevated};
+    // ── Monospace chip ────────────────────────────────────────────────────────
+    --cqi-mono-bg:          rgba(99, 102, 241, .07);
+    --cqi-mono-color:       #6366f1;
 
-  // --- Misc ---
-  --cqi-topbar-height:  #{$topbar-height};
-  --cqi-sidebar-width:  #{$sidebar-width};
+    // ── Input ────────────────────────────────────────────────────────────────
+    --cqi-input-bg:         #ffffff;
+    --cqi-input-border:     #e2e8f0;
+
+    // ── Table ────────────────────────────────────────────────────────────────
+    --cqi-table-stripe-bg:  rgba(0,0,0,.018);
+    --cqi-table-hover-bg:   rgba(37, 99, 235, .035);
+
+    // ── Dropdown ─────────────────────────────────────────────────────────────
+    --cqi-dropdown-bg:      #ffffff;
+    --cqi-dropdown-border:  rgba(0, 0, 0, .08);
+
+    // ── Alert flash ──────────────────────────────────────────────────────────
+    --cqi-alert-success-bg: #f0fdf4;
+    --cqi-alert-success-border: #bbf7d0;
+    --cqi-alert-success-color:  #15803d;
+    --cqi-alert-danger-bg:  #fef2f2;
+    --cqi-alert-danger-border:  #fecaca;
+    --cqi-alert-danger-color:   #dc2626;
+    --cqi-alert-info-bg:    #f0f9ff;
+    --cqi-alert-info-border:    #bae6fd;
+    --cqi-alert-info-color:     #0284c7;
+
+    // ── Scrollbar ────────────────────────────────────────────────────────────
+    --cqi-scrollbar-thumb:  rgba(0, 0, 0, .15);
 }
+
 
 [data-bs-theme="dark"] {
-  --cqi-bg:             #{$dark-bg};
-  --cqi-surface:        #{$dark-surface};
-  --cqi-surface-2:      #{$dark-surface-2};
+    // ── Surface / Background ──────────────────────────────────────────────────
+    --cqi-body-bg:          #0c1220;
+    --cqi-body-color:       #e2e8f0;
+    --cqi-surface:          #131d30;
+    --cqi-surface-raised:   #1a2540;
+    --cqi-surface-sunken:   #0a1018;
 
-  --cqi-border:         #{$dark-border};
-  --cqi-border-subtle:  #{$dark-border-subtle};
+    // ── Card ─────────────────────────────────────────────────────────────────
+    --cqi-card-bg:          #131d30;
+    --cqi-card-border:      rgba(255, 255, 255, 0.07);
+    --cqi-card-shadow:      0 1px 3px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.25);
 
-  --cqi-text:           #{$dark-text-primary};
-  --cqi-text-secondary: #{$dark-text-secondary};
-  --cqi-text-muted:     #{$dark-text-muted};
+    // ── Border ───────────────────────────────────────────────────────────────
+    --cqi-border-color:     rgba(255, 255, 255, 0.09);
+    --cqi-border-subtle:    rgba(255, 255, 255, 0.05);
 
-  --cqi-sidebar-bg:     #{$dark-sidebar-bg};
-  --cqi-sidebar-text:   #{$dark-sidebar-text};
+    // ── Text ─────────────────────────────────────────────────────────────────
+    --cqi-text-primary:     #e2e8f0;
+    --cqi-text-secondary:   #94a3b8;
+    --cqi-text-muted:       #64748b;
+    --cqi-text-disabled:    #334155;
 
-  --cqi-topbar-bg:      #{$dark-topbar-bg};
+    // ── Topbar ───────────────────────────────────────────────────────────────
+    --cqi-topbar-bg:        #131d30;
+    --cqi-topbar-border:    rgba(255, 255, 255, 0.07);
+    --cqi-topbar-shadow:    0 1px 0 rgba(0,0,0,.3);
 
-  --cqi-shadow-card:    0 1px 3px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.2);
-  --cqi-shadow-elevated: 0 4px 24px rgba(0,0,0,.4);
-}
+    // ── Content area ─────────────────────────────────────────────────────────
+    --cqi-content-bg:       #0c1220;
 
-// ---- Smooth theme transition on page elements ---------------
-body,
-.sidebar,
-.topbar,
-.card,
-.main,
-.dropdown-menu {
-  transition: background-color .25s ease, border-color .25s ease, color .25s ease;
+    // ── Avatar ───────────────────────────────────────────────────────────────
+    --cqi-avatar-bg:        #2563eb;
+    --cqi-avatar-color:     #ffffff;
+
+    // ── Monospace chip ────────────────────────────────────────────────────────
+    --cqi-mono-bg:          rgba(99, 102, 241, .15);
+    --cqi-mono-color:       #818cf8;
+
+    // ── Input ────────────────────────────────────────────────────────────────
+    --cqi-input-bg:         #0f1929;
+    --cqi-input-border:     rgba(255, 255, 255, .1);
+
+    // ── Table ────────────────────────────────────────────────────────────────
+    --cqi-table-stripe-bg:  rgba(255,255,255,.025);
+    --cqi-table-hover-bg:   rgba(37, 99, 235, .07);
+
+    // ── Dropdown ─────────────────────────────────────────────────────────────
+    --cqi-dropdown-bg:      #1a2540;
+    --cqi-dropdown-border:  rgba(255, 255, 255, .07);
+
+    // ── Alert flash ──────────────────────────────────────────────────────────
+    --cqi-alert-success-bg: rgba(22, 163, 74, .1);
+    --cqi-alert-success-border: rgba(22, 163, 74, .25);
+    --cqi-alert-success-color:  #4ade80;
+    --cqi-alert-danger-bg:  rgba(220, 38, 38, .1);
+    --cqi-alert-danger-border:  rgba(220, 38, 38, .25);
+    --cqi-alert-danger-color:   #f87171;
+    --cqi-alert-info-bg:    rgba(2, 132, 199, .1);
+    --cqi-alert-info-border:    rgba(2, 132, 199, .25);
+    --cqi-alert-info-color:     #38bdf8;
+
+    // ── Scrollbar ────────────────────────────────────────────────────────────
+    --cqi-scrollbar-thumb:  rgba(255, 255, 255, .12);
 }

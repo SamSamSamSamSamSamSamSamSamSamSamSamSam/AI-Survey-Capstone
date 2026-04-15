@@ -1,46 +1,167 @@
-// ============================================================
-// _forms.scss
-// ============================================================
+// =============================================================================
+// _forms.scss — CQI System Form Styles
+// =============================================================================
 
-.form-label {
-  font-size: .8125rem;
-  font-weight: 600;
-  color: $light-text-primary;
-  margin-bottom: 5px;
-
-  [data-bs-theme="dark"] & { color: $dark-text-primary; }
-}
-
+// ── Form control base ─────────────────────────────────────────────────────────
 .form-control,
 .form-select {
-  border-color: $light-border;
-  border-radius: $radius-md;
-  font-size: .875rem;
-  color: $light-text-primary;
-  background-color: $light-surface;
-  transition: border-color .18s, box-shadow .18s;
+    background-color: var(--cqi-input-bg);
+    border-color: var(--cqi-input-border);
+    color: var(--cqi-text-primary);
+    font-size: $font-size-sm;
+    transition: border-color $transition-fast, box-shadow $transition-fast;
 
-  &:focus {
-    border-color: $brand-action;
-    box-shadow: 0 0 0 3px rgba($brand-action, .15);
-  }
-
-  &::placeholder { color: lighten($light-text-muted, 10%); }
-
-  [data-bs-theme="dark"] & {
-    background-color: rgba(255,255,255,.05);
-    border-color: $dark-border;
-    color: $dark-text-primary;
+    &::placeholder { color: var(--cqi-text-muted); }
 
     &:focus {
-      border-color: $brand-action;
-      box-shadow: 0 0 0 3px rgba($brand-action, .2);
+        background-color: var(--cqi-input-bg);
+        border-color: $primary;
+        box-shadow: 0 0 0 3px rgba($primary, .12);
+        color: var(--cqi-text-primary);
     }
-  }
+
+    &:disabled,
+    &[readonly] {
+        background-color: var(--cqi-surface-sunken);
+        color: var(--cqi-text-muted);
+        opacity: .8;
+    }
 }
 
+// ── Label ─────────────────────────────────────────────────────────────────────
+.form-label {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: var(--cqi-text-secondary);
+    margin-bottom: .375rem;
+
+    .required-marker {
+        color: $danger;
+        margin-left: .125rem;
+    }
+}
+
+// ── Helper text ───────────────────────────────────────────────────────────────
 .form-text {
-  font-size: .75rem;
-  color: $light-text-muted;
-  [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    font-size: $font-size-xs;
+    color: var(--cqi-text-muted);
+    margin-top: .3rem;
+}
+
+// ── Validation states ─────────────────────────────────────────────────────────
+.invalid-feedback {
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+}
+
+.is-invalid ~ .invalid-feedback {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+
+    &::before {
+        content: '\F330'; // bi-exclamation-circle
+        font-family: 'bootstrap-icons';
+        font-size: .7rem;
+    }
+}
+
+// ── Input group ───────────────────────────────────────────────────────────────
+.input-group {
+    .input-group-text {
+        background: var(--cqi-surface-sunken);
+        border-color: var(--cqi-input-border);
+        color: var(--cqi-text-muted);
+        font-size: $font-size-sm;
+    }
+}
+
+// ── Checkbox + radio ──────────────────────────────────────────────────────────
+.form-check-input {
+    border-color: var(--cqi-input-border);
+    background-color: var(--cqi-input-bg);
+    transition: border-color $transition-fast, background $transition-fast;
+
+    &:checked {
+        background-color: $primary;
+        border-color: $primary;
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 3px rgba($primary, .12);
+        border-color: $primary;
+    }
+}
+
+.form-check-label {
+    font-size: $font-size-sm;
+    color: var(--cqi-text-secondary);
+    cursor: pointer;
+}
+
+// ── Form section header ───────────────────────────────────────────────────────
+.form-section-title {
+    font-size: .875rem;
+    font-weight: $font-weight-semibold;
+    color: var(--cqi-text-primary);
+    padding-bottom: .625rem;
+    border-bottom: 1px solid var(--cqi-border-subtle);
+    margin: 1.5rem 0 1rem;
+
+    &:first-child { margin-top: 0; }
+}
+
+// ── Search input ──────────────────────────────────────────────────────────────
+.search-input-wrap {
+    position: relative;
+
+    .search-icon {
+        position: absolute;
+        left: .75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--cqi-text-muted);
+        font-size: .875rem;
+        pointer-events: none;
+    }
+
+    .form-control {
+        padding-left: 2.25rem;
+    }
+}
+
+// ── File upload drop zone ─────────────────────────────────────────────────────
+.file-drop-zone {
+    border: 2px dashed var(--cqi-border-color);
+    border-radius: $border-radius-lg;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color $transition-base, background $transition-base;
+    background: var(--cqi-surface-sunken);
+
+    &:hover,
+    &.drag-over {
+        border-color: $primary;
+        background: rgba($primary, .03);
+    }
+
+    .file-drop-icon {
+        font-size: 2rem;
+        color: var(--cqi-text-muted);
+        margin-bottom: .75rem;
+    }
+
+    .file-drop-title {
+        font-size: .9375rem;
+        font-weight: $font-weight-medium;
+        color: var(--cqi-text-secondary);
+        margin: 0 0 .25rem;
+    }
+
+    .file-drop-hint {
+        font-size: $font-size-xs;
+        color: var(--cqi-text-muted);
+        margin: 0;
+    }
 }

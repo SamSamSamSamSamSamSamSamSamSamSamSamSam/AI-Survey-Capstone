@@ -1,27 +1,73 @@
-// ============================================================
-// _reset.scss  (complements Bootstrap Reboot)
-// ============================================================
+// =============================================================================
+// _reset.scss — CQI System Base Resets
+// =============================================================================
 
-*, *::before, *::after { box-sizing: border-box; }
-
-html { scroll-behavior: smooth; }
-
-body {
-  margin: 0;
-  background-color: $light-bg;
-  color: $light-text-primary;
-  transition: background-color .25s ease, color .25s ease;
-
-  &[data-bs-theme="dark"] {
-    background-color: $dark-bg;
-    color: $dark-text-primary;
-  }
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
 }
 
-a { text-decoration: none; }
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    height: 100%;
+}
 
-img, svg { display: block; max-width: 100%; }
+body {
+    min-height: 100%;
+    overflow-x: hidden;
+    background-color: var(--cqi-body-bg);
+    color: var(--cqi-body-color);
+    font-family: $font-family-sans-serif;
+    font-size: $font-size-base;
+    line-height: $line-height-base;
+}
 
-// Remove number spinners
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+// Remove default list styles for nav elements
+nav ul,
+nav ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+// Smooth focus transitions
+:focus-visible {
+    outline: 2px solid $primary;
+    outline-offset: 2px;
+    border-radius: 3px;
+}
+
+// Better image defaults
+img,
+svg {
+    vertical-align: middle;
+    max-width: 100%;
+}
+
+// Better button defaults
+button {
+    cursor: pointer;
+}
+
+// Prevent user select on interactive elements
+button,
+label,
+.btn {
+    user-select: none;
+}
+
+// Scrollbar base for content areas
+html {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, .15) transparent;
+}
+
+// Selection color
+::selection {
+    background-color: rgba($primary, .15);
+    color: inherit;
+}

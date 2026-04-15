@@ -1,151 +1,261 @@
-// ============================================================
-// _header.scss  (topbar)
-// ============================================================
+// =============================================================================
+// _header.scss — CQI System Topbar
+// =============================================================================
 
-.topbar {
-  position: sticky;
-  top: 0;
-  height: $topbar-height;
-  background: $light-topbar-bg;
-  border-bottom: 1px solid $light-border;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
-  z-index: 100;
-  transition: background .25s ease, border-color .25s ease;
+// ── Main area (pushes with sidebar) ──────────────────────────────────────────
+.main-area {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin-left: $sidebar-width;
+    @include transition-sidebar;
 
-  [data-bs-theme="dark"] & {
-    background: $dark-topbar-bg;
-    border-color: $dark-border;
-  }
-}
-
-// ---- Left: hamburger + title + breadcrumbs ----
-.topbar-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-
-.sidebar-toggle {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 36px; height: 36px;
-  border-radius: $radius-md;
-  border: 1px solid $light-border;
-  background: transparent;
-  color: $light-text-muted;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background .15s, color .15s;
-
-  &:hover { background: $light-bg; color: $light-text-primary; }
-
-  [data-bs-theme="dark"] & {
-    border-color: $dark-border;
-    color: $dark-text-muted;
-    &:hover { background: rgba(255,255,255,.05); color: $dark-text-primary; }
-  }
-
-  @media (max-width: 991.98px) { display: flex; }
-}
-
-.topbar-title-group {
-  min-width: 0;
-}
-
-.topbar-title {
-  font-family: $font-heading;
-  font-size: 1rem;
-  font-weight: 700;
-  color: $light-text-primary;
-  margin: 0;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  [data-bs-theme="dark"] & { color: $dark-text-primary; }
-}
-
-// ---- Breadcrumbs ----
-.breadcrumbs {
-  .breadcrumb {
-    margin: 0;
-    font-size: .75rem;
-    --bs-breadcrumb-divider-color: #{$light-text-muted};
-    --bs-breadcrumb-item-active-color: #{$light-text-muted};
-  }
-
-  .breadcrumb-item a {
-    color: $brand-action;
-    &:hover { text-decoration: underline; }
-  }
-
-  [data-bs-theme="dark"] & {
-    .breadcrumb {
-      --bs-breadcrumb-divider-color: #{$dark-text-muted};
-      --bs-breadcrumb-item-active-color: #{$dark-text-muted};
+    @include mobile {
+        margin-left: 0;
     }
-  }
+
+    // Collapsed sidebar adjustment
+    .app-shell.sidebar-collapsed & {
+        margin-left: $sidebar-collapsed-width;
+    }
 }
 
-// ---- Right: user area ----
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+
+// ── Topbar ────────────────────────────────────────────────────────────────────
+.topbar {
+    height: $topbar-height;
+    background: var(--cqi-topbar-bg);
+    border-bottom: 1px solid var(--cqi-topbar-border);
+    box-shadow: var(--cqi-topbar-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 900;
+    @include transition(background $transition-base, border-color $transition-base);
+
+    @include mobile {
+        padding: 0 1rem;
+    }
 }
 
+
+// ── Topbar Start (left) ───────────────────────────────────────────────────────
+.topbar-start {
+    @include flex-start;
+    gap: .875rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.topbar-heading {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .125rem;
+}
+
+.page-title {
+    @include text-truncate;
+}
+
+
+// ── Hamburger (mobile) ────────────────────────────────────────────────────────
+.topbar-hamburger {
+    width: 2rem;
+    height: 2rem;
+    background: none;
+    border: none;
+    padding: .25rem;
+    @include flex-center;
+    flex-direction: column;
+    gap: 5px;
+    flex-shrink: 0;
+    cursor: pointer;
+    border-radius: $border-radius-sm;
+    transition: background $transition-fast;
+
+    &:hover { background: var(--cqi-surface-sunken); }
+
+    .hamburger-bar {
+        display: block;
+        width: 1.25rem;
+        height: 1.5px;
+        background: var(--cqi-text-secondary);
+        border-radius: $border-radius-pill;
+        transition: transform $transition-base, opacity $transition-base;
+    }
+
+    @include desktop { display: none; }
+}
+
+// Animated hamburger when sidebar is open
+body.sidebar-mobile-open .topbar-hamburger {
+    .hamburger-bar:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .hamburger-bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .hamburger-bar:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+}
+
+
+// ── Topbar End (right) ────────────────────────────────────────────────────────
+.topbar-end {
+    @include flex-start;
+    gap: .375rem;
+    flex-shrink: 0;
+}
+
+
+// ── Icon button (bell etc.) ───────────────────────────────────────────────────
+.topbar-icon-btn {
+    width: 2.25rem;
+    height: 2.25rem;
+    background: none;
+    border: none;
+    border-radius: $border-radius;
+    @include flex-center;
+    cursor: pointer;
+    color: var(--cqi-text-secondary);
+    font-size: 1rem;
+    position: relative;
+    transition: background $transition-fast, color $transition-fast;
+
+    &:hover {
+        background: var(--cqi-surface-sunken);
+        color: var(--cqi-text-primary);
+    }
+
+    .notif-dot {
+        position: absolute;
+        top: .375rem;
+        right: .375rem;
+        width: .4375rem;
+        height: .4375rem;
+        background: $danger;
+        border-radius: 50%;
+        border: 1.5px solid var(--cqi-topbar-bg);
+    }
+}
+
+
+// ── User button (dropdown trigger) ───────────────────────────────────────────
 .topbar-user-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: $radius-md;
-  border: 1px solid $light-border;
-  background: transparent;
-  cursor: pointer;
-  transition: background .15s;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .3125rem .5rem .3125rem .3125rem;
+    background: none;
+    border: 1px solid var(--cqi-border-color);
+    border-radius: $border-radius;
+    cursor: pointer;
+    text-align: left;
+    transition: background $transition-fast, border-color $transition-fast;
+    color: inherit;
 
-  &:hover { background: $light-bg; }
+    &:hover,
+    &.show {
+        background: var(--cqi-surface-sunken);
+        border-color: var(--cqi-border-color);
+    }
 
-  [data-bs-theme="dark"] & {
-    border-color: $dark-border;
-    &:hover { background: rgba(255,255,255,.05); }
-  }
+    &::after { display: none; } // remove Bootstrap default caret
 }
 
 .topbar-avatar {
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, $brand-action, $brand-accent);
-  display: flex; align-items: center; justify-content: center;
-  font-size: .7rem;
-  font-weight: 700;
-  color: #fff;
-  flex-shrink: 0;
+    width: 1.875rem;
+    height: 1.875rem;
+    background: var(--cqi-avatar-bg);
+    color: var(--cqi-avatar-color);
+    border-radius: $border-radius-sm;
+    @include flex-center;
+    font-size: .6875rem;
+    font-weight: $font-weight-bold;
+    letter-spacing: .02em;
+    flex-shrink: 0;
+}
+
+.topbar-user-meta {
+    display: flex;
+    flex-direction: column;
 }
 
 .topbar-user-name {
-  font-size: .8rem;
-  font-weight: 500;
-  color: $light-text-primary;
-  max-width: 140px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  [data-bs-theme="dark"] & { color: $dark-text-primary; }
+    font-size: .8125rem;
+    font-weight: $font-weight-medium;
+    color: var(--cqi-text-primary);
+    line-height: 1.2;
+    max-width: 10rem;
+    @include text-truncate;
 }
 
 .topbar-user-id {
-  font-size: .7rem;
-  color: $light-text-muted;
+    font-size: .6875rem;
+    color: var(--cqi-text-muted);
+    @include mono;
+}
 
-  [data-bs-theme="dark"] & { color: $dark-text-muted; }
+.topbar-chevron {
+    font-size: .6rem;
+    color: var(--cqi-text-muted);
+}
+
+
+// ── Topbar dropdown ───────────────────────────────────────────────────────────
+.topbar-dropdown-menu {
+    min-width: 14rem;
+    background: var(--cqi-dropdown-bg);
+    border: 1px solid var(--cqi-dropdown-border);
+    box-shadow: $box-shadow-md;
+
+    .dropdown-header-item {
+        padding: .75rem 1rem;
+    }
+}
+
+.dropdown-user-preview {
+    @include flex-start;
+    gap: .625rem;
+}
+
+.dropdown-avatar {
+    width: 2.25rem;
+    height: 2.25rem;
+    background: linear-gradient(135deg, $primary, darken($primary, 10%));
+    color: white;
+    border-radius: $border-radius;
+    @include flex-center;
+    font-size: .75rem;
+    font-weight: $font-weight-bold;
+    flex-shrink: 0;
+}
+
+.dropdown-user-name {
+    font-size: .875rem;
+    font-weight: $font-weight-semibold;
+    color: var(--cqi-text-primary);
+    @include text-truncate;
+}
+
+.dropdown-user-id {
+    font-size: .75rem;
+    color: var(--cqi-text-muted);
+    @include mono;
+}
+
+.dropdown-signout {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .875rem;
+    color: $danger !important;
+
+    &:hover {
+        background: rgba($danger, .06) !important;
+    }
+
+    i { font-size: .9rem; }
 }

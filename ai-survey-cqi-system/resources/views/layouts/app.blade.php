@@ -6,10 +6,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="icon" type="image/png" href="{{ asset('images/dcism_logo.ico') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <title>@yield('title', 'Dashboard') | CQI System</title>
 
-    {{-- Vite: SCSS + JS --}}
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
     @stack('styles')
@@ -17,26 +19,59 @@
 
 <body>
 
-<div class="app-wrapper">
+{{-- ===================== APP SHELL ===================== --}}
+<div class="app-shell">
 
     {{-- ===================== SIDEBAR ===================== --}}
     <aside class="sidebar" id="appSidebar">
 
+        {{-- Brand --}}
         <div class="sidebar-brand">
-            <span class="brand-name">
-                <i class="bi bi-mortarboard-fill me-2" style="color: var(--bs-blue)"></i>CQI System
-            </span>
-            <span class="brand-role">{{ auth()->user()?->primaryRole() }}</span>
+            <div class="sidebar-brand-icon">
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <div class="sidebar-brand-text">
+                <span class="brand-name">CQI System</span>
+                <span class="brand-sub">Quality Improvement</span>
+            </div>
+            {{-- Desktop collapse button --}}
+            <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" aria-label="Collapse sidebar">
+                <i class="bi bi-chevron-left"></i>
+            </button>
         </div>
 
-        <nav class="sidebar-nav">
+        {{-- Role badge --}}
+        <div class="sidebar-role-badge">
+            @php
+                $role = auth()->user()?->primaryRole();
+                $roleClass = match($role) {
+                    'admin'   => 'role-admin',
+                    'faculty' => 'role-faculty',
+                    'student' => 'role-student',
+                    default   => 'role-default',
+                };
+            @endphp
+            <span class="role-chip {{ $roleClass }}">
+                <i class="bi bi-{{ $role === 'admin' ? 'shield-fill' : ($role === 'faculty' ? 'person-workspace' : 'mortarboard') }}"></i>
+                <span class="role-label">{{ ucfirst($role) }}</span>
+            </span>
+        </div>
 
-            {{-- Dashboard (all roles) --}}
-            <a href="{{ route(auth()->user()->primaryRole() . '.dashboard') }}"
-               class="nav-link {{ request()->routeIs('*.dashboard') ? 'active' : '' }}">
-                <i class="bi bi-speedometer2"></i>
-                <span>Dashboard</span>
-            </a>
+        {{-- Navigation --}}
+        <nav class="sidebar-nav" aria-label="Main navigation">
+
+            <div class="nav-section">
+                <span class="nav-section-label">Main</span>
+
+                <a href="{{ route(auth()->user()->primaryRole() . '.dashboard') }}"
+                   class="nav-item {{ request()->routeIs('*.dashboard') ? 'active' : '' }}">
+                    <span class="nav-icon"><i class="bi bi-speedometer2"></i></span>
+                    <span class="nav-label">Dashboard</span>
+                    @if(request()->routeIs('*.dashboard'))
+                        <span class="nav-active-bar"></span>
+                    @endif
+                </a>
+            </div>
 
             {{-- Role-based nav partials --}}
             @if(auth()->user()->hasRole('admin'))
@@ -53,77 +88,103 @@
 
         </nav>
 
+        {{-- Sidebar Footer --}}
         <div class="sidebar-footer">
-            <span class="sidebar-user">
-                <i class="bi bi-person-circle me-1"></i>{{ auth()->user()->name }}
-            </span>
-            <div class="theme-switch" title="Toggle dark mode">
-                <label class="switch">
-                    <input type="checkbox" id="themeToggle">
-                    <span class="slider">
-                        <i class="bi bi-sun-fill icon sun"></i>
-                        <i class="bi bi-moon-fill icon moon"></i>
-                    </span>
-                </label>
+            <div class="sidebar-user-info">
+                <div class="sidebar-avatar">
+                    {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                </div>
+                <div class="sidebar-user-details">
+                    <span class="sidebar-user-name">{{ auth()->user()->name }}</span>
+                    <span class="sidebar-user-id">{{ auth()->user()->user_id_number }}</span>
+                </div>
+            </div>
+
+            <div class="sidebar-footer-actions">
+                <div class="theme-toggle-wrap" title="Toggle dark mode">
+                    <label class="theme-toggle" aria-label="Toggle dark mode">
+                        <input type="checkbox" id="themeToggle">
+                        <span class="theme-toggle-track">
+                            <i class="bi bi-sun-fill toggle-icon sun-icon"></i>
+                            <i class="bi bi-moon-fill toggle-icon moon-icon"></i>
+                            <span class="theme-toggle-thumb"></span>
+                        </span>
+                    </label>
+                </div>
             </div>
         </div>
 
     </aside>
 
-    {{-- Mobile sidebar overlay --}}
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    {{-- Mobile overlay --}}
+    <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
 
-    {{-- ===================== MAIN ===================== --}}
-    <main class="main">
+    {{-- ===================== MAIN AREA ===================== --}}
+    <div class="main-area">
 
         {{-- Topbar --}}
-        <header class="topbar">
+        <header class="topbar" role="banner">
 
-            <div class="topbar-left">
+            <div class="topbar-start">
                 {{-- Mobile hamburger --}}
-                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Open menu">
-                    <i class="bi bi-list"></i>
+                <button class="topbar-hamburger" id="sidebarToggle" aria-label="Open menu" aria-expanded="false">
+                    <span class="hamburger-bar"></span>
+                    <span class="hamburger-bar"></span>
+                    <span class="hamburger-bar"></span>
                 </button>
 
-                <div class="topbar-title-group">
-                    <h1 class="topbar-title">@yield('title', 'Dashboard')</h1>
-
+                {{-- Page title + breadcrumb --}}
+                <div class="topbar-heading">
+                    <h1 class="page-title">@yield('title', 'Dashboard')</h1>
                     @hasSection('breadcrumbs')
-                        <nav class="breadcrumbs" aria-label="breadcrumb">
+                        <nav class="page-breadcrumb" aria-label="breadcrumb">
                             @yield('breadcrumbs')
                         </nav>
                     @endif
                 </div>
             </div>
 
-            <div class="topbar-right">
+            <div class="topbar-end">
+
+                {{-- Notification bell (placeholder) --}}
+                <button class="topbar-icon-btn" aria-label="Notifications">
+                    <i class="bi bi-bell"></i>
+                    <span class="notif-dot" aria-hidden="true"></span>
+                </button>
 
                 {{-- User dropdown --}}
                 <div class="dropdown">
                     <button class="topbar-user-btn dropdown-toggle" type="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
+                            data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">
                         <div class="topbar-avatar">
                             {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
                         </div>
-                        <div class="d-none d-sm-block text-start">
-                            <div class="topbar-user-name">{{ auth()->user()->name }}</div>
-                            <div class="topbar-user-id">{{ auth()->user()->user_id_number }}</div>
+                        <div class="topbar-user-meta d-none d-sm-block">
+                            <span class="topbar-user-name">{{ auth()->user()->name }}</span>
+                            <span class="topbar-user-id">{{ auth()->user()->user_id_number }}</span>
                         </div>
-                        <i class="bi bi-chevron-down" style="font-size:.65rem; color: var(--bs-secondary-color)"></i>
+                        <i class="bi bi-chevron-down topbar-chevron"></i>
                     </button>
 
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                        <li>
-                            <span class="dropdown-item-text small text-muted">
-                                {{ auth()->user()->user_id_number }}
-                            </span>
+                    <ul class="dropdown-menu dropdown-menu-end topbar-dropdown-menu">
+                        <li class="dropdown-header-item">
+                            <div class="dropdown-user-preview">
+                                <div class="dropdown-avatar">
+                                    {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                                </div>
+                                <div>
+                                    <div class="dropdown-user-name">{{ auth()->user()->name }}</div>
+                                    <div class="dropdown-user-id">{{ auth()->user()->user_id_number }}</div>
+                                </div>
+                            </div>
                         </li>
-                        <li><hr class="dropdown-divider"></li>
+                        <li><hr class="dropdown-divider my-1"></li>
                         <li>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="dropdown-item text-danger">
-                                    <i class="bi bi-box-arrow-right me-2"></i>Sign Out
+                                <button type="submit" class="dropdown-item dropdown-signout">
+                                    <i class="bi bi-box-arrow-right"></i>
+                                    <span>Sign Out</span>
                                 </button>
                             </form>
                         </li>
@@ -134,71 +195,114 @@
         </header>
 
         {{-- ===================== CONTENT ===================== --}}
-        <section class="content">
+        <main class="content-area" id="mainContent" role="main">
 
             {{-- Flash alerts --}}
             @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle-fill"></i>
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="alert-flash alert-flash-success alert-dismissible fade show" role="alert">
+                    <div class="alert-flash-icon"><i class="bi bi-check-circle-fill"></i></div>
+                    <div class="alert-flash-body">{{ session('success') }}</div>
+                    <button type="button" class="alert-flash-close btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
 
             @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                    {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="alert-flash alert-flash-danger alert-dismissible fade show" role="alert">
+                    <div class="alert-flash-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                    <div class="alert-flash-body">{{ session('error') }}</div>
+                    <button type="button" class="alert-flash-close btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
 
             @if(session('info'))
-                <div class="alert alert-info alert-dismissible fade show" role="alert">
-                    <i class="bi bi-info-circle-fill"></i>
-                    {{ session('info') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="alert-flash alert-flash-info alert-dismissible fade show" role="alert">
+                    <div class="alert-flash-icon"><i class="bi bi-info-circle-fill"></i></div>
+                    <div class="alert-flash-body">{{ session('info') }}</div>
+                    <button type="button" class="alert-flash-close btn-close btn-close-sm" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
 
+            {{-- Page content --}}
             @yield('content')
 
-        </section>
+        </main>
 
-    </main>
+    </div>{{-- /.main-area --}}
 
-</div>
+</div>{{-- /.app-shell --}}
 
 {{-- ===================== SCRIPTS ===================== --}}
 <script>
 (function () {
-    // ---- Theme persistence ----
-    const THEME_KEY = 'cqi-theme';
-    const html      = document.documentElement;
-    const toggle    = document.getElementById('themeToggle');
+    'use strict';
 
-    const saved = localStorage.getItem(THEME_KEY) || 'light';
-    html.setAttribute('data-bs-theme', saved);
-    if (toggle) toggle.checked = (saved === 'dark');
+    /* ── Theme persistence ── */
+    const THEME_KEY  = 'cqi-theme';
+    const SIDEBAR_KEY = 'cqi-sidebar-collapsed';
+    const html       = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
 
-    if (toggle) {
-        toggle.addEventListener('change', function () {
+    const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
+    html.setAttribute('data-bs-theme', savedTheme);
+    if (themeToggle) themeToggle.checked = (savedTheme === 'dark');
+
+    if (themeToggle) {
+        themeToggle.addEventListener('change', function () {
             const next = this.checked ? 'dark' : 'light';
             html.setAttribute('data-bs-theme', next);
             localStorage.setItem(THEME_KEY, next);
         });
     }
 
-    // ---- Mobile sidebar ----
-    const sidebar = document.getElementById('appSidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    const burger  = document.getElementById('sidebarToggle');
+    /* ── Desktop sidebar collapse ── */
+    const sidebar     = document.getElementById('appSidebar');
+    const collapseBtn = document.getElementById('sidebarCollapseBtn');
+    const appShell    = document.querySelector('.app-shell');
 
-    function openSidebar()  { sidebar.classList.add('show'); overlay.classList.add('show'); }
-    function closeSidebar() { sidebar.classList.remove('show'); overlay.classList.remove('show'); }
+    const isCollapsed = localStorage.getItem(SIDEBAR_KEY) === 'true';
+    if (isCollapsed && appShell) appShell.classList.add('sidebar-collapsed');
 
-    if (burger)  burger.addEventListener('click', openSidebar);
-    if (overlay) overlay.addEventListener('click', closeSidebar);
+    if (collapseBtn) {
+        collapseBtn.addEventListener('click', function () {
+            const collapsed = appShell.classList.toggle('sidebar-collapsed');
+            localStorage.setItem(SIDEBAR_KEY, collapsed);
+        });
+    }
+
+    /* ── Mobile sidebar ── */
+    const overlay    = document.getElementById('sidebarOverlay');
+    const hamburger  = document.getElementById('sidebarToggle');
+
+    function openSidebar() {
+        sidebar?.classList.add('sidebar-open');
+        overlay?.classList.add('overlay-visible');
+        hamburger?.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('sidebar-mobile-open');
+    }
+
+    function closeSidebar() {
+        sidebar?.classList.remove('sidebar-open');
+        overlay?.classList.remove('overlay-visible');
+        hamburger?.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('sidebar-mobile-open');
+    }
+
+    hamburger?.addEventListener('click', openSidebar);
+    overlay?.addEventListener('click', closeSidebar);
+
+    /* ── Keyboard: Esc closes mobile sidebar ── */
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeSidebar();
+    });
+
+    /* ── Auto-dismiss flash alerts after 5s ── */
+    setTimeout(function () {
+        document.querySelectorAll('.alert-flash').forEach(function (el) {
+            el.classList.remove('show');
+            setTimeout(function () { el.remove(); }, 300);
+        });
+    }, 5000);
+
 })();
 </script>
 

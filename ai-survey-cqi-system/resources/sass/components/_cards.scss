@@ -1,82 +1,178 @@
-// ============================================================
-// _cards.scss
-// ============================================================
+// =============================================================================
+// _cards.scss — CQI System Card Components
+// =============================================================================
 
+// ── Base card override ────────────────────────────────────────────────────────
 .card {
-  @include card-base;
-  border: 1px solid $light-border;
+    background: var(--cqi-card-bg);
+    border: 1px solid var(--cqi-card-border);
+    border-radius: $border-radius-lg;
+    box-shadow: var(--cqi-card-shadow);
+    overflow: hidden;
 
-  .card-title {
-    font-family: $font-heading;
-    font-size: .9375rem;
-    font-weight: 600;
-    color: $light-text-primary;
-    margin-bottom: 16px;
+    .card-header {
+        background: transparent;
+        border-bottom: 1px solid var(--cqi-border-subtle);
+        padding: 1rem 1.25rem;
+        @include flex-between;
+        gap: .75rem;
+        flex-wrap: wrap;
 
-    [data-bs-theme="dark"] & { color: $dark-text-primary; }
-  }
+        .card-title {
+            font-size: .9375rem;
+            font-weight: $font-weight-semibold;
+            color: var(--cqi-text-primary);
+            margin: 0;
+            line-height: 1.3;
+        }
 
-  .card-body { padding: 20px; }
+        .card-subtitle {
+            font-size: $font-size-xs;
+            color: var(--cqi-text-muted);
+            margin: .125rem 0 0;
+        }
+    }
+
+    .card-body {
+        padding: 1.25rem;
+    }
+
+    .card-footer {
+        background: transparent;
+        border-top: 1px solid var(--cqi-border-subtle);
+        padding: .875rem 1.25rem;
+    }
 }
 
-// ---- KPI Cards ----
-.kpi-card {
-  border-top: 3px solid $brand-action;
-  transition: transform .2s ease, box-shadow .2s ease;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: $shadow-elevated;
-  }
+// ── Stat card (dashboard KPI) ─────────────────────────────────────────────────
+.stat-card {
+    @include cqi-card;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    transition: box-shadow $transition-base, transform $transition-base;
 
-  .kpi-label {
-    font-size: .75rem;
-    font-weight: 600;
-    letter-spacing: .08em;
+    &:hover {
+        box-shadow: $box-shadow;
+        transform: translateY(-1px);
+    }
+
+    .stat-card-header {
+        @include flex-between;
+    }
+
+    .stat-card-label {
+        font-size: $font-size-xs;
+        font-weight: $font-weight-semibold;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: var(--cqi-text-muted);
+    }
+
+    .stat-card-icon {
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: $border-radius;
+        @include flex-center;
+        font-size: 1rem;
+        flex-shrink: 0;
+
+        &.icon-blue    { background: rgba($primary, .1);  color: $primary; }
+        &.icon-green   { background: rgba($success, .1);  color: $success; }
+        &.icon-amber   { background: rgba($warning, .1);  color: $warning; }
+        &.icon-red     { background: rgba($danger, .1);   color: $danger; }
+        &.icon-indigo  { background: rgba(99, 102, 241, .1); color: #6366f1; }
+        &.icon-teal    { background: rgba(20, 184, 166, .1); color: #0d9488; }
+    }
+
+    .stat-card-value {
+        font-size: 1.75rem;
+        font-weight: $font-weight-bold;
+        color: var(--cqi-text-primary);
+        line-height: 1;
+        letter-spacing: -.02em;
+    }
+
+    .stat-card-change {
+        @include flex-start;
+        gap: .25rem;
+        font-size: $font-size-xs;
+        font-weight: $font-weight-medium;
+
+        &.change-up   { color: $success; }
+        &.change-down { color: $danger; }
+        &.change-neutral { color: var(--cqi-text-muted); }
+    }
+}
+
+
+// ── Info card (summary block) ─────────────────────────────────────────────────
+.info-card {
+    @include cqi-card;
+    padding: 1.125rem 1.25rem;
+    display: flex;
+    align-items: flex-start;
+    gap: .875rem;
+
+    .info-card-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: $border-radius;
+        @include flex-center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        background: rgba($primary, .08);
+        color: $primary;
+    }
+
+    .info-card-body {
+        min-width: 0;
+        flex: 1;
+
+        .info-card-title {
+            font-size: .875rem;
+            font-weight: $font-weight-semibold;
+            color: var(--cqi-text-primary);
+            margin: 0 0 .25rem;
+        }
+
+        .info-card-desc {
+            font-size: $font-size-sm;
+            color: var(--cqi-text-muted);
+            margin: 0;
+            line-height: 1.55;
+        }
+    }
+}
+
+
+// ── Status badge ─────────────────────────────────────────────────────────────
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3em;
+    font-size: .7rem;
+    font-weight: $font-weight-semibold;
     text-transform: uppercase;
-    color: $light-text-muted;
-    margin-bottom: 6px;
+    letter-spacing: .04em;
+    border-radius: $border-radius-pill;
+    padding: .2em .65em;
+    line-height: 1.5;
 
-    [data-bs-theme="dark"] & { color: $dark-text-muted; }
-  }
+    &::before {
+        content: '';
+        display: block;
+        width: .4em;
+        height: .4em;
+        border-radius: 50%;
+        background: currentColor;
+        flex-shrink: 0;
+    }
 
-  .kpi-value {
-    font-family: $font-heading;
-    font-size: 2rem;
-    font-weight: 700;
-    color: $brand-primary;
-    margin: 0;
-    line-height: 1;
-
-    [data-bs-theme="dark"] & { color: $brand-accent; }
-  }
-
-  .kpi-meta {
-    font-size: .75rem;
-    color: $light-text-muted;
-    margin-top: 4px;
-
-    [data-bs-theme="dark"] & { color: $dark-text-muted; }
-  }
-}
-
-// KPI icon badge
-.kpi-icon {
-  width: 44px; height: 44px;
-  border-radius: $radius-md;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.25rem;
-  flex-shrink: 0;
-
-  &.kpi-icon--blue    { background: rgba($brand-action, .1); color: $brand-action; }
-  &.kpi-icon--navy    { background: rgba($brand-primary, .1); color: $brand-primary; }
-  &.kpi-icon--success { background: rgba(#22c55e, .1); color: #22c55e; }
-  &.kpi-icon--accent  { background: rgba($brand-accent, .1); color: $brand-accent; }
-
-  [data-bs-theme="dark"] & {
-    &.kpi-icon--blue    { background: rgba($brand-action, .18); }
-    &.kpi-icon--navy    { background: rgba($brand-accent, .18); color: $brand-accent; }
-    &.kpi-icon--success { background: rgba(#22c55e, .18); }
-    &.kpi-icon--accent  { background: rgba($brand-accent, .18); }
-  }
+    &.badge-active    { @include status-badge($status-active-bg,    $status-active-color); }
+    &.badge-pending   { @include status-badge($status-pending-bg,   $status-pending-color); }
+    &.badge-completed { @include status-badge($status-completed-bg, $status-completed-color); }
+    &.badge-inactive  { @include status-badge($status-inactive-bg,  $status-inactive-color); }
 }

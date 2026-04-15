@@ -1,54 +1,132 @@
-// ============================================================
-// _buttons.scss
-// ============================================================
+// =============================================================================
+// _buttons.scss — CQI System Button Styles
+// =============================================================================
 
+// ── Base overrides ────────────────────────────────────────────────────────────
 .btn {
-  font-family: $font-body;
-  font-weight: 500;
-  border-radius: $radius-md;
-  transition: all .18s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: .4375rem;
+    font-weight: $font-weight-medium;
+    font-size: $font-size-sm;
+    line-height: 1.5;
+    transition: background $transition-fast, color $transition-fast,
+                border-color $transition-fast, box-shadow $transition-fast,
+                transform $transition-fast;
+
+    i { font-size: .875em; }
+
+    &:active { transform: scale(.97); }
+    &:focus-visible { outline: 2px solid $primary; outline-offset: 2px; }
+
+    // Size tweaks
+    &.btn-sm {
+        font-size: .8rem;
+        gap: .3125rem;
+        padding: .3125rem .6875rem;
+    }
+
+    &.btn-lg {
+        font-size: .9375rem;
+        gap: .5rem;
+    }
 }
 
+
+// ── Primary ───────────────────────────────────────────────────────────────────
 .btn-primary {
-  background-color: $brand-action;
-  border-color: $brand-action;
-
-  &:hover {
-    background-color: darken($brand-action, 8%);
-    border-color: darken($brand-action, 8%);
-    box-shadow: 0 4px 12px rgba($brand-action, .35);
-  }
-}
-
-.btn-navy {
-  background-color: $brand-primary;
-  border-color: $brand-primary;
-  color: #fff;
-
-  &:hover {
-    background-color: lighten($brand-primary, 5%);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba($brand-primary, .35);
-  }
-}
-
-.btn-outline-secondary {
-  border-color: $light-border;
-  color: $light-text-muted;
-
-  &:hover {
-    background-color: $light-bg;
-    border-color: $light-border;
-    color: $light-text-primary;
-  }
-
-  [data-bs-theme="dark"] & {
-    border-color: $dark-border;
-    color: $dark-text-muted;
+    background: $primary;
+    border-color: $primary;
+    box-shadow: 0 1px 2px rgba($primary, .25), 0 2px 6px rgba($primary, .15);
 
     &:hover {
-      background-color: rgba(255,255,255,.06);
-      color: $dark-text-primary;
+        background: $primary-dark;
+        border-color: $primary-dark;
+        box-shadow: 0 2px 4px rgba($primary, .3), 0 4px 12px rgba($primary, .2);
     }
-  }
+}
+
+
+// ── Outline primary ───────────────────────────────────────────────────────────
+.btn-outline-primary {
+    color: $primary;
+    border-color: rgba($primary, .4);
+
+    &:hover {
+        background: rgba($primary, .06);
+        border-color: $primary;
+        color: $primary-dark;
+    }
+}
+
+
+// ── Ghost / subtle ────────────────────────────────────────────────────────────
+.btn-ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--cqi-text-secondary);
+
+    &:hover {
+        background: var(--cqi-surface-sunken);
+        color: var(--cqi-text-primary);
+    }
+}
+
+.btn-soft-primary {
+    background: rgba($primary, .08);
+    border-color: transparent;
+    color: $primary;
+
+    &:hover {
+        background: rgba($primary, .14);
+    }
+}
+
+.btn-soft-danger {
+    background: rgba($danger, .08);
+    border-color: transparent;
+    color: $danger;
+
+    &:hover {
+        background: rgba($danger, .14);
+    }
+}
+
+.btn-soft-success {
+    background: rgba($success, .08);
+    border-color: transparent;
+    color: $success;
+
+    &:hover {
+        background: rgba($success, .14);
+    }
+}
+
+
+// ── Icon button (square) ──────────────────────────────────────────────────────
+.btn-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    @include flex-center;
+    border-radius: $border-radius;
+
+    &.btn-sm {
+        width: 1.875rem;
+        height: 1.875rem;
+    }
+
+    &.btn-lg {
+        width: 2.625rem;
+        height: 2.625rem;
+    }
+}
+
+
+// ── Action group (header button row) ─────────────────────────────────────────
+.btn-group-actions {
+    display: flex;
+    align-items: center;
+    gap: .375rem;
+    flex-wrap: wrap;
 }

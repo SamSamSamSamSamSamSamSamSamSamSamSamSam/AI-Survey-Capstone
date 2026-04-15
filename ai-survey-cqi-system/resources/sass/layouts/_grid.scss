@@ -1,33 +1,158 @@
-// ============================================================
-// _grid.scss  (app shell layout)
-// ============================================================
+// =============================================================================
+// _grid.scss — CQI System Content Layout
+// =============================================================================
 
-.app-wrapper {
-  display: flex;
-  min-height: 100vh;
+// ── Content area ─────────────────────────────────────────────────────────────
+.content-area {
+    flex: 1;
+    padding: 1.75rem 1.75rem 2.5rem;
+    background: var(--cqi-content-bg);
+    min-width: 0;
+    max-width: $content-max-width;
+    width: 100%;
+
+    @include mobile {
+        padding: 1.25rem 1rem 2rem;
+    }
 }
 
-.main {
-  margin-left: $sidebar-width;
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  background: $light-bg;
-  transition: background .25s ease;
 
-  [data-bs-theme="dark"] & { background: $dark-bg; }
+// ── Page header (inside content) ─────────────────────────────────────────────
+.page-header {
+    @include flex-between;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
 
-  @media (max-width: 991.98px) {
-    margin-left: 0;
-  }
+    .page-header-start {
+        min-width: 0;
+    }
+
+    .page-header-end {
+        @include flex-start;
+        gap: .5rem;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+    }
+
+    h1, h2, h3 {
+        margin: 0 0 .25rem;
+    }
+
+    .page-subtitle {
+        font-size: $font-size-sm;
+        color: var(--cqi-text-muted);
+        margin: 0;
+    }
 }
 
-.content {
-  flex: 1;
-  padding: 24px;
 
-  @media (max-width: 575.98px) {
-    padding: 16px;
-  }
+// ── Stats row ─────────────────────────────────────────────────────────────────
+.stats-row {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    margin-bottom: 1.5rem;
+}
+
+
+// ── Dashboard grid ────────────────────────────────────────────────────────────
+.dashboard-grid {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(12, 1fr);
+
+    .col-full  { grid-column: 1 / -1; }
+    .col-8     { grid-column: span 8; }
+    .col-4     { grid-column: span 4; }
+    .col-6     { grid-column: span 6; }
+    .col-3     { grid-column: span 3; }
+
+    @media (max-width: 1199.98px) {
+        .col-8, .col-4 { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 767.98px) {
+        .col-6, .col-3 { grid-column: 1 / -1; }
+    }
+}
+
+
+// ── Section divider ───────────────────────────────────────────────────────────
+.section-divider {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin: 2rem 0 1.25rem;
+
+    .section-divider-title {
+        font-size: .8rem;
+        font-weight: $font-weight-semibold;
+        color: var(--cqi-text-muted);
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        white-space: nowrap;
+    }
+
+    &::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--cqi-border-subtle);
+    }
+}
+
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.empty-state {
+    @include flex-center;
+    flex-direction: column;
+    gap: .75rem;
+    padding: 3.5rem 1.5rem;
+    text-align: center;
+
+    .empty-state-icon {
+        width: 3.5rem;
+        height: 3.5rem;
+        background: var(--cqi-surface-sunken);
+        border-radius: $border-radius-xl;
+        @include flex-center;
+        font-size: 1.5rem;
+        color: var(--cqi-text-muted);
+        margin-bottom: .25rem;
+    }
+
+    .empty-state-title {
+        font-size: .9375rem;
+        font-weight: $font-weight-semibold;
+        color: var(--cqi-text-primary);
+        margin: 0;
+    }
+
+    .empty-state-desc {
+        font-size: $font-size-sm;
+        color: var(--cqi-text-muted);
+        margin: 0;
+        max-width: 26rem;
+        line-height: 1.65;
+    }
+}
+
+
+// ── Loading skeleton ──────────────────────────────────────────────────────────
+@keyframes skeleton-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .4; }
+}
+
+.skeleton {
+    background: var(--cqi-border-subtle);
+    border-radius: $border-radius-sm;
+    animation: skeleton-pulse 1.5s ease infinite;
+    display: block;
+
+    &-text { height: .875rem; margin-bottom: .375rem; }
+    &-title { height: 1.25rem; }
+    &-avatar { width: 2.5rem; height: 2.5rem; border-radius: $border-radius; }
+    &-btn { height: 2.25rem; width: 6rem; border-radius: $border-radius; }
 }
