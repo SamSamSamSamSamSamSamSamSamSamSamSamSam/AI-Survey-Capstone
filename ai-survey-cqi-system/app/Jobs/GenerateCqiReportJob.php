@@ -20,8 +20,13 @@ class GenerateCqiReportJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries   = 2;
-    public int $timeout = 300; // 5 min — AI + PDF generation
+    public int $tries   = 5;                    // Max attempts in case of failure 
+    public int $timeout = 300;                  // Max execution time (5 minutes) to allow for API calls and PDF generation
+
+    public function backoff(): array            // Exponential backoff strategy for retries (in seconds)
+    {
+        return [10, 30, 60, 120, 240];
+    }
 
     public function __construct(
         public readonly string  $surveyId,
@@ -79,6 +84,9 @@ class GenerateCqiReportJob implements ShouldQueue
 
         $academicYear = $semester->academic_start_year . '–' . ($semester->academic_start_year + 1);
 
+        // Ensure numeric values are explicitly cast to float/int 
+        // before they get sent to the PDF service. 
+        // This can help prevent issues with JSON encoding and ensure consistent formatting in the PDF.
         $analyticsPayload = [
             'institution'        => config('cqi.institution', 'University'),
             'department'         => config('cqi.department', ''),
@@ -93,9 +101,9 @@ class GenerateCqiReportJob implements ShouldQueue
             'academic_year'      => $academicYear,
             'group_number'       => $survey->offering->group_number ?? '—',
             'response_count'     => $analytics->response_count,
-            'avg_rating'         => $analytics->avg_rating,
-            'scale_max'          => $scaleMax,
-            'positive_pct'       => $analytics->positive_sentiment_percent ?? 0,
+            'avg_rating'         => (float) $analytics->avg_rating,
+            'scale_max'          => (int) $scaleMax,
+            'positive_pct'       => (float) $analytics->positive_sentiment_percent ?? 0,
             'neutral_pct'        => $analytics->neutral_sentiment_percent  ?? 0,
             'negative_pct'       => $analytics->negative_sentiment_percent ?? 0,
             'category_scores'    => $analytics->category_scores ?? [],

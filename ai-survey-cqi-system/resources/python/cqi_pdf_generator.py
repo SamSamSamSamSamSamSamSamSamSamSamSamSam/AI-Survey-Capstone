@@ -110,7 +110,15 @@ def sub_section_header(title, styles):
 
 
 def interpret_score(score, scale_max=5):
-    pct = score / scale_max if scale_max else 0
+    # Convert score to float to handle cases where it arrives as a string
+    try:
+        numeric_score = float(score)
+    except (ValueError, TypeError):
+        numeric_score = 0.0
+
+    # Use the converted numeric_score variable for division
+    pct = numeric_score / scale_max if scale_max else 0
+    
     if pct >= 0.90: return 'Excellent'
     if pct >= 0.80: return 'Very Good'
     if pct >= 0.70: return 'Good'
@@ -119,7 +127,13 @@ def interpret_score(score, scale_max=5):
 
 
 def score_style(score, scale_max, styles):
-    pct = score / scale_max if scale_max else 0
+    # Convert score to float to handle cases where it arrives as a string
+    try:
+        numeric_score = float(score)
+    except (ValueError, TypeError):
+        numeric_score = 0.0
+
+    pct = numeric_score / scale_max if scale_max else 0
     return styles['score_good'] if pct >= 0.70 else styles['score_fair']
 
 
@@ -207,19 +221,30 @@ def build_pdf(data: dict, output_path: str):
         ]
         rows = [hdr]
         for cat, score in category_scores.items():
-            interp = interpret_score(score, scale_max)
+            try:
+                numeric_score = float(score)
+            except (ValueError, TypeError):
+                numeric_score = 0.0
+            
+            interp = interpret_score(numeric_score, scale_max)
             rows.append([
                 Paragraph(cat, styles['table_cell']),
-                Paragraph(f"{score:.2f} / {scale_max}", score_style(score, scale_max, styles)),
-                Paragraph(interp, score_style(score, scale_max, styles)),
+                Paragraph(f"{numeric_score:.2f} / {scale_max}", score_style(numeric_score, scale_max, styles)),
+                Paragraph(interp, score_style(numeric_score, scale_max, styles)),
             ])
 
         # Overall row
         avg = data.get('avg_rating', 0)
+        # Ensure avg is numeric for consistent formatting and interpretation
+        try:
+            numeric_avg = float(avg)
+        except (ValueError, TypeError):
+            numeric_avg = 0.0
+        
         rows.append([
             Paragraph("<b>Overall Mean Score</b>", styles['label_bold']),
-            Paragraph(f"<b>{avg:.2f} / {scale_max}</b>", score_style(avg, scale_max, styles)),
-            Paragraph(f"<b>{interpret_score(avg, scale_max)}</b>", score_style(avg, scale_max, styles)),
+            Paragraph(f"<b>{numeric_avg:.2f} / {scale_max}</b>", score_style(numeric_avg, scale_max, styles)),
+            Paragraph(f"<b>{interpret_score(numeric_avg, scale_max)}</b>", score_style(numeric_avg, scale_max, styles)),
         ])
 
         cw2 = [(PAGE_W - 2 * MARGIN) * r for r in [0.50, 0.25, 0.25]]
