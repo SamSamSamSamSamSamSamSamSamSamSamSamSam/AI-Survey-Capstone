@@ -13,6 +13,8 @@ use App\Models\Role;
 use App\Models\Semester;
 use App\Models\Subject;
 use App\Models\User;
+use App\Services\CsvValidationService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,10 +32,6 @@ class SemesterSetupController extends Controller
         4 => ['key' => 'enrollments','label' => 'Import Enrollments', 'icon' => '📋'],
     ];
 
-    // -------------------------------------------------------------------------
-    // Main wizard view
-    // -------------------------------------------------------------------------
-
     public function index(Request $request): View|RedirectResponse
     {
         $activeSemester = Semester::current();
@@ -48,45 +46,55 @@ class SemesterSetupController extends Controller
         return view('admin.semester-setup.wizard', [
             'activeSemester' => $activeSemester,
             'steps'          => self::STEPS,
-            'currentStep'    => $step,
-            'stepStats'      => $this->getStepStats($activeSemester),
+            'step'           => $step, // current active step
+            'stats'          => $this->getStepStats($activeSemester),
         ]);
     }
 
-    // -------------------------------------------------------------------------
-    // STEP 1 — Students
-    // -------------------------------------------------------------------------
+    public function previewValidation(Request $request): JsonResponse
+    {
+        $this->validateCsvUpload($request);
+
+        $step = (int) $request->input('step', 1);
+        $rows = $this->parseCsv($request);
+
+        if (empty($rows)) {
+            return response()->json(['can_proceed' => false, 'errors' => [['line' => 0, 'message' => 'CSV is empty.']]], 422);
+        }
+
+        $activeSemester = Semester::current();
+        $validator = new CsvValidationService($activeSemester);
+
+        $result = match ($step) {
+            1 => $validator->validateStudents($rows),
+            2 => $validator->validateBlocks($rows),
+            3 => $validator->validateOfferings($rows),
+            4 => $validator->validateEnrollments($rows),
+            default => ['can_proceed' => false, 'errors' => [['line' => 0, 'message' => 'Invalid step.']]],
+        };
+
+        return response()->json($result);
+    }
 
     public function importStudents(Request $request): RedirectResponse
     {
         $this->validateCsvUpload($request);
+        $rows = $this->parseCsv($request);
+        $activeSemester = Semester::current();
+        
+        $validator = new CsvValidationService($activeSemester);
+        $validation = $validator->validateStudents($rows);
 
-        $rows    = $this->parseCsv($request->file('csv_file'));
-        $errors  = [];
+        if (!$validation['can_proceed']) {
+            return redirect()->back()->with('error', 'Validation failed.');
+        }
+
         $created = 0;
-        $skipped = 0;
-
         $studentRole = Role::whereName('student')->firstOrFail();
 
-        DB::transaction(function () use ($rows, $studentRole, &$created, &$skipped, &$errors) {
-            foreach ($rows as $i => $row) {
-                $line = $i + 2;
-                $v = Validator::make($row, [
-                    'user_id_number' => ['required', 'string'],
-                    'name'           => ['required', 'string'],
-                    'email'          => ['required', 'email'],
-                ]);
-
-                if ($v->fails()) {
-                    $errors[] = "Row {$line}: " . implode(', ', $v->errors()->all());
-                    continue;
-                }
-
-                if (User::where('user_id_number', $row['user_id_number'])->exists()) {
-                    $skipped++;
-                    continue;
-                }
-
+        DB::transaction(function () use ($validation, $studentRole, &$created) {
+            foreach ($validation['valid_rows'] as $item) {
+                $row = $item['row'];
                 $user = User::create([
                     'user_id_number'    => trim($row['user_id_number']),
                     'name'              => trim($row['name']),
@@ -94,295 +102,169 @@ class SemesterSetupController extends Controller
                     'password'          => Hash::make(trim($row['user_id_number'])),
                     'email_verified_at' => now(),
                 ]);
-
                 $user->roles()->syncWithoutDetaching([$studentRole->id]);
                 $created++;
             }
         });
 
-        return $this->wizardRedirect(1, $created, $skipped, $errors);
+        return $this->wizardRedirect(1, $created, $validation['skipped_count'], []);
     }
-
-    // -------------------------------------------------------------------------
-    // STEP 2 — Blocks
-    // -------------------------------------------------------------------------
 
     public function importBlocks(Request $request): RedirectResponse
     {
         $this->validateCsvUpload($request);
-
+        $rows = $this->parseCsv($request);
         $activeSemester = Semester::current();
-        $rows    = $this->parseCsv($request->file('csv_file'));
-        $errors  = [];
+
+        $validator = new CsvValidationService($activeSemester);
+        $validation = $validator->validateBlocks($rows);
+
+        if (!$validation['can_proceed']) {
+            return redirect()->back()->withErrors($validation['errors']);
+        }
+
         $created = 0;
-        $skipped = 0;
-
-        DB::transaction(function () use ($rows, $activeSemester, &$created, &$skipped, &$errors) {
-            foreach ($rows as $i => $row) {
-                $line = $i + 2;
-                $v = Validator::make($row, [
-                    'block_name'   => ['required', 'string', 'max:50'],
-                    'program_code' => ['required', 'string'],
-                    'year_level'   => ['required', 'integer', 'min:1', 'max:5'],
-                ]);
-
-                if ($v->fails()) {
-                    $errors[] = "Row {$line}: " . implode(', ', $v->errors()->all());
-                    continue;
-                }
-
+        DB::transaction(function () use ($validation, $activeSemester, &$created) {
+            foreach ($validation['valid_rows'] as $item) {
+                $row = $item['row'];
                 $program = Program::where('program_code', strtoupper(trim($row['program_code'])))->first();
-                if (! $program) {
-                    $errors[] = "Row {$line}: Program '{$row['program_code']}' not found.";
-                    continue;
+                
+                if ($program) {
+                    // Use updateOrCreate to avoid Duplicate Entry exceptions
+                    Block::updateOrCreate(
+                        [
+                            'program_id'  => $program->id,
+                            'semester_id' => $activeSemester->id,
+                            'name'        => strtoupper(trim($row['block_name'])),
+                        ],
+                        [
+                            'year_level'  => (int) $row['year_level'],
+                        ]
+                    );
+                    $created++;
                 }
-
-                $exists = Block::where([
-                    'program_id'  => $program->id,
-                    'semester_id' => $activeSemester->id,
-                    'name'        => strtoupper(trim($row['block_name'])),
-                ])->exists();
-
-                if ($exists) { $skipped++; continue; }
-
-                Block::create([
-                    'program_id'  => $program->id,
-                    'semester_id' => $activeSemester->id,
-                    'name'        => strtoupper(trim($row['block_name'])),
-                    'year_level'  => (int) $row['year_level'],
-                ]);
-                $created++;
             }
         });
 
-        return $this->wizardRedirect(2, $created, $skipped, $errors);
+        return $this->wizardRedirect(2, $created, $validation['skipped_count'], []);
     }
-
-    // -------------------------------------------------------------------------
-    // STEP 3 — Course Offerings
-    // -------------------------------------------------------------------------
 
     public function importOfferings(Request $request): RedirectResponse
     {
         $this->validateCsvUpload($request);
-
+        $rows = $this->parseCsv($request);
         $activeSemester = Semester::current();
-        $rows    = $this->parseCsv($request->file('csv_file'));
-        $errors  = [];
+
+        $validator = new CsvValidationService($activeSemester);
+        $validation = $validator->validateOfferings($rows);
+
+        if (!$validation['can_proceed']) return redirect()->back();
+
         $created = 0;
-        $skipped = 0;
-
-        DB::transaction(function () use ($rows, $activeSemester, &$created, &$skipped, &$errors) {
-            foreach ($rows as $i => $row) {
-                $line = $i + 2;
-                $v = Validator::make($row, [
-                    'subject_code'      => ['required', 'string'],
-                    'teacher_id_number' => ['required', 'string'],
-                    'group_number'      => ['nullable'],
-                    'block_name'        => ['nullable', 'string'],
-                    'offering_type'     => ['nullable', 'string'],
-                ]);
-
-                if ($v->fails()) {
-                    $errors[] = "Row {$line}: " . implode(', ', $v->errors()->all());
-                    continue;
-                }
-
+        DB::transaction(function () use ($validation, $activeSemester, &$created) {
+            foreach ($validation['valid_rows'] as $item) {
+                $row = $item['row'];
                 $subject = Subject::where('course_code', strtoupper(trim($row['subject_code'])))->first();
-                if (! $subject) { $errors[] = "Row {$line}: Subject '{$row['subject_code']}' not found."; continue; }
-
                 $teacher = User::where('user_id_number', trim($row['teacher_id_number']))->first();
-                if (! $teacher) { $errors[] = "Row {$line}: Teacher '{$row['teacher_id_number']}' not found."; continue; }
+                
+                $blockId = !empty($row['block_name']) 
+                    ? Block::where('name', strtoupper(trim($row['block_name'])))->where('semester_id', $activeSemester->id)->first()?->id 
+                    : null;
 
-                $blockId = null;
-                if (! empty($row['block_name'])) {
-                    $block = Block::where('name', strtoupper(trim($row['block_name'])))
-                                  ->where('semester_id', $activeSemester->id)->first();
-                    if (! $block) { $errors[] = "Row {$line}: Block '{$row['block_name']}' not found."; continue; }
-                    $blockId = $block->id;
-                }
-
-                $offeringTypeId = null;
-                if (! empty($row['offering_type'])) {
-                    $offeringTypeId = OfferingType::where('name', 'like', trim($row['offering_type']))->first()?->id;
-                }
-
-                $groupNumber = isset($row['group_number']) && $row['group_number'] !== ''
-                    ? (int) $row['group_number'] : null;
-
-                $exists = CourseOffering::where([
-                    'subject_id'   => $subject->id,
-                    'semester_id'  => $activeSemester->id,
-                    'group_number' => $groupNumber,
-                ])->whereNull('deleted_at')->exists();
-
-                if ($exists) { $skipped++; continue; }
+                $offeringTypeId = !empty($row['offering_type'])
+                    ? OfferingType::where('name', 'like', trim($row['offering_type']))->first()?->id
+                    : null;
 
                 CourseOffering::create([
                     'subject_id'       => $subject->id,
                     'semester_id'      => $activeSemester->id,
                     'teacher_id'       => $teacher->id,
                     'block_id'         => $blockId,
-                    'group_number'     => $groupNumber,
+                    'group_number'     => $row['group_number'] ?? null,
                     'offering_type_id' => $offeringTypeId,
                 ]);
                 $created++;
             }
         });
 
-        return $this->wizardRedirect(3, $created, $skipped, $errors);
+        return $this->wizardRedirect(3, $created, $validation['skipped_count'], []);
     }
-
-    // -------------------------------------------------------------------------
-    // STEP 4 — Enrollments
-    // -------------------------------------------------------------------------
 
     public function importEnrollments(Request $request): RedirectResponse
     {
         $this->validateCsvUpload($request);
-
+        $rows = $this->parseCsv($request);
         $activeSemester = Semester::current();
-        $rows    = $this->parseCsv($request->file('csv_file'));
-        $errors  = [];
+
+        $validator = new CsvValidationService($activeSemester);
+        $validation = $validator->validateEnrollments($rows);
+
+        if (!$validation['can_proceed']) return redirect()->back();
+
         $created = 0;
-        $skipped = 0;
+        $defaultType = EnrollmentType::whereName('Block-Enrolled')->first() ?? EnrollmentType::first();
 
-        $defaultType = EnrollmentType::whereName('Block-Enrolled')->first()
-                    ?? EnrollmentType::first();
-
-        DB::transaction(function () use ($rows, $activeSemester, $defaultType, &$created, &$skipped, &$errors) {
-            foreach ($rows as $i => $row) {
-                $line = $i + 2;
-                $v = Validator::make($row, [
-                    'student_id_number' => ['required', 'string'],
-                    'subject_code'      => ['required', 'string'],
-                    'group_number'      => ['nullable'],
-                    'enrollment_type'   => ['nullable', 'string'],
-                ]);
-
-                if ($v->fails()) {
-                    $errors[] = "Row {$line}: " . implode(', ', $v->errors()->all());
-                    continue;
-                }
-
+        DB::transaction(function () use ($validation, $activeSemester, $defaultType, &$created) {
+            foreach ($validation['valid_rows'] as $item) {
+                $row = $item['row'];
                 $student = User::where('user_id_number', trim($row['student_id_number']))->first();
-                if (! $student) { $errors[] = "Row {$line}: Student '{$row['student_id_number']}' not found."; continue; }
-
                 $subject = Subject::where('course_code', strtoupper(trim($row['subject_code'])))->first();
-                if (! $subject) { $errors[] = "Row {$line}: Subject '{$row['subject_code']}' not found."; continue; }
-
-                $groupNumber = isset($row['group_number']) && $row['group_number'] !== ''
-                    ? (int) $row['group_number'] : null;
-
+                
                 $offering = CourseOffering::where([
                     'subject_id'   => $subject->id,
                     'semester_id'  => $activeSemester->id,
-                    'group_number' => $groupNumber,
-                ])->whereNull('deleted_at')->first();
-
-                if (! $offering) {
-                    $errors[] = "Row {$line}: No offering found for '{$row['subject_code']}' group {$groupNumber}.";
-                    continue;
-                }
-
-                $enrollmentType = $defaultType;
-                if (! empty($row['enrollment_type'])) {
-                    $et = EnrollmentType::where('name', 'like', '%' . trim($row['enrollment_type']) . '%')->first();
-                    if ($et) $enrollmentType = $et;
-                }
-
-                $exists = Enrollment::where([
-                    'offering_id' => $offering->id,
-                    'student_id'  => $student->id,
-                ])->exists();
-
-                if ($exists) { $skipped++; continue; }
+                    'group_number' => $row['group_number'] ?? null,
+                ])->first();
 
                 Enrollment::create([
                     'offering_id'        => $offering->id,
                     'student_id'         => $student->id,
-                    'enrollment_type_id' => $enrollmentType->id,
+                    'enrollment_type_id' => $defaultType->id,
                 ]);
                 $created++;
             }
         });
 
-        return $this->wizardRedirect(4, $created, $skipped, $errors);
+        return $this->wizardRedirect(4, $created, $validation['skipped_count'], []);
     }
 
-    // -------------------------------------------------------------------------
-    // Private helpers
-    // -------------------------------------------------------------------------
-
-    /**
-     * Validate the uploaded CSV file.
-     * Detects PHP silent upload failures caused by php.ini limits.
-     */
     private function validateCsvUpload(Request $request): void
     {
-        // Detect PHP silent upload failure (post_max_size exceeded)
-        if (empty($_FILES) && empty($_POST) && $_SERVER['REQUEST_METHOD'] === 'POST') {
-            abort(413, 'The uploaded file exceeds the server limit. Check post_max_size in php.ini.');
-        }
-
         $request->validate([
-            'csv_file' => [
-                'required',
-                'file',
-                'mimes:csv,txt',
-                'max:10240', // 10 MB in kilobytes
-            ],
-        ], [
-            'csv_file.required' => 'Please select a CSV file.',
-            'csv_file.mimes'    => 'The file must be a .csv file.',
-            'csv_file.max'      => 'The file must not exceed 10 MB. For larger imports, split the file.',
+            'csv_file' => 'required|file|mimes:csv,txt|max:10240',
         ]);
     }
 
-    private function parseCsv(\Illuminate\Http\UploadedFile $file): array
+    private function parseCsv(Request $request): array
     {
-        $rows    = [];
-        $handle  = fopen($file->getRealPath(), 'r');
-        $headers = null;
-
-        while (($data = fgetcsv($handle)) !== false) {
-            if ($headers === null) {
-                // Normalize: lowercase, trim whitespace, strip UTF-8 BOM
-                $headers = array_map(
-                    fn ($h) => strtolower(trim(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $h))),
-                    $data
-                );
-                continue;
+        $path = $request->file('csv_file')->getRealPath();
+        $rows = [];
+        if (($handle = fopen($path, 'r')) !== false) {
+            $headers = fgetcsv($handle, 1000, ',');
+            $headers = array_map(fn($h) => strtolower(trim(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', $h))), $headers);
+            while (($data = fgetcsv($handle, 1000, ',')) !== false) {
+                if (count($data) === count($headers)) {
+                    $rows[] = array_combine($headers, array_map('trim', $data));
+                }
             }
-            // Only process rows with matching column count
-            if (count($data) === count($headers)) {
-                $rows[] = array_combine($headers, array_map('trim', $data));
-            }
+            fclose($handle);
         }
-
-        fclose($handle);
         return $rows;
     }
 
     private function wizardRedirect(int $step, int $created, int $skipped, array $errors): RedirectResponse
     {
         $nextStep = min($step + 1, 4);
-        $message  = "Step {$step} complete — {$created} created, {$skipped} skipped.";
-
-        if (! empty($errors)) {
-            session()->flash('import_errors', array_slice($errors, 0, 50)); // cap at 50 shown
-        }
-
         return redirect()->route('admin.semester-setup.index', ['step' => $nextStep])
-                         ->with('success', $message);
+                         ->with('success', "Step {$step} complete: {$created} created.");
     }
 
     private function getStepStats(Semester $semester): array
     {
         return [
             1 => User::whereHas('roles', fn ($q) => $q->where('name', 'student'))->count(),
-            2 => Block::where('semester_id', $semester->id)->whereNull('deleted_at')->count(),
-            3 => CourseOffering::where('semester_id', $semester->id)->whereNull('deleted_at')->count(),
+            2 => Block::where('semester_id', $semester->id)->count(),
+            3 => CourseOffering::where('semester_id', $semester->id)->count(),
             4 => Enrollment::whereHas('offering', fn ($q) => $q->where('semester_id', $semester->id))->count(),
         ];
     }

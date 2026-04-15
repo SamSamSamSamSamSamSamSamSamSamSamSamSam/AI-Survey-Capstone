@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 // Semester Setup Wizard
 Route::get('semester-setup', [SemesterSetupController::class, 'index'])->name('semester-setup.index');
+Route::post('semester-setup/preview',     [SemesterSetupController::class, 'previewValidation']) ->name('semester-setup.preview');
 Route::post('semester-setup/students',   [SemesterSetupController::class, 'importStudents'])  ->name('semester-setup.import-students');
 Route::post('semester-setup/blocks',     [SemesterSetupController::class, 'importBlocks'])    ->name('semester-setup.import-blocks');
 Route::post('semester-setup/offerings',  [SemesterSetupController::class, 'importOfferings']) ->name('semester-setup.import-offerings');
