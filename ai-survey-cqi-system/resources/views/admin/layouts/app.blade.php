@@ -6,7 +6,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-```
 <title>@yield('title', 'Dashboard') | CQI System</title>
 
 {{-- Bootstrap Icons --}}
@@ -16,7 +15,6 @@
 @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
 @stack('styles')
-```
 
 </head>
 
@@ -24,7 +22,6 @@
 
 <div class="app-wrapper">
 
-```
 {{-- Sidebar --}}
 <aside class="sidebar">
 
@@ -141,7 +138,6 @@
     </section>
 
 </main>
-```
 
 </div>
 
