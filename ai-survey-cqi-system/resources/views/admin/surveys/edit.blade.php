@@ -27,6 +27,30 @@
         <form method="POST" action="{{ route('admin.surveys.update', $survey->id) }}" novalidate>
             @csrf @method('PUT')
 
+            {{-- Template selector added to Edit --}}
+            <div class="mb-4">
+                <label class="form-label" for="template_id">
+                    Template
+                    <span class="form-label-optional">optional</span>
+                </label>
+                <select name="template_id" id="template_id" class="form-select">
+                    <option value="">— Keep current questions / No template —</option>
+                    @foreach ($templates as $template)
+                        <option value="{{ $template->id }}"
+                                data-name="{{ $template->name }}"
+                                @selected(old('template_id', $survey->template_id ?? '') == $template->id)>
+                            @if ($template->is_official) ⭐ @endif{{ $template->name }}
+                        </option>
+                    @endforeach
+                </select>
+                <div class="form-text text-warning">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    Changing the template will replace all existing questions in this survey.
+                </div>
+            </div>
+
+            <hr class="form-divider">
+
             @include('admin.surveys._form-edit')
 
             <div class="form-actions mt-2">
@@ -48,5 +72,23 @@
         </div>
     </div>
 </div>
-
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    const templateSelect = document.getElementById('template_id');
+    const titleInput     = document.getElementById('survey_title');
+
+    if (templateSelect && titleInput) {
+        templateSelect.addEventListener('change', function () {
+            const selected = this.options[this.selectedIndex];
+            // Only auto-fill title if the user hasn't typed a custom one yet
+            if (selected.value && !titleInput.value.trim()) {
+                titleInput.value = selected.dataset.name || '';
+            }
+        });
+    }
+})();
+</script>
+@endpush
