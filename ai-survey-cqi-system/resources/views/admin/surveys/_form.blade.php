@@ -62,6 +62,34 @@
     @enderror
 </div>
 
+{{-- Survey period --}}
+<div class="row g-3 mb-4">
+    <div class="col-6">
+        <label class="form-label" for="start_date">
+            Start Date &amp; Time {{--<span class="text-danger">*</span> --}}
+            <span class="form-label-optional">optional</span>
+        </label>
+        <input type="datetime-local" name="start_date" id="start_date"
+            class="form-control @error('start_date') is-invalid @enderror"
+            value="{{ old('start_date') }}">
+        @error('start_date')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+    <div class="col-6">
+        <label class="form-label" for="end_date">
+            End Date &amp; Time {{--<span class="text-danger">*</span> --}}
+            <span class="form-label-optional">optional</span>
+        </label>
+        <input type="datetime-local" name="end_date" id="end_date"
+            class="form-control @error('end_date') is-invalid @enderror"
+            value="{{ old('end_date') }}">
+        @error('end_date')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+</div>
+
 {{-- Description --}}
 <div class="mb-4">
     <label class="form-label" for="description">
@@ -75,7 +103,6 @@
         <div class="invalid-feedback">{{ $message }}</div>
     @enderror
 </div>
-
 
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 <script>

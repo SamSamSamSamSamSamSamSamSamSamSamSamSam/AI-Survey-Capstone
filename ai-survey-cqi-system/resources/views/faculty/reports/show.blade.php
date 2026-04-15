@@ -1,11 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CQI Report — {{ $cqiReport->title }}</title>
+@extends('layouts.app')
+@section('title', 'My Reports')
+
+@section('breadcrumbs')
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active">My Reports</li>
+</ol>
+@endsection
+
+@push('styles')
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        /* *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: sans-serif; background: #f1f5f9; color: #111; display: flex; min-height: 100vh; }
         .sidebar { width: 200px; background: #1e3a5f; color: #bfdbfe; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-brand { padding: 1.25rem 1rem; font-size: 1rem; font-weight: 700; color: #fff; border-bottom: 1px solid #1e40af; }
@@ -21,7 +26,7 @@
         .btn-logout { background: none; border: 1px solid #e5e7eb; padding: .35rem .85rem; border-radius: 6px; font-size: .8rem; cursor: pointer; color: #374151; }
         .content { flex: 1; padding: 1.75rem; max-width: 900px; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .page-header h1 { font-size: 1.25rem; }
+        .page-header h1 { font-size: 1.25rem; } */
 
         /* Report sections */
         .report-meta { background: #fff; border-radius: 8px; padding: 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,.06); margin-bottom: 1rem; border-left: 4px solid #1e3a5f; }
@@ -52,30 +57,9 @@
         .btn-primary   { background: #4f46e5; color: #fff; }
         .btn-secondary { background: #e5e7eb; color: #374151; }
     </style>
-</head>
-<body>
+@endpush
 
-<aside class="sidebar">
-    <div class="sidebar-brand">CQI System <span>Faculty Portal</span></div>
-    <nav class="sidebar-nav">
-        <a href="{{ route('faculty.dashboard') }}" class="nav-link">Dashboard</a>
-        <a href="{{ route('faculty.reports.index') }}" class="nav-link active">My CQI Reports</a>
-        <a href="{{ route('survey.index') }}" class="nav-link">Surveys</a>
-    </nav>
-    <div class="sidebar-footer">{{ auth()->user()->name }}</div>
-</aside>
-
-<div class="main">
-    <div class="topbar">
-        <span class="topbar-title">CQI Report</span>
-        <div class="topbar-right">
-            {{ auth()->user()->user_id_number }}
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf <button type="submit" class="btn-logout">Sign Out</button>
-            </form>
-        </div>
-    </div>
-
+@section('content')
     <div class="content">
 
         <div class="page-header">
@@ -181,7 +165,4 @@
         @endif
 
     </div>
-</div>
-
-</body>
-</html>
+@endsection

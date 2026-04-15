@@ -28,6 +28,7 @@
             @csrf @method('PUT')
 
             {{-- Template selector added to Edit --}}
+            {{-- DOES NOT WORK YET FOR EDIT NEED FIX --}}
             <div class="mb-4">
                 <label class="form-label" for="template_id">
                     Template

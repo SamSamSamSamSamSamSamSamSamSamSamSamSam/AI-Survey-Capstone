@@ -5,6 +5,32 @@
 
 <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
 
+
+{{-- Template selector added to Edit --}}
+{{-- DOES NOT UPDATE YET NEED FIX --}}
+{{-- <div class="mb-4">
+    <label class="form-label" for="template_id">
+        Template
+        <span class="form-label-optional">optional</span>
+    </label>
+    <select name="template_id" id="template_id" class="form-select">
+        <option value="">— Keep current questions / No template —</option>
+        @foreach ($templates as $template)
+            <option value="{{ $template->id }}"
+                    data-name="{{ $template->name }}"
+                    @selected(old('template_id', $survey->template_id ?? '') == $template->id)>
+                @if ($template->is_official) ⭐ @endif{{ $template->name }}
+            </option>
+        @endforeach
+    </select>
+    <div class="form-text text-warning">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        Changing the template will replace all existing questions in this survey.
+    </div>
+</div>
+
+<hr class="form-divider"> --}}
+
 {{-- Course Offering --}}
 <div class="mb-4">
     <label class="form-label" for="offering_id">
@@ -47,12 +73,12 @@
     @enderror
 </div>
 
-            {{-- Preserve value when disabled --}}
-                @if(isset($survey) && $survey->is_active)
-                    <input type="hidden" name="offering_id" value="{{ $survey->offering_id }}">
-                    <input type="hidden" name="target_role_id" value="{{ old('target_role_id', 
-                            $survey->target_role_id ?? '') == $role->id ? $role->id : '' }}">
-                @endif
+{{-- Preserve value when disabled --}}
+@if(isset($survey) && $survey->is_active)
+    <input type="hidden" name="offering_id" value="{{ $survey->offering_id }}">
+    <input type="hidden" name="target_role_id" value="{{ old('target_role_id', 
+            $survey->target_role_id ?? '') == $role->id ? $role->id : '' }}">
+@endif
 
 {{-- Survey Title --}}
 <div class="mb-4">
@@ -67,6 +93,35 @@
     @error('title')
         <div class="invalid-feedback">{{ $message }}</div>
     @enderror
+</div>
+
+{{-- Survey period (Edit Mode) --}}
+<div class="row g-3 mb-4">
+    <div class="col-6">
+        <label class="form-label" for="start_date">
+            Start Date &amp; Time 
+            <span class="form-label-optional">optional</span>
+        </label>
+        <input type="datetime-local" name="start_date" id="start_date"
+            class="form-control @error('start_date') is-invalid @enderror"
+            value="{{ old('start_date', $survey->start_date ? $survey->start_date->format('Y-m-d\TH:i') : '') }}">
+        @error('start_date')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+    
+    <div class="col-6">
+        <label class="form-label" for="end_date">
+            End Date &amp; Time 
+            <span class="form-label-optional">optional</span>
+        </label>
+        <input type="datetime-local" name="end_date" id="end_date"
+            class="form-control @error('end_date') is-invalid @enderror"
+            value="{{ old('end_date', $survey->end_date ? $survey->end_date->format('Y-m-d\TH:i') : '') }}">
+        @error('end_date')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
 </div>
 
 {{-- Description --}}

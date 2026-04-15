@@ -21,7 +21,7 @@ class GlobalSurveyController extends Controller
         $activeSemester = Semester::current();
         $officialTemplate = SurveyTemplate::where('is_official', true)
                                            ->where('is_active', true)
-                                           ->first();
+                                           ->get();
 
         $roles = Role::orderBy('name')->get();
 

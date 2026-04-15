@@ -62,26 +62,37 @@
                   data-confirm="Create surveys for all {{ $offeringsWithoutSurvey }} offering(s)? They will be activated immediately.">
                 @csrf
 
-                {{-- Template (read-only display) --}}
-                <div class="mb-4">
-                    <label class="form-label">Template</label>
-                    <div class="global-assign-template-display">
-                        @if ($officialTemplate)
-                            <div class="global-assign-template-display__icon">
-                                <i class="bi bi-star-fill"></i>
-                            </div>
-                            <div>
-                                <div class="fw-500">{{ $officialTemplate->name }}</div>
-                                <div class="text-muted-sm">
-                                    {{ $officialTemplate->questions_count ?? '—' }} questions
-                                </div>
-                            </div>
-                        @else
-                            <span class="text-muted-sm">No official template set</span>
-                        @endif
-                    </div>
-                    <div class="form-text">Always uses the official university questionnaire.</div>
-                </div>
+{{-- Template Selection (Official Surveys Only) --}}
+<div class="mb-4">
+    <label for="template_id" class="form-label">Template</label>
+    
+    <div class="input-group">
+        <span class="input-group-text bg-light">
+            <i class="bi bi-star-fill text-warning"></i>
+        </span>
+        <select 
+            name="template_id" 
+            id="template_id" 
+            class="form-select @error('template_id') is-invalid @enderror"
+        >
+            <option value="" selected disabled>Select an official survey...</option>
+            
+            @forelse ($officialTemplate as $template)
+                <option value="{{ $template->id }}" {{ old('template_id', $currentTemplateId ?? '') == $template->id ? 'selected' : '' }}>
+                    {{ $template->name }} ({{ $template->questions_count ?? 0 }} questions)
+                </option>
+            @empty
+                <option value="" disabled>No official templates available</option>
+            @endforelse
+        </select>
+    </div>
+
+    @error('template_id')
+        <div class="invalid-feedback d-block">{{ $message }}</div>
+    @enderror
+
+    <div class="form-text">Choose from the authorized university questionnaires.</div>
+</div>
 
                 {{-- Target role --}}
                 <div class="mb-4">
