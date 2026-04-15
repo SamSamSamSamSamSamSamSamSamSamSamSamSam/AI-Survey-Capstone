@@ -1,5 +1,13 @@
-@extends('admin.layouts.app')
+@extends('layouts.app')
 @section('title', $curriculum->curriculum_code)
+
+@section('breadcrumbs')
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.curricula.index') }}">Curricula</a></li>
+    <li class="breadcrumb-item active">{{ $curriculum->curriculum_code }}</li>
+</ol>
+@endsection
 
 @section('content')
 <div class="page-header">

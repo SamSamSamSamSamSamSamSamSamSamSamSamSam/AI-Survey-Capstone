@@ -1,34 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Surveys — CQI System</title>
+@extends('layouts.app')
+@section('title', 'My Surveys')
+
+@section('breadcrumbs')
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">My Surveys</li>
+    </ol>
+@endsection
+
+@push('styles')
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; background: #f1f5f9; color: #111; min-height: 100vh; }
-
-        .topbar { background: #fff; padding: .85rem 1.75rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
-        .topbar-left { display: flex; align-items: center; gap: 1rem; }
-        .topbar-left h1 { font-size: 1rem; font-weight: 600; }
-        .topbar-meta { font-size: .82rem; color: #6b7280; }
-        .topbar-right { display: flex; align-items: center; gap: .75rem; font-size: .85rem; color: #6b7280; }
-
-        .back-link { font-size: .85rem; color: #4f46e5; text-decoration: none; }
-        .back-link:hover { text-decoration: underline; }
-        .btn-logout { background: none; border: 1px solid #e5e7eb; padding: .35rem .85rem; border-radius: 6px; font-size: .8rem; cursor: pointer; color: #374151; }
-
-        .content { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
-
-        .page-header { margin-bottom: 1.5rem; }
-        .page-header h2 { font-size: 1.25rem; margin-bottom: .25rem; }
-        .page-header p  { font-size: .875rem; color: #6b7280; }
-
-        /* Section tabs */
-        .section-tabs { display: flex; gap: .5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; }
-        .tab { padding: .5rem 1rem; font-size: .875rem; font-weight: 500; color: #6b7280; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
-        .tab.active { color: #4f46e5; border-bottom-color: #4f46e5; }
-
         /* Survey cards */
         .survey-grid { display: grid; gap: 1rem; }
         .survey-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 1.25rem; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
@@ -53,23 +33,9 @@
 
         .count-badge { display: inline-block; background: #e0e7ff; color: #3730a3; font-size: .72rem; font-weight: 700; padding: .1rem .45rem; border-radius: 999px; margin-left: .4rem; }
     </style>
-</head>
-<body>
+@endpush
 
-<div class="topbar">
-    <div class="topbar-left">
-        <a href="{{ auth()->user()->dashboardRoute() }}" class="back-link">← Dashboard</a>
-        <h1>My Surveys</h1>
-    </div>
-    <div class="topbar-right">
-        <span class="topbar-meta">{{ auth()->user()->name }}</span>
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="btn-logout">Sign Out</button>
-        </form>
-    </div>
-</div>
-
+@section('content')
 <div class="content">
 
     @if (session('success'))
@@ -156,16 +122,16 @@
     </div>
 
 </div>
+@endsection
 
-<script>
-function showTab(name, el) {
-    document.getElementById('tab-pending').style.display   = 'none';
-    document.getElementById('tab-completed').style.display = 'none';
-    document.getElementById('tab-' + name).style.display   = 'block';
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-}
-</script>
-
-</body>
-</html>
+@push('scripts')
+    <script>
+        function showTab(name, el) {
+            document.getElementById('tab-pending').style.display   = 'none';
+            document.getElementById('tab-completed').style.display = 'none';
+            document.getElementById('tab-' + name).style.display   = 'block';
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+        }
+    </script>
+@endpush

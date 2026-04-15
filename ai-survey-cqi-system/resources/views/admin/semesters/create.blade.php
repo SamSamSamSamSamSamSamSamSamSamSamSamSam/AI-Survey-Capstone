@@ -1,6 +1,14 @@
 {{-- resources/views/admin/semesters/create.blade.php --}}
-@extends('admin.layouts.app')
+@extends('layouts.app')
 @section('title', 'Create Semester')
+
+@section('breadcrumbs')
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.semesters.index') }}">Semesters</a></li>
+    <li class="breadcrumb-item active">Create</li>
+</ol>
+@endsection
 
 @section('content')
 <div class="page-header">

@@ -1,64 +1,127 @@
 // ============================================================
 // _variables.scss
-// Brand tokens & Bootstrap overrides
+// Brand tokens & Bootstrap overrides — single source of truth
 // ============================================================
 
-// --- Brand Palette ---
+// ---- Brand Palette -------------------------------------------
 $brand-primary:       #0a3d62;   // Deep Navy
-$brand-action:        #3498db;   // Bright Blue
-$brand-accent:        #70a1ff;   // Sky Blue
-$brand-success:       #2980b9;   // Steel Blue
-$brand-surface-light: #f1f4f8;   // Alice Blue
-$brand-dark-bg:       #0f172a;   // Midnight Blue
+$brand-action:        #3498db;   // Bright Blue (CTA)
+$brand-accent:        #70a1ff;   // Sky Blue (hover / dark mode)
+$brand-surface-light: #f1f4f8;   // Alice Blue page bg
+$brand-dark-bg:       #0f172a;   // Midnight Blue page bg
 
-// --- Light Mode Tokens ---
+// ---- Semantic Status Colors ----------------------------------
+$status-active:       #22c55e;
+$status-active-muted: rgba(#22c55e, .12);
+$status-pending:      #f59e0b;
+$status-pending-muted: rgba(#f59e0b, .12);
+$status-danger:       #ef4444;
+$status-danger-muted: rgba(#ef4444, .12);
+$status-completed:    #8b5cf6;
+$status-completed-muted: rgba(#8b5cf6, .12);
+$status-inactive:     #94a3b8;
+$status-inactive-muted: rgba(#94a3b8, .12);
+$status-draft:        #64748b;
+$status-archived:     #94a3b8;
+
+// ---- Light Mode Tokens ---------------------------------------
 $light-bg:            $brand-surface-light;
 $light-surface:       #ffffff;
 $light-sidebar-bg:    $brand-primary;
-$light-sidebar-text:  rgba(255, 255, 255, 0.75);
+$light-sidebar-text:  rgba(255, 255, 255, 0.70);
 $light-sidebar-active:#ffffff;
 $light-topbar-bg:     #ffffff;
 $light-border:        #e2e8f0;
+$light-border-subtle: #f1f5f9;
 $light-text-primary:  #1e293b;
+$light-text-secondary:#475569;
 $light-text-muted:    #64748b;
 
-// --- Dark Mode Tokens ---
+// ---- Dark Mode Tokens ----------------------------------------
 $dark-bg:             $brand-dark-bg;
 $dark-surface:        #1e293b;
+$dark-surface-2:      #162032;
 $dark-sidebar-bg:     #0b1628;
 $dark-sidebar-text:   rgba(255, 255, 255, 0.65);
 $dark-sidebar-active: #ffffff;
 $dark-topbar-bg:      #1e293b;
 $dark-border:         rgba(255, 255, 255, 0.08);
+$dark-border-subtle:  rgba(255, 255, 255, 0.04);
 $dark-text-primary:   #e2e8f0;
-$dark-text-muted:     #94a3b8;
+$dark-text-secondary: #94a3b8;
+$dark-text-muted:     #64748b;
 
-// --- Layout ---
+// ---- Layout --------------------------------------------------
 $sidebar-width:       260px;
-$topbar-height:       64px;
-$sidebar-collapsed:   72px;
+$topbar-height:       60px;
+$sidebar-collapsed:   68px;
+$content-max-width:   1400px;
 
-// --- Typography ---
+// ---- Typography ----------------------------------------------
 $font-heading:        'DM Sans', sans-serif;
 $font-body:           'IBM Plex Sans', sans-serif;
 $font-mono:           'IBM Plex Mono', monospace;
 
-// --- Radii ---
+$text-xs:   .6875rem;  // 11px
+$text-sm:   .75rem;    // 12px
+$text-base: .875rem;   // 14px
+$text-md:   .9375rem;  // 15px
+$text-lg:   1rem;      // 16px
+$text-xl:   1.125rem;  // 18px
+$text-2xl:  1.375rem;  // 22px
+$text-3xl:  1.75rem;   // 28px
+
+// ---- Spacing Scale -------------------------------------------
+$space-1:  4px;
+$space-2:  8px;
+$space-3:  12px;
+$space-4:  16px;
+$space-5:  20px;
+$space-6:  24px;
+$space-8:  32px;
+$space-10: 40px;
+$space-12: 48px;
+
+// ---- Border Radii --------------------------------------------
+$radius-xs:   4px;
 $radius-sm:   6px;
 $radius-md:   10px;
 $radius-lg:   14px;
 $radius-xl:   20px;
+$radius-full: 9999px;
 
-// --- Shadows ---
-$shadow-card: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
+// ---- Shadows -------------------------------------------------
+$shadow-xs:       0 1px 2px rgba(0,0,0,.05);
+$shadow-card:     0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.05);
 $shadow-elevated: 0 4px 24px rgba(10, 61, 98, 0.12);
+$shadow-modal:    0 20px 60px rgba(0,0,0,.18);
+$shadow-dropdown: 0 4px 16px rgba(0,0,0,.10);
 
-// --- Bootstrap Overrides ---
+// ---- Transitions ---------------------------------------------
+$transition-fast:   all .15s ease;
+$transition-base:   all .2s ease;
+$transition-smooth: all .3s cubic-bezier(.4, 0, .2, 1);
+
+// ---- Z-Index Scale -------------------------------------------
+$z-below:    -1;
+$z-base:      0;
+$z-raised:    10;
+$z-topbar:    100;
+$z-overlay:   1039;
+$z-sidebar:   1040;
+$z-modal:     1055;
+$z-toast:     1090;
+$z-tooltip:   1100;
+
+// ---- Bootstrap Variable Overrides ----------------------------
 $primary:   $brand-action;
-$success:   #22c55e;
-$danger:    #ef4444;
-$warning:   #f59e0b;
+$secondary: #64748b;
+$success:   $status-active;
+$danger:    $status-danger;
+$warning:   $status-pending;
 $info:      $brand-accent;
+$light:     $light-bg;
+$dark:      $brand-primary;
 
 $border-radius:    $radius-sm;
 $border-radius-lg: $radius-md;
@@ -67,3 +130,59 @@ $border-radius-xl: $radius-lg;
 $font-family-sans-serif: $font-body;
 $headings-font-family:   $font-heading;
 $headings-font-weight:   600;
+$font-size-base:         .9375rem;
+
+$body-bg:    $light-bg;
+$body-color: $light-text-primary;
+
+$link-color:           $brand-action;
+$link-hover-color:     darken($brand-action, 10%);
+$link-decoration:      none;
+$link-hover-decoration: underline;
+
+// Table
+$table-border-color:   $light-border;
+$table-hover-bg:       rgba($brand-action, .03);
+$table-striped-bg:     rgba($brand-action, .02);
+$table-cell-padding-y: .75rem;
+$table-cell-padding-x: 1rem;
+
+// Input
+$input-border-color:    $light-border;
+$input-border-radius:   $radius-md;
+$input-focus-border-color: $brand-action;
+$input-focus-box-shadow: 0 0 0 3px rgba($brand-action, .15);
+
+// Card
+$card-border-color:  $light-border;
+$card-border-radius: $radius-lg;
+$card-box-shadow:    $shadow-card;
+$card-spacer-y:      1.25rem;
+$card-spacer-x:      1.25rem;
+
+// Modal
+$modal-content-border-radius: $radius-lg;
+$modal-content-box-shadow-xs: $shadow-modal;
+$modal-header-border-color:   $light-border;
+$modal-footer-border-color:   $light-border;
+
+// Badge
+$badge-border-radius: $radius-full;
+$badge-font-size:     .7em;
+$badge-font-weight:   600;
+
+// Breadcrumb
+$breadcrumb-font-size:          $text-sm;
+$breadcrumb-item-padding-x:     .4rem;
+$breadcrumb-margin-bottom:      0;
+
+// Dropdown
+$dropdown-border-radius: $radius-md;
+$dropdown-box-shadow:    $shadow-dropdown;
+$dropdown-item-padding-y: .5rem;
+$dropdown-item-padding-x: 1rem;
+
+// Alert
+$alert-border-radius: $radius-md;
+$alert-padding-y:     .875rem;
+$alert-padding-x:     1rem;

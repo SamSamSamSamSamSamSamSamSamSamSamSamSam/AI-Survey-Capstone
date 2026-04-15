@@ -1,5 +1,14 @@
 @extends('admin.layouts.app')
 @section('title', $offering->display_name)
+
+@section('breadcrumbs')
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.offerings.index') }}">Course Offerings</a></li>
+    <li class="breadcrumb-item active">View</li>
+</ol>
+@endsection
+
 @section('content')
 <div class="page-header">
     <h1>{{ $offering->display_name }}</h1>

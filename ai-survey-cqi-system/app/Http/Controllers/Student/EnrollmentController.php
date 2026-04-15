@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CourseOffering;
 use App\Models\Enrollment;
 use App\Models\Semester;
-use App\Models\StudentStatus;
+use App\Models\EnrollmentType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,7 +35,7 @@ class EnrollmentController extends Controller
         }
 
         // Student's current enrollments — all semesters for history
-        $myEnrollments = Enrollment::with(['offering.subject', 'offering.semester', 'studentStatus'])
+        $myEnrollments = Enrollment::with(['offering.subject', 'offering.semester', 'enrollmentType'])
                                    ->where('student_id', Auth::id())
                                    ->latest()
                                    ->get();
@@ -77,13 +77,13 @@ class EnrollmentController extends Controller
         }
 
         // Default status: 'regular' — adjust as needed
-        $defaultStatus = StudentStatus::whereName('regular')->first()
-                      ?? StudentStatus::first();
+        $defaultEnrollmentType = EnrollmentType::whereName('block-enrolled')->first()
+                      ?? EnrollmentType::first();
 
         Enrollment::create([
             'offering_id'       => $offering->id,
             'student_id'        => Auth::id(),
-            'student_status_id' => $defaultStatus?->id,
+            'enrollment_type_id' => $defaultEnrollmentType?->id,
         ]);
 
         return redirect()->route('student.enrollments.index')

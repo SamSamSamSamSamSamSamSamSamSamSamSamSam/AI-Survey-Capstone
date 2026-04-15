@@ -1,0 +1,78 @@
+// ============================================================
+// _theme.scss
+// CSS Custom Properties — runtime light / dark theming
+// ============================================================
+
+:root {
+  // --- Brand ---
+  --cqi-primary:        #{$brand-primary};
+  --cqi-action:         #{$brand-action};
+  --cqi-accent:         #{$brand-accent};
+
+  // --- Page surfaces ---
+  --cqi-bg:             #{$light-bg};
+  --cqi-surface:        #{$light-surface};
+  --cqi-surface-2:      #{$light-bg};
+
+  // --- Borders ---
+  --cqi-border:         #{$light-border};
+  --cqi-border-subtle:  #{$light-border-subtle};
+
+  // --- Text ---
+  --cqi-text:           #{$light-text-primary};
+  --cqi-text-secondary: #{$light-text-secondary};
+  --cqi-text-muted:     #{$light-text-muted};
+
+  // --- Sidebar ---
+  --cqi-sidebar-bg:     #{$light-sidebar-bg};
+  --cqi-sidebar-text:   #{$light-sidebar-text};
+
+  // --- Topbar ---
+  --cqi-topbar-bg:      #{$light-topbar-bg};
+
+  // --- Status colors ---
+  --cqi-active:         #{$status-active};
+  --cqi-pending:        #{$status-pending};
+  --cqi-danger:         #{$status-danger};
+  --cqi-completed:      #{$status-completed};
+  --cqi-inactive:       #{$status-inactive};
+
+  // --- Shadows ---
+  --cqi-shadow-card:    #{$shadow-card};
+  --cqi-shadow-elevated: #{$shadow-elevated};
+
+  // --- Misc ---
+  --cqi-topbar-height:  #{$topbar-height};
+  --cqi-sidebar-width:  #{$sidebar-width};
+}
+
+[data-bs-theme="dark"] {
+  --cqi-bg:             #{$dark-bg};
+  --cqi-surface:        #{$dark-surface};
+  --cqi-surface-2:      #{$dark-surface-2};
+
+  --cqi-border:         #{$dark-border};
+  --cqi-border-subtle:  #{$dark-border-subtle};
+
+  --cqi-text:           #{$dark-text-primary};
+  --cqi-text-secondary: #{$dark-text-secondary};
+  --cqi-text-muted:     #{$dark-text-muted};
+
+  --cqi-sidebar-bg:     #{$dark-sidebar-bg};
+  --cqi-sidebar-text:   #{$dark-sidebar-text};
+
+  --cqi-topbar-bg:      #{$dark-topbar-bg};
+
+  --cqi-shadow-card:    0 1px 3px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.2);
+  --cqi-shadow-elevated: 0 4px 24px rgba(0,0,0,.4);
+}
+
+// ---- Smooth theme transition on page elements ---------------
+body,
+.sidebar,
+.topbar,
+.card,
+.main,
+.dropdown-menu {
+  transition: background-color .25s ease, border-color .25s ease, color .25s ease;
+}

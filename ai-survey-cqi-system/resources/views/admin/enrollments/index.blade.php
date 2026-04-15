@@ -1,6 +1,13 @@
-{{-- resources/views/admin/enrollments/index.blade.php --}}
-@extends('admin.layouts.app')
+@extends('layouts.app')
 @section('title', 'Enrollments')
+
+@section('breadcrumbs')
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active">Enrollments</li>
+</ol>
+@endsection
+
 @section('content')
 <div class="page-header">
     <h1>Enrollments — {{ $offering->subject->course_code }}</h1>

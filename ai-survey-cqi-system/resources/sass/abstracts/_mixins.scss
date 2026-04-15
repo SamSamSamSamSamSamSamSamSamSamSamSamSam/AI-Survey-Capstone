@@ -2,40 +2,77 @@
 // _mixins.scss
 // ============================================================
 
+// ---- Dark mode shorthand ------------------------------------
 @mixin dark {
   [data-bs-theme="dark"] & {
     @content;
   }
 }
 
+// ---- Flex helpers -------------------------------------------
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-start {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+// ---- Text overflow -------------------------------------------
+@mixin truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ---- Sidebar nav link base ----------------------------------
 @mixin sidebar-link-base {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 14px;
+  padding: 9px 12px;
   border-radius: $radius-md;
-  font-size: .875rem;
+  font-size: $text-base;
   font-weight: 500;
   color: $light-sidebar-text;
   text-decoration: none;
   transition: background .18s ease, color .18s ease;
   white-space: nowrap;
   overflow: hidden;
+  position: relative;
 
-  i { font-size: 1rem; flex-shrink: 0; }
+  i {
+    font-size: 1rem;
+    flex-shrink: 0;
+    opacity: .8;
+    transition: opacity .18s;
+  }
 
   &:hover {
-    background: rgba(255,255,255,.08);
+    background: rgba(255, 255, 255, .08);
     color: $light-sidebar-active;
+    i { opacity: 1; }
   }
 
   &.active {
-    background: rgba(255,255,255,.14);
+    background: rgba(255, 255, 255, .14);
     color: $light-sidebar-active;
     font-weight: 600;
+    i { opacity: 1; }
   }
 }
 
+// ---- Card base -----------------------------------------------
 @mixin card-base {
   background: $light-surface;
   border: 1px solid $light-border;
@@ -48,24 +85,64 @@
   }
 }
 
+// ---- Icon badge (colored icon container) --------------------
+@mixin icon-badge($size: 40px, $radius: $radius-md) {
+  width: $size;
+  height: $size;
+  border-radius: $radius;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+// ---- Skeleton shimmer animation ------------------------------
 @mixin skeleton-pulse {
   background: linear-gradient(
     90deg,
-    rgba(0,0,0,.06) 25%,
-    rgba(0,0,0,.03) 50%,
-    rgba(0,0,0,.06) 75%
+    rgba(0, 0, 0, .06) 25%,
+    rgba(0, 0, 0, .03) 50%,
+    rgba(0, 0, 0, .06) 75%
   );
   background-size: 400% 100%;
   animation: skeleton-shimmer 1.6s ease infinite;
   border-radius: $radius-sm;
 
-  [data-bs-theme="dark"] & {
+  @include dark {
     background: linear-gradient(
       90deg,
-      rgba(255,255,255,.06) 25%,
-      rgba(255,255,255,.03) 50%,
-      rgba(255,255,255,.06) 75%
+      rgba(255, 255, 255, .06) 25%,
+      rgba(255, 255, 255, .03) 50%,
+      rgba(255, 255, 255, .06) 75%
     );
     background-size: 400% 100%;
   }
+}
+
+// ---- Focus ring ---------------------------------------------
+@mixin focus-ring($color: $brand-action, $opacity: .2) {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba($color, $opacity);
+}
+
+// ---- Surface card variant -----------------------------------
+@mixin surface($padding: 20px) {
+  @include card-base;
+  padding: $padding;
+}
+
+// ---- Uppercase label ----------------------------------------
+@mixin label-uppercase($size: .68rem) {
+  font-size: $size;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+// ---- Responsive breakpoints ---------------------------------
+@mixin respond-to($bp) {
+  @if $bp == sm { @media (max-width: 575.98px) { @content; } }
+  @if $bp == md { @media (max-width: 767.98px) { @content; } }
+  @if $bp == lg { @media (max-width: 991.98px) { @content; } }
+  @if $bp == xl { @media (max-width: 1199.98px) { @content; } }
 }

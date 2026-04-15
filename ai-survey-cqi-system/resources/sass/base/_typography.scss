@@ -2,34 +2,104 @@
 // _typography.scss
 // ============================================================
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
+// ---- Base ---------------------------------------------------
 body {
   font-family: $font-body;
-  font-size: .9375rem;
+  font-size: $text-md;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: $font-heading;
 }
 
+code, pre, .font-mono {
+  font-family: $font-mono;
+}
+
+// ---- Page-level headings ------------------------------------
 .page-title {
-  font-size: 1.375rem;
+  font-family: $font-heading;
+  font-size: $text-2xl;
   font-weight: 700;
   color: $light-text-primary;
-  letter-spacing: -.02em;
+  letter-spacing: -.025em;
   line-height: 1.2;
   margin: 0;
 
-  [data-bs-theme="dark"] & { color: $dark-text-primary; }
+  @include dark { color: $dark-text-primary; }
+}
+
+.section-title {
+  font-family: $font-heading;
+  font-size: $text-lg;
+  font-weight: 700;
+  color: $light-text-primary;
+  letter-spacing: -.015em;
+  margin: 0 0 $space-4;
+
+  @include dark { color: $dark-text-primary; }
+}
+
+// ---- Label styles -------------------------------------------
+.label-xs {
+  @include label-uppercase($text-xs);
+  color: $light-text-muted;
+  @include dark { color: $dark-text-muted; }
+}
+
+.label-sm {
+  @include label-uppercase($text-sm);
+  color: $light-text-muted;
+  @include dark { color: $dark-text-muted; }
+}
+
+.section-label {
+  @include label-uppercase(.65rem);
+  color: rgba(255, 255, 255, .4);
+  padding: $space-4 $space-2 $space-1;
+  display: block;
+}
+
+// ---- Text size utilities (supplement Bootstrap) -------------
+.text-xs   { font-size: $text-xs !important; }
+.text-sm   { font-size: $text-sm !important; }
+.text-base { font-size: $text-base !important; }
+.text-md   { font-size: $text-md !important; }
+
+// ---- Text color utilities -----------------------------------
+.text-primary-color {
+  color: $light-text-primary !important;
+  @include dark { color: $dark-text-primary !important; }
 }
 
 .text-muted {
   color: $light-text-muted !important;
-  [data-bs-theme="dark"] & { color: $dark-text-muted !important; }
+  @include dark { color: $dark-text-muted !important; }
 }
 
-code, pre {
-  font-family: $font-mono;
+.text-secondary-color {
+  color: $light-text-secondary !important;
+  @include dark { color: $dark-text-secondary !important; }
+}
+
+.text-brand   { color: $brand-action !important; }
+.text-navy    { color: $brand-primary !important; }
+
+// ---- Font weight helpers ------------------------------------
+.fw-500 { font-weight: 500 !important; }
+.fw-600 { font-weight: 600 !important; }
+.fw-700 { font-weight: 700 !important; }
+
+// ---- Mono / code --------------------------------------------
+.text-mono { font-family: $font-mono; font-size: .82em; }
+
+// ---- Muted small text (often meta / timestamps) -------------
+.text-muted-sm {
+  font-size: $text-sm;
+  color: $light-text-muted;
+  @include dark { color: $dark-text-muted; }
 }

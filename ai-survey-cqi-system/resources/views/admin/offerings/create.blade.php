@@ -1,6 +1,14 @@
-{{-- resources/views/admin/offerings/create.blade.php --}}
-@extends('admin.layouts.app')
+@extends('layouts.app')
 @section('title', 'Create Course Offering')
+
+@section('breadcrumbs')
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.offerings.index') }}">Course Offerings</a></li>
+    <li class="breadcrumb-item active">Create</li>
+</ol>
+@endsection
+
 @section('content')
 <div class="page-header">
     <h1>Create Course Offering</h1>

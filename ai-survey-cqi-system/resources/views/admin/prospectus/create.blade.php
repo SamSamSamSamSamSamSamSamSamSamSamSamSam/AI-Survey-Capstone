@@ -1,6 +1,14 @@
 @extends('admin.layouts.app')
 @section('title', 'Add Prospectus Entry')
 
+@section('breadcrumbs')
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('admin.prospectus.index') }}">Prospectus</a></li>
+    <li class="breadcrumb-item active">Add Entry</li>
+</ol>
+@endsection
+
 @section('content')
 <div class="page-header">
     <h1>Add Prospectus Entry</h1>

@@ -49,7 +49,8 @@ class ProgramController extends Controller
 
     public function show(Program $program): View
     {
-        $program->load(['prospectuses.subject', 'prospectuses.offeringType']);
+        // $program->load(['prospectuses.subject', 'prospectuses.offeringType']);
+        $program->load(['curricula.prospectuses.subject', ]);
         return view('admin.programs.show', compact('program'));
     }
 
