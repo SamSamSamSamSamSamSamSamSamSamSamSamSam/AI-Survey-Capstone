@@ -37,7 +37,7 @@
             <i class="bi bi-person-plus me-1"></i> New User
         </a>
         
-        <a href="#" class="btn btn-outline-primary">
+        <a href="{{ route('admin.users.import') }}" class="btn btn-outline-primary">
             <i class="bi bi-file-earmark-arrow-up me-1"></i> Import Users
         </a>
     </div>

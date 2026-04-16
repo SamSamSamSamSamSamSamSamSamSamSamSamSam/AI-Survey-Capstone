@@ -42,6 +42,18 @@ class LoginController extends Controller
             ]);
         }
 
+        $user = Auth::user();
+
+        // Check if they came from a CSV import and haven't set a password yet
+        if ($user->must_change_password) {
+            Auth::logout();
+            $request->session()->invalidate();
+
+            throw ValidationException::withMessages([
+                'login' => 'Your account is not fully set up. Please check your email to set your password.',
+            ]);
+        }
+
         // Block unverified users
         if (! Auth::user()->hasVerifiedEmail()) {
             Auth::logout();

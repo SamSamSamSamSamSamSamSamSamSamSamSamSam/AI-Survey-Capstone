@@ -6,6 +6,13 @@
 // ---------------------------------------------------------------------------
 
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\UserImportController;
+
+
+Route::get('users/import', [UserImportController::class, 'showImportForm'])->name('users.import');
+Route::post('users/import', [UserImportController::class, 'import'])->name('users.import.post');
+
+Route::resource('users', UserController::class);
 
 // Standard resource routes (index, create, store, show, edit, update, destroy)
 Route::resource('users', UserController::class);
