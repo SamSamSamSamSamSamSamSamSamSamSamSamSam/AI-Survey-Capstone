@@ -76,8 +76,7 @@
 {{-- Preserve value when disabled --}}
 @if(isset($survey) && $survey->is_active)
     <input type="hidden" name="offering_id" value="{{ $survey->offering_id }}">
-    <input type="hidden" name="target_role_id" value="{{ old('target_role_id', 
-            $survey->target_role_id ?? '') == $role->id ? $role->id : '' }}">
+    <input type="hidden" name="target_role_id" value="{{ $survey->target_role_id }}">
 @endif
 
 {{-- Survey Title --}}
