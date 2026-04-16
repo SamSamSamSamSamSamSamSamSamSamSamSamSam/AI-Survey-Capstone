@@ -1,57 +1,38 @@
-# Project TODO List
+# TO DO - *sam*
 
-This document tracks pending tasks, improvements, and issues.
+## Modules
+__*priority*__
+- [ ] CSV UPPLOAD
+- [X] ADMIN DASHBOARD
+- [X] CQI REPORT
+- [ ] Seeder file for Prospectus
 
-Legend:
-- [ ] Not Started
-- [/] In Progress
-- [x] Completed
+## LOGIC FIXES
+- [ ] SCHEDULING NOT WORKING YET (start/end date don't work yet in create new survey)
+- [ ] CHANGE TEMPLATE ON EDIT SURVEY (Does not work)
+- [ ] csv file upload logic not working
+- [X] cqi report not working
+- [ ] FACULTY AND ADMIN SURVEY REMOVE COURSE OFFERINGS
+- [ ] SURVEY EDIT (USE ANOTHER TEMPLATE NOT WORKING YET)
+* some edit fields should be locked
+    - [X] survey edit
+    - [ ] others edits...
 
----
+## Pages
+__*priority*__
+- [X] FACULTY REPORT PAGE
+- [ ] SYSTEM SETTINGS PAGE
+- [ ] SET TIME IS CREATE NEW SURVEY
 
-## High Priority
-
-- [ ] - Integrate Model for Sentiment Analysis
-- [ ] - Dynamic Search for subjects
-- [ ] - Sudject Management for Each User in Admin Panel
-- [ ] - Faculty Statistics - FACULTY
-- [ ] - CQI Report Generation
-- [ ]
-
-## Medium Priority
-
-- [/] - Improving Admin Dashboard UI
-- [/] - Improving Admin Create Survey UI
-- [ ] - admin/department profile cards fix/improve
-- [ ]
-
-
-## Low Priority
-
-- [x] - icons not working (fix) 
-- [ ]
-
-
-Categorized
-
----
-
-## Backend (Laravel)
-
-- [ ]
-
-## AI / NLP (Python)
-
-- [ ]
-
-## Frontend
-
-- [ ]
-
-## Improvements
-
-- [ ]
-
-## Bugs
-
+## UI improvements
+__*priority*__
+- [ ] STUDENT update
+- [X] FACULTY PAGE update 
+- [X] Dashboard Analystics
+*low prio*
+- [ ] all old survey modules
+- [ ] survey creation time period for new survey creation
+- [ ] new global survey
+- [ ] all academic modules
+- [ ] PROGRAMS SHOW PAGE
 - [ ]
