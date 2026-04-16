@@ -10,20 +10,32 @@
 @endsection
 
 @section('content')
+
 <div class="page-header">
-    <h1>Create Course Offering</h1>
-    <a href="{{ route('admin.offerings.index') }}" class="btn btn-secondary">← Back</a>
+    <div>
+        <h2 class="page-heading">Create Course Offering</h2>
+        <p class="page-subheading">Assign a subject and faculty member to a semester.</p>
+    </div>
+    <a href="{{ route('admin.offerings.index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back to Offerings
+    </a>
 </div>
-<div class="card" style="max-width:600px;">
-    <div class="card-body">
-        <form method="POST" action="{{ route('admin.offerings.store') }}">
+
+<div class="form-page-layout">
+    <div class="form-card">
+        <form method="POST" action="{{ route('admin.offerings.store') }}" novalidate>
             @csrf
             @include('admin.offerings._form')
-            <div class="actions" style="margin-top:1.5rem;">
-                <button type="submit" class="btn btn-primary">Create Offering</button>
-                <a href="{{ route('admin.offerings.index') }}" class="btn btn-secondary">Cancel</a>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> Create Offering
+                </button>
+                <a href="{{ route('admin.offerings.index') }}" class="btn btn-outline-secondary">
+                    Cancel
+                </a>
             </div>
         </form>
     </div>
 </div>
+
 @endsection

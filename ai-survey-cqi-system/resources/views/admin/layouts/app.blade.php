@@ -141,5 +141,10 @@
 
 </div>
 
+    @vite(['resources/js/modules/confirm-action.js'])
+
+    @stack('scripts')
+
 </body>
+    
 </html>

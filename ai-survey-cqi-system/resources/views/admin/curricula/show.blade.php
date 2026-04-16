@@ -171,7 +171,3 @@
 @endif
 
 @endsection
-
-@push('scripts')
-<script src="{{ asset('js/modules/confirm-action.js') }}"></script>
-@endpush

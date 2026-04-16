@@ -90,5 +90,4 @@ document.addEventListener('DOMContentLoaded', function() {
     filterForm.addEventListener('submit', e => { e.preventDefault(); performSearch(); });
 });
 </script>
-<script src="{{ asset('js/modules/confirm-action.js') }}"></script>
 @endpush

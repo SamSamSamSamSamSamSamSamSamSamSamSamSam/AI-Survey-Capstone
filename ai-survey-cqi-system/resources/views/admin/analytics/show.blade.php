@@ -331,7 +331,6 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/modules/confirm-action.js') }}"></script>
 <script>
 (function () {
     // ---- Animate category bar fills on page load ----

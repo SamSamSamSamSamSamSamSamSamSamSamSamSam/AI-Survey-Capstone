@@ -1,64 +1,92 @@
-{{-- resources/views/admin/offerings/_form.blade.php --}}
+{{-- ============================================================
+     admin/offerings/_form.blade.php
+     Shared by create.blade.php and edit.blade.php
+     ============================================================ --}}
 
-<div class="form-group">
-    <label class="form-label">Subject <span style="color:#dc2626">*</span></label>
-    <select name="subject_id" class="form-control {{ $errors->has('subject_id') ? 'is-invalid' : '' }}">
+{{-- Subject --}}
+<div class="mb-4">
+    <label class="form-label" for="subject_id">
+        Subject <span class="text-danger">*</span>
+    </label>
+    <select name="subject_id" id="subject_id"
+            class="form-select @error('subject_id') is-invalid @enderror">
         <option value="">Select subject…</option>
         @foreach ($subjects as $subject)
-            <option value="{{ $subject->id }}" @selected(old('subject_id', $offering->subject_id ?? '') == $subject->id)>
+            <option value="{{ $subject->id }}"
+                @selected(old('subject_id', $offering->subject_id ?? '') == $subject->id)>
                 {{ $subject->course_code }} — {{ $subject->name }}
             </option>
         @endforeach
     </select>
-    @error('subject_id') <p class="invalid-feedback">{{ $message }}</p> @enderror
+    @error('subject_id')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
 </div>
 
-<div class="form-group">
-    <label class="form-label">Semester <span style="color:#dc2626">*</span></label>
-    <select name="semester_id" class="form-control {{ $errors->has('semester_id') ? 'is-invalid' : '' }}">
+{{-- Semester --}}
+<div class="mb-4">
+    <label class="form-label" for="semester_id">
+        Semester <span class="text-danger">*</span>
+    </label>
+    <select name="semester_id" id="semester_id"
+            class="form-select @error('semester_id') is-invalid @enderror">
         <option value="">Select semester…</option>
         @foreach ($semesters as $sem)
-            <option value="{{ $sem->id }}" @selected(old('semester_id', $offering->semester_id ?? '') == $sem->id)>
-                {{ $sem->full_label }} {{ $sem->is_active ? '(Active)' : '' }}
+            <option value="{{ $sem->id }}"
+                @selected(old('semester_id', $offering->semester_id ?? '') == $sem->id)>
+                {{ $sem->full_label }}{{ $sem->is_active ? ' · Active' : '' }}
             </option>
         @endforeach
     </select>
-    @error('semester_id') <p class="invalid-feedback">{{ $message }}</p> @enderror
+    @error('semester_id')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
 </div>
 
-<div class="form-group">
-    <label class="form-label">Faculty / Teacher <span style="color:#dc2626">*</span></label>
-    <select name="teacher_id" class="form-control {{ $errors->has('teacher_id') ? 'is-invalid' : '' }}">
+{{-- Faculty --}}
+<div class="mb-4">
+    <label class="form-label" for="teacher_id">
+        Faculty / Teacher <span class="text-danger">*</span>
+    </label>
+    <select name="teacher_id" id="teacher_id"
+            class="form-select @error('teacher_id') is-invalid @enderror">
         <option value="">Select faculty…</option>
         @foreach ($teachers as $teacher)
-            <option value="{{ $teacher->id }}" @selected(old('teacher_id', $offering->teacher_id ?? '') == $teacher->id)>
+            <option value="{{ $teacher->id }}"
+                @selected(old('teacher_id', $offering->teacher_id ?? '') == $teacher->id)>
                 {{ $teacher->name }} ({{ $teacher->user_id_number }})
             </option>
         @endforeach
     </select>
-    @error('teacher_id') <p class="invalid-feedback">{{ $message }}</p> @enderror
+    @error('teacher_id')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
 </div>
 
-<div style="display:flex;gap:1rem;">
-    <div class="form-group" style="flex:1;">
-        <label class="form-label">Offering Type</label>
-        <select name="offering_type_id" class="form-control">
+{{-- Offering Type + Group --}}
+<div class="row g-3 mb-4">
+    <div class="col-6">
+        <label class="form-label" for="offering_type_id">Offering Type</label>
+        <select name="offering_type_id" id="offering_type_id" class="form-select">
             <option value="">None</option>
             @foreach ($offeringTypes as $type)
-                <option value="{{ $type->id }}" @selected(old('offering_type_id', $offering->offering_type_id ?? '') == $type->id)>
+                <option value="{{ $type->id }}"
+                    @selected(old('offering_type_id', $offering->offering_type_id ?? '') == $type->id)>
                     {{ $type->name }}
                 </option>
             @endforeach
         </select>
     </div>
 
-    <div class="form-group" style="flex:1;">
-        <label class="form-label">Group Number</label>
-        <input type="number" name="group_number" min="1"
-               class="form-control {{ $errors->has('group_number') ? 'is-invalid' : '' }}"
+    <div class="col-6">
+        <label class="form-label" for="group_number">Group Number</label>
+        <input type="number" name="group_number" id="group_number" min="1"
+               class="form-control @error('group_number') is-invalid @enderror"
                value="{{ old('group_number', $offering->group_number ?? '') }}"
                placeholder="e.g. 1">
-        <p class="form-text">Optional — for multiple sections of the same subject.</p>
-        @error('group_number') <p class="invalid-feedback">{{ $message }}</p> @enderror
+        <div class="form-text">Optional — for multiple sections of the same subject.</div>
+        @error('group_number')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
     </div>
 </div>
