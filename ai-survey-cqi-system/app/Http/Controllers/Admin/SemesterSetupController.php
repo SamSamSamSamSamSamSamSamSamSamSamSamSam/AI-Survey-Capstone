@@ -166,7 +166,7 @@ class SemesterSetupController extends Controller
                 $row = $item['row'];
                 $subject = Subject::where('course_code', strtoupper(trim($row['subject_code'])))->first();
                 $teacher = User::where('user_id_number', trim($row['teacher_id_number']))->first();
-                
+                    
                 $blockId = !empty($row['block_name']) 
                     ? Block::where('name', strtoupper(trim($row['block_name'])))->where('semester_id', $activeSemester->id)->first()?->id 
                     : null;

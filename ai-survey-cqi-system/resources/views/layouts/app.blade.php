@@ -17,11 +17,11 @@
 
 <body>
 
-<div class="app-wrapper">
+<div class="app-wrapper {{ !auth()->check() ? 'guest-mode' : '' }}">
 
-    {{-- ===================== SIDEBAR ===================== --}}
+    {{-- ===================== SIDEBAR (Auth Only) ===================== --}}
+    @auth
     <aside class="sidebar" id="appSidebar">
-
         <div class="sidebar-brand">
             <span class="brand-name">
                 <i class="bi bi-mortarboard-fill me-2" style="color: var(--bs-blue)"></i>CQI System
@@ -30,7 +30,6 @@
         </div>
 
         <nav class="sidebar-nav">
-
             {{-- Dashboard (all roles) --}}
             <a href="{{ route(auth()->user()->primaryRole() . '.dashboard') }}"
                class="nav-link {{ request()->routeIs('*.dashboard') ? 'active' : '' }}">
@@ -50,7 +49,6 @@
             @if(auth()->user()->hasRole('student'))
                 @include('partials.nav-student')
             @endif
-
         </nav>
 
         <div class="sidebar-footer">
@@ -67,27 +65,23 @@
                 </label>
             </div>
         </div>
-
     </aside>
-
-    {{-- Mobile sidebar overlay --}}
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    @endauth
 
     {{-- ===================== MAIN ===================== --}}
-    <main class="main">
+    <main class="main {{ !auth()->check() ? 'ms-0 w-100' : '' }}">
 
-        {{-- Topbar --}}
+        {{-- Topbar (Auth Only) --}}
+        @auth
         <header class="topbar">
-
             <div class="topbar-left">
-                {{-- Mobile hamburger --}}
                 <button class="sidebar-toggle" id="sidebarToggle" aria-label="Open menu">
                     <i class="bi bi-list"></i>
                 </button>
 
                 <div class="topbar-title-group">
                     <h1 class="topbar-title">@yield('title', 'Dashboard')</h1>
-
                     @hasSection('breadcrumbs')
                         <nav class="breadcrumbs" aria-label="breadcrumb">
                             @yield('breadcrumbs')
@@ -97,8 +91,6 @@
             </div>
 
             <div class="topbar-right">
-
-                {{-- User dropdown --}}
                 <div class="dropdown">
                     <button class="topbar-user-btn dropdown-toggle" type="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
@@ -129,17 +121,16 @@
                         </li>
                     </ul>
                 </div>
-
             </div>
         </header>
+        @endauth
 
         {{-- ===================== CONTENT ===================== --}}
-        <section class="content">
-
+        <section class="content {{ !auth()->check() ? 'pt-4' : '' }}">
             {{-- Flash alerts --}}
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle-fill"></i>
+                    <i class="bi bi-check-circle-fill me-2"></i>
                     {{ session('success') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
@@ -147,35 +138,25 @@
 
             @if(session('error'))
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
                     {{ session('error') }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             @endif
 
-            @if(session('info'))
-                <div class="alert alert-info alert-dismissible fade show" role="alert">
-                    <i class="bi bi-info-circle-fill"></i>
-                    {{ session('info') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-
             @yield('content')
-
         </section>
 
     </main>
 
 </div>
 
-{{-- ===================== SCRIPTS ===================== --}}
+{{-- Scripts stay the same --}}
 <script>
 (function () {
-    // ---- Theme persistence ----
     const THEME_KEY = 'cqi-theme';
-    const html      = document.documentElement;
-    const toggle    = document.getElementById('themeToggle');
+    const html = document.documentElement;
+    const toggle = document.getElementById('themeToggle');
 
     const saved = localStorage.getItem(THEME_KEY) || 'light';
     html.setAttribute('data-bs-theme', saved);
@@ -189,15 +170,14 @@
         });
     }
 
-    // ---- Mobile sidebar ----
     const sidebar = document.getElementById('appSidebar');
     const overlay = document.getElementById('sidebarOverlay');
-    const burger  = document.getElementById('sidebarToggle');
+    const burger = document.getElementById('sidebarToggle');
 
-    function openSidebar()  { sidebar.classList.add('show'); overlay.classList.add('show'); }
-    function closeSidebar() { sidebar.classList.remove('show'); overlay.classList.remove('show'); }
+    function openSidebar() { if(sidebar) sidebar.classList.add('show'); if(overlay) overlay.classList.add('show'); }
+    function closeSidebar() { if(sidebar) sidebar.classList.remove('show'); if(overlay) overlay.classList.remove('show'); }
 
-    if (burger)  burger.addEventListener('click', openSidebar);
+    if (burger) burger.addEventListener('click', openSidebar);
     if (overlay) overlay.addEventListener('click', closeSidebar);
 })();
 </script>
