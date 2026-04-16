@@ -10,23 +10,33 @@ class CourseOfferingSeeder extends Seeder
 {
     public function run(): void
     {
-        // Loop over all prospectus entries to generate course offerings
         $prospectuses = Prospectus::all();
+        
+        // Get all faculty members once to avoid repeated queries
+        $facultyMembers = \App\Models\User::whereHas('roles', function($query) {
+            $query->where('name', 'faculty');
+        })->get();
 
         foreach ($prospectuses as $pros) {
-
-            // Generate 1–3 sections per prospectus entry
             $numSections = rand(1, 3);
 
             for ($i = 1; $i <= $numSections; $i++) {
+                $semesterId = \App\Models\Semester::where('academic_start_year', 2024)
+                    ->where('semester_number', $pros->semester_number)
+                    ->first()->id ?? 1;
 
-                CourseOffering::factory()->create([
-                    'subject_id' => $pros->subject_id,
-                    'semester_id' => \App\Models\Semester::where('academic_start_year', 2024)
-                        ->where('semester_number', $pros->semester_number)
-                        ->first()->id ?? 1,
-                    'offering_type_id' => $pros->offered_type_id,
-                ]);
+                \App\Models\CourseOffering::updateOrCreate(
+                    [
+                        'subject_id'   => $pros->subject_id,
+                        'semester_id'  => $semesterId,
+                        'group_number' => $i,
+                    ],
+                    [
+                        'offering_type_id' => $pros->offered_type_id,
+                        // Pull a random faculty ID just like your factory does
+                        'teacher_id'       => $facultyMembers->random()->id,
+                    ]
+                );
             }
         }
     }
