@@ -10,14 +10,37 @@
 
 @section('content')
 
-<div class="page-header">
+@if(session('success'))
+    <div style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+        <strong>Success!</strong> {{ session('success') }}
+    </div>
+@endif
+
+@if($errors->any())
+    <div style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
+        <strong>Import Error:</strong>
+        <ul style="margin-top: 10px;">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+<div class="page-header d-flex align-items-center justify-content-between">
     <div>
         <h2 class="page-heading">User Management</h2>
-        <p class="page-subheading">Manage system users, roles, and access control.</p>
+        <p class="page-subheading text-muted">Manage system users, roles, and access control.</p>
     </div>
-    <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
-        <i class="bi bi-person-plus me-1"></i> New User
-    </a>
+    <div class="d-flex gap-2">
+        <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
+            <i class="bi bi-person-plus me-1"></i> New User
+        </a>
+        
+        <a href="#" class="btn btn-outline-primary">
+            <i class="bi bi-file-earmark-arrow-up me-1"></i> Import Users
+        </a>
+    </div>
 </div>
 
 {{-- ===== FILTER CARD ===== --}}

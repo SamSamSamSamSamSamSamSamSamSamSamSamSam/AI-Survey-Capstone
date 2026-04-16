@@ -47,7 +47,56 @@
                         </span>
                     </td>
                     <td class="text-end">
-                        {{-- Keep your existing table-actions div here --}}
+                        <div class="table-actions">
+
+                            <a href="{{ route('admin.users.show', $user->id) }}"
+                                class="btn btn-sm btn-icon" title="View">
+                                <i class="bi bi-eye"></i>
+                            </a>
+
+                            @if (! $user->trashed())
+
+                                <a href="{{ route('admin.users.edit', $user->id) }}"
+                                    class="btn btn-sm btn-icon" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+
+                                <form method="POST"
+                                        action="{{ route('admin.users.reset-password', $user->id) }}"
+                                        class="d-inline"
+                                        data-confirm="Send a new password to {{ $user->email }}?">
+                                    @csrf @method('PATCH')
+                                    <button type="submit" class="btn btn-sm btn-icon btn-icon--warning" title="Reset Password">
+                                        <i class="bi bi-key"></i>
+                                    </button>
+                                </form>
+
+                                @if ($user->id !== auth()->id())
+                                    <form method="POST"
+                                            action="{{ route('admin.users.destroy', $user->id) }}"
+                                            class="d-inline"
+                                            data-confirm="Deactivate {{ $user->name }}?">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-icon btn-icon--danger" title="Deactivate">
+                                            <i class="bi bi-person-dash"></i>
+                                        </button>
+                                    </form>
+                                @endif
+
+                            @else
+
+                                <form method="POST"
+                                        action="{{ route('admin.users.restore', $user->id) }}"
+                                        class="d-inline">
+                                    @csrf @method('PATCH')
+                                    <button type="submit" class="btn btn-sm btn-icon btn-icon--success" title="Restore">
+                                        <i class="bi bi-person-check"></i>
+                                    </button>
+                                </form>
+
+                            @endif
+
+                        </div>
                     </td>
                 </tr>
                 @endforeach

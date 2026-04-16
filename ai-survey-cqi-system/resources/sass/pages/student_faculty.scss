@@ -1,0 +1,613 @@
+// ============================================================
+// _student-faculty.scss
+// Student dashboard, faculty dashboard, survey index/take,
+// enrollments, faculty reports
+// ============================================================
+
+// ============================================================
+// Shared: survey tabs
+// ============================================================
+
+.survey-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 2px solid $light-border;
+    padding-bottom: 0;
+
+    [data-bs-theme="dark"] & { border-color: $dark-border; }
+}
+
+.survey-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-size: .875rem;
+    font-weight: 500;
+    color: $light-text-muted;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+
+    &:hover { color: $brand-action; }
+
+    &--active {
+        color: $brand-action;
+        border-bottom-color: $brand-action;
+        font-weight: 600;
+
+        [data-bs-theme="dark"] & {
+            color: $brand-accent;
+            border-bottom-color: $brand-accent;
+        }
+    }
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+
+    &__badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 18px; height: 18px;
+        padding: 0 5px;
+        border-radius: 99px;
+        font-size: .65rem;
+        font-weight: 700;
+        background: rgba($brand-action, .12);
+        color: $brand-action;
+
+        &--done { background: rgba(#22c55e,.12); color: #16a34a; }
+
+        [data-bs-theme="dark"] & {
+            background: rgba($brand-accent,.18);
+            color: $brand-accent;
+        }
+    }
+}
+
+// ============================================================
+// Survey cards (index + student dashboard)
+// ============================================================
+
+.student-survey-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.student-survey-card {
+    @include card-base;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px;
+    transition: box-shadow .2s, border-color .2s;
+
+    &:hover { box-shadow: $shadow-elevated; }
+
+    &--urgent {
+        border-left: 3px solid #ef4444;
+        padding-left: 17px;
+    }
+
+    &--done {
+        opacity: .65;
+        pointer-events: none;
+    }
+
+    &__body { flex: 1; min-width: 0; }
+
+    [data-bs-theme="dark"] & {
+        &--urgent { border-left-color: #f87171; }
+    }
+}
+
+.student-deadline-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: $radius-sm;
+    font-size: .72rem;
+    font-weight: 600;
+    background: rgba(#ef4444, .1);
+    color: #dc2626;
+    text-decoration: none;
+
+    &--safe {
+        background: rgba(#22c55e, .1);
+        color: #15803d;
+        [data-bs-theme="dark"] & { background: rgba(#22c55e,.18); color: #4ade80; }
+    }
+
+    [data-bs-theme="dark"] & { background: rgba(#ef4444,.18); color: #f87171; }
+}
+
+.survey-done-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: $radius-md;
+    font-size: .82rem;
+    font-weight: 600;
+    background: rgba(#22c55e, .1);
+    color: #15803d;
+
+    [data-bs-theme="dark"] & { background: rgba(#22c55e,.18); color: #4ade80; }
+}
+
+// ============================================================
+// Faculty: survey row in dashboard
+// ============================================================
+
+.faculty-survey-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid $light-border;
+
+    &:last-child { border-bottom: none; }
+
+    [data-bs-theme="dark"] & { border-color: $dark-border; }
+
+    &__info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+}
+
+// ============================================================
+// Faculty: sentiment pills
+// ============================================================
+
+.faculty-sentiment-pill {
+    border-radius: $radius-md;
+    padding: 10px 8px;
+    text-align: center;
+
+    &__pct {
+        font-family: $font-heading;
+        font-size: 1.2rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 3px;
+    }
+
+    &__lbl {
+        font-size: .68rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+    }
+
+    &--pos {
+        background: rgba(#22c55e, .08);
+        .faculty-sentiment-pill__pct { color: #15803d; }
+        .faculty-sentiment-pill__lbl { color: #16a34a; }
+        [data-bs-theme="dark"] & {
+            background: rgba(#22c55e, .12);
+            .faculty-sentiment-pill__pct { color: #4ade80; }
+            .faculty-sentiment-pill__lbl { color: #4ade80; }
+        }
+    }
+
+    &--neu {
+        background: rgba(#f59e0b, .08);
+        .faculty-sentiment-pill__pct { color: #b45309; }
+        .faculty-sentiment-pill__lbl { color: #d97706; }
+        [data-bs-theme="dark"] & {
+            background: rgba(#f59e0b, .12);
+            .faculty-sentiment-pill__pct { color: #fbbf24; }
+            .faculty-sentiment-pill__lbl { color: #fbbf24; }
+        }
+    }
+
+    &--neg {
+        background: rgba(#ef4444, .08);
+        .faculty-sentiment-pill__pct { color: #dc2626; }
+        .faculty-sentiment-pill__lbl { color: #ef4444; }
+        [data-bs-theme="dark"] & {
+            background: rgba(#ef4444, .12);
+            .faculty-sentiment-pill__pct { color: #f87171; }
+            .faculty-sentiment-pill__lbl { color: #f87171; }
+        }
+    }
+}
+
+// ============================================================
+// Enrollment offering grid
+// ============================================================
+
+.enrollment-offering-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+}
+
+.enrollment-offering-card {
+    @include card-base;
+    padding: 16px;
+    transition: box-shadow .2s, transform .2s;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: $shadow-elevated;
+    }
+
+    &__code {
+        font-family: $font-mono;
+        font-size: .78rem;
+        font-weight: 700;
+        color: $brand-action;
+        margin-bottom: 3px;
+
+        [data-bs-theme="dark"] & { color: $brand-accent; }
+    }
+
+    &__name {
+        font-weight: 600;
+        font-size: .9375rem;
+        color: $light-text-primary;
+        margin-bottom: 8px;
+        line-height: 1.3;
+
+        [data-bs-theme="dark"] & { color: $dark-text-primary; }
+    }
+
+    &__meta {
+        font-size: .78rem;
+        color: $light-text-muted;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        margin-bottom: 10px;
+        line-height: 1.4;
+
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+}
+
+// ============================================================
+// Survey take page (standalone — no sidebar)
+// ============================================================
+
+.survey-take-page {
+    background: $light-bg;
+    min-height: 100vh;
+    padding-bottom: 80px; // room for sticky submit bar
+
+    [data-bs-theme="dark"] & { background: $dark-bg; }
+}
+
+// ---- Topbar ----
+.survey-take-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: $light-surface;
+    border-bottom: 1px solid $light-border;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+    box-shadow: $shadow-card;
+
+    [data-bs-theme="dark"] & {
+        background: $dark-surface;
+        border-color: $dark-border;
+    }
+
+    &__title {
+        flex: 1;
+        font-family: $font-heading;
+        font-size: .9rem;
+        font-weight: 600;
+        color: $light-text-primary;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        [data-bs-theme="dark"] & { color: $dark-text-primary; }
+    }
+}
+
+.survey-take-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px; height: 34px;
+    border-radius: $radius-md;
+    border: 1px solid $light-border;
+    color: $light-text-muted;
+    flex-shrink: 0;
+    transition: all .15s;
+
+    &:hover { border-color: $brand-action; color: $brand-action; }
+
+    [data-bs-theme="dark"] & {
+        border-color: $dark-border;
+        color: $dark-text-muted;
+        &:hover { border-color: $brand-accent; color: $brand-accent; }
+    }
+}
+
+.survey-take-progress {
+    flex-shrink: 0;
+    min-width: 180px;
+
+    @media (max-width: 575.98px) { display: none; }
+
+    &__track {
+        height: 5px;
+        background: $light-border;
+        border-radius: 99px;
+        overflow: hidden;
+        margin-bottom: 3px;
+
+        [data-bs-theme="dark"] & { background: $dark-border; }
+    }
+
+    &__fill {
+        height: 100%;
+        background: $brand-action;
+        border-radius: 99px;
+        transition: width .3s ease;
+
+        [data-bs-theme="dark"] & { background: $brand-accent; }
+    }
+
+    &__label {
+        font-size: .68rem;
+        color: $light-text-muted;
+        text-align: right;
+
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+}
+
+// ---- Content ----
+.survey-take-content {
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 24px 16px 16px;
+}
+
+// ---- Info card ----
+.survey-take-info-card {
+    @include card-base;
+    padding: 20px 24px;
+    border-left: 4px solid $brand-action;
+    margin-bottom: 20px;
+
+    &__title {
+        font-family: $font-heading;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: $light-text-primary;
+        margin: 0 0 6px;
+
+        [data-bs-theme="dark"] & { color: $dark-text-primary; }
+    }
+
+    &__desc {
+        font-size: .875rem;
+        color: $light-text-muted;
+        line-height: 1.6;
+        margin: 0;
+
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+
+    [data-bs-theme="dark"] & { border-left-color: $brand-accent; }
+}
+
+// ---- Question cards ----
+.survey-question-card {
+    @include card-base;
+    padding: 20px;
+    margin-bottom: 12px;
+    border: 2px solid transparent;
+    transition: border-color .2s, box-shadow .2s;
+
+    &:focus-within { border-color: rgba($brand-action, .4); }
+
+    &--error { border-color: rgba(#ef4444, .5); }
+
+    &--answered { border-color: rgba(#22c55e, .25); }
+
+    &__meta {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    &__num {
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+        color: $light-text-muted;
+
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+
+    &__text {
+        font-size: .9375rem;
+        font-weight: 500;
+        color: $light-text-primary;
+        line-height: 1.55;
+        margin: 0 0 16px;
+
+        [data-bs-theme="dark"] & { color: $dark-text-primary; }
+    }
+}
+
+.survey-required-tag {
+    font-size: .7rem;
+    font-weight: 600;
+    color: #dc2626;
+    margin-left: auto;
+}
+
+.survey-optional-tag {
+    font-size: .7rem;
+    color: $light-text-muted;
+    margin-left: auto;
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+// ---- Scale options ----
+.survey-scale-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.survey-scale-option {
+    &__input {
+        position: absolute;
+        opacity: 0;
+        width: 0; height: 0;
+
+        &:checked + .survey-scale-option__label {
+            background: $brand-action;
+            border-color: $brand-action;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba($brand-action, .35);
+
+            [data-bs-theme="dark"] & {
+                background: $brand-accent;
+                border-color: $brand-accent;
+                color: $brand-primary;
+                box-shadow: 0 2px 8px rgba($brand-accent, .35);
+            }
+        }
+
+        &:focus + .survey-scale-option__label {
+            box-shadow: 0 0 0 3px rgba($brand-action, .2);
+        }
+    }
+
+    &__label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 68px;
+        padding: 10px 8px;
+        border: 2px solid $light-border;
+        border-radius: $radius-md;
+        cursor: pointer;
+        transition: all .15s;
+        font-size: .875rem;
+        font-weight: 600;
+        color: $light-text-muted;
+        text-align: center;
+        user-select: none;
+
+        &:hover {
+            border-color: $brand-action;
+            background: rgba($brand-action, .05);
+            color: $brand-action;
+        }
+
+        [data-bs-theme="dark"] & {
+            border-color: $dark-border;
+            color: $dark-text-muted;
+
+            &:hover {
+                border-color: $brand-accent;
+                background: rgba($brand-accent, .08);
+                color: $brand-accent;
+            }
+        }
+    }
+
+    &__val { font-size: .9rem; font-weight: 700; }
+
+    &__lbl {
+        font-size: .62rem;
+        font-weight: 400;
+        margin-top: 3px;
+        line-height: 1.2;
+        color: inherit;
+    }
+}
+
+// ---- Text answer ----
+.survey-text-answer {
+    border: 2px solid $light-border !important;
+    border-radius: $radius-md !important;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color .18s !important;
+
+    &:focus {
+        border-color: $brand-action !important;
+        box-shadow: 0 0 0 3px rgba($brand-action, .15) !important;
+    }
+
+    [data-bs-theme="dark"] & {
+        border-color: $dark-border !important;
+        &:focus { border-color: $brand-accent !important; }
+    }
+}
+
+.survey-char-count {
+    font-size: .72rem;
+    color: $light-text-muted;
+    text-align: right;
+    margin-top: 4px;
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+// ---- Submit bar ----
+.survey-submit-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: $light-surface;
+    border-top: 1px solid $light-border;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    z-index: 50;
+    box-shadow: 0 -2px 12px rgba(0,0,0,.06);
+
+    [data-bs-theme="dark"] & {
+        background: $dark-surface;
+        border-color: $dark-border;
+    }
+
+    &__cancel {
+        font-size: .845rem;
+        color: $light-text-muted;
+        text-decoration: underline;
+
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+
+    &__count {
+        font-size: .8rem;
+        color: $light-text-muted;
+
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+
+    &__btn {
+        padding: 10px 24px;
+        font-weight: 600;
+    }
+}

@@ -1,4 +1,3 @@
-{{-- resources/views/admin/semesters/create.blade.php --}}
 @extends('layouts.app')
 @section('title', 'Create Semester')
 
@@ -11,21 +10,32 @@
 @endsection
 
 @section('content')
+
 <div class="page-header">
-    <h1>Create Semester</h1>
-    <a href="{{ route('admin.semesters.index') }}" class="btn btn-secondary">← Back</a>
+    <div>
+        <h2 class="page-heading">Create Semester</h2>
+        <p class="page-subheading">Add a new academic semester to the system.</p>
+    </div>
+    <a href="{{ route('admin.semesters.index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back to Semesters
+    </a>
 </div>
 
-<div class="card" style="max-width:480px;">
-    <div class="card-body">
-        <form method="POST" action="{{ route('admin.semesters.store') }}">
+<div class="form-page-layout">
+    <div class="form-card">
+        <form method="POST" action="{{ route('admin.semesters.store') }}" novalidate>
             @csrf
             @include('admin.semesters._form')
-            <div class="actions" style="margin-top:1.5rem;">
-                <button type="submit" class="btn btn-primary">Create Semester</button>
-                <a href="{{ route('admin.semesters.index') }}" class="btn btn-secondary">Cancel</a>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> Create Semester
+                </button>
+                <a href="{{ route('admin.semesters.index') }}" class="btn btn-outline-secondary">
+                    Cancel
+                </a>
             </div>
         </form>
     </div>
 </div>
+
 @endsection

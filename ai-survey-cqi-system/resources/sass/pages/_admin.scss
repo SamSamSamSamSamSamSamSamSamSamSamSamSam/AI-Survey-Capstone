@@ -191,3 +191,195 @@
     [data-bs-theme="dark"] & { color: $dark-text-muted; }
   }
 }
+
+// =============================================================================
+// admin-pages.scss
+// Page-specific styles for: Semesters, Subjects, Curricula, Prospectus
+// Extends the existing Bootstrap 5 + shared admin design system.
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Semester toggle icons — make the on/off toggle icons larger & clearer
+// -----------------------------------------------------------------------------
+.btn-icon {
+  .bi-toggle-on,
+  .bi-toggle-off {
+    font-size: 1.15rem;
+    vertical-align: middle;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Status pills — extend with a neutral "inactive" variant
+// (active/archived already defined globally; this adds the soft grey one)
+// -----------------------------------------------------------------------------
+.status-pill--inactive {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+// -----------------------------------------------------------------------------
+// Semester index — active-semester alert tweak
+// -----------------------------------------------------------------------------
+.alert {
+  border-radius: 0.5rem;
+
+  .bi {
+    font-size: 1rem;
+    margin-top: 1px; // optical alignment with text
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Curricula show / Prospectus index — year-level group heading
+// (mirrors .program-year-heading from the Programs show page)
+// -----------------------------------------------------------------------------
+.program-year-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 1.5rem 0 0.5rem;
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--bs-primary, #2563eb);
+    flex-shrink: 0;
+  }
+
+  &__label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #374151;
+    margin: 0;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Table tfoot — subtle totals row
+// -----------------------------------------------------------------------------
+.table tfoot tr td {
+  font-size: 0.8rem;
+  color: #6b7280;
+  padding: 0.45rem 1rem;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
+
+// -----------------------------------------------------------------------------
+// Prospectus index — context / meta strip (reuses .attempts-meta-strip)
+// If the global class doesn't exist, define it here as a fallback.
+// -----------------------------------------------------------------------------
+.attempts-meta-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.82rem;
+  color: #374151;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    padding: 0 0.75rem;
+
+    &:first-child {
+      padding-left: 0;
+    }
+
+    strong {
+      font-weight: 600;
+    }
+  }
+
+  &__sep {
+    width: 1px;
+    height: 1rem;
+    background: #d1d5db;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Form card — prospectus create uses a wider card on larger screens
+// -----------------------------------------------------------------------------
+.form-page-layout {
+  .form-card {
+    // Inherit from global; no changes needed — just documenting intent.
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Curricula form — form-switch spacing
+// -----------------------------------------------------------------------------
+.form-check.form-switch {
+  .form-check-input {
+    cursor: pointer;
+    width: 2.5em;
+    margin-right: 0.5rem;
+  }
+
+  .form-check-label {
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Subject code badge variant — slightly different hue for subject codes
+// (program-code-badge--subject already referenced in Blade; define it here)
+// -----------------------------------------------------------------------------
+.program-code-badge--subject {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+// -----------------------------------------------------------------------------
+// Curricula show — semester sub-header (mirrors .program-semester-header)
+// -----------------------------------------------------------------------------
+.program-semester-header {
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #374151;
+
+  .count-badge {
+    margin-left: auto;
+    font-weight: 400;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Responsive tweaks
+// -----------------------------------------------------------------------------
+@media (max-width: 576px) {
+  .attempts-meta-strip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+
+    &__sep {
+      display: none;
+    }
+
+    &__item {
+      padding: 0;
+    }
+  }
+
+  .table-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}

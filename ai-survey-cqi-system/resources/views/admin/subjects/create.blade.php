@@ -10,21 +10,32 @@
 @endsection
 
 @section('content')
+
 <div class="page-header">
-    <h1>Create Subject</h1>
-    <a href="{{ route('admin.subjects.index') }}" class="btn btn-secondary">← Back</a>
+    <div>
+        <h2 class="page-heading">Create Subject</h2>
+        <p class="page-subheading">Add a new course subject to the system.</p>
+    </div>
+    <a href="{{ route('admin.subjects.index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back to Subjects
+    </a>
 </div>
 
-<div class="card" style="max-width:560px;">
-    <div class="card-body">
-        <form method="POST" action="{{ route('admin.subjects.store') }}">
+<div class="form-page-layout">
+    <div class="form-card">
+        <form method="POST" action="{{ route('admin.subjects.store') }}" novalidate>
             @csrf
             @include('admin.subjects._form')
-            <div class="actions" style="margin-top:1.5rem;">
-                <button type="submit" class="btn btn-primary">Create Subject</button>
-                <a href="{{ route('admin.subjects.index') }}" class="btn btn-secondary">Cancel</a>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> Create Subject
+                </button>
+                <a href="{{ route('admin.subjects.index') }}" class="btn btn-outline-secondary">
+                    Cancel
+                </a>
             </div>
         </form>
     </div>
 </div>
+
 @endsection

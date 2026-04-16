@@ -34,12 +34,14 @@
 
 <a href="{{ route('admin.semester-setup.index') }}"
    class="nav-link {{ request()->routeIs('admin.semester-setup.*') ? 'active' : '' }}">
-   Semester Setup Wizard
+   <i class="bi bi-arrow-clockwise"></i>
+   Semester Rollover
 </a>
 
 <a href="{{ route('admin.surveys.global-assign') }}"
    class="nav-link {{ request()->routeIs('admin.surveys.global-assign*') ? 'active' : '' }}">
-   Global Survey Assignment
+   <i class="bi bi-share"></i>
+   Survey Deployment
 </a>
 
 <p class="nav-section">Academic Structure</p>
