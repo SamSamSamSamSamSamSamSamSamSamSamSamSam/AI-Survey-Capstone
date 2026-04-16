@@ -133,17 +133,34 @@ class SurveyController extends Controller
         if ($survey->is_active) {
             return back()->with('error', 'Cannot modify survey while it is active.');
         }
-    
-        // For editing, we usually update just the one specific survey record
+
         $request->validate([
             'offering_id'    => ['required', 'exists:course_offerings,id'],
             'target_role_id' => ['required', 'exists:roles,id'],
             'template_id'    => ['nullable', 'exists:survey_templates,id'],
             'title'          => ['required', 'string', 'max:255'],
             'description'    => ['nullable', 'string'],
+            'start_date'     => ['nullable', 'date'],
+            'end_date'       => ['nullable', 'date', 'after_or_equal:start_date'],
         ]);
 
-        $survey->update($request->only('offering_id', 'target_role_id', 'template_id', 'title', 'description'));
+        $incomingTemplateId = $request->input('template_id');
+        $templateChanged    = $incomingTemplateId && $incomingTemplateId != $survey->template_id;
+
+        DB::transaction(function () use ($request, $survey, $incomingTemplateId, $templateChanged) {
+            $survey->update($request->only(
+                'offering_id', 'target_role_id', 'template_id',
+                'title', 'description', 'start_date', 'end_date'
+            ));
+
+            // Replace questions only when the template actually changed
+            if ($templateChanged) {
+                $survey->questions()->delete();
+
+                $template = SurveyTemplate::with('questions')->find($incomingTemplateId);
+                $template?->copyQuestionsTo($survey);
+            }
+        });
 
         return redirect()->route('admin.surveys.show', $survey->id)->with('success', 'Survey updated.');
     }
