@@ -28,13 +28,14 @@
             @csrf @method('PUT')
 
             {{-- Template selector added to Edit --}}
-            {{-- DOES NOT WORK YET FOR EDIT NEED FIX --}}
             <div class="mb-4">
                 <label class="form-label" for="template_id">
                     Template
                     <span class="form-label-optional">optional</span>
                 </label>
-                <select name="template_id" id="template_id" class="form-select">
+                <select name="template_id" id="template_id" class="form-select  
+                        @error('template_id') is-invalid @enderror"
+                        {{ isset($survey) && $survey->is_active ? 'disabled' : '' }}>
                     <option value="">— Keep current questions / No template —</option>
                     @foreach ($templates as $template)
                         <option value="{{ $template->id }}"
@@ -44,13 +45,22 @@
                         </option>
                     @endforeach
                 </select>
-                <div class="form-text text-warning">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                    Changing the template will replace all existing questions in this survey.
-                </div>
+                 @if(isset($survey) && $survey->is_active)
+                    <div class="form-text text-muted">
+                        <i class="bi bi-lock-fill"></i> This field cannot be changed while the survey is active.
+                    </div>
+                    <input type="hidden" name="template_id" value="{{ $template->id }}">
+                @else
+                    <div class="form-text text-warning">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Changing the template will replace all existing questions in this survey.
+                    </div>    
+                @endif
             </div>
 
             <hr class="form-divider">
+
+           
 
             @include('admin.surveys._form-edit')
 
