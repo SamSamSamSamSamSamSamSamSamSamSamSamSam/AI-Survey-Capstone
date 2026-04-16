@@ -27,6 +27,7 @@ class UserSeeder extends Seeder
             'email' => 'admin@example.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
+            'must_change_password' => false,
         ]);
 
         $admin->roles()->attach($adminRole);
@@ -37,6 +38,7 @@ class UserSeeder extends Seeder
             'email' => 'student@example.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
+            'must_change_password' => false,
         ]);
         
         $teachersample = User::create([
@@ -45,6 +47,7 @@ class UserSeeder extends Seeder
             'email' => 'teacher@example.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
+            'must_change_password' => false,
         ]);
         $teachersample->roles()->attach($teacherRole);
         $studentsample->roles()->attach($studentRole);
