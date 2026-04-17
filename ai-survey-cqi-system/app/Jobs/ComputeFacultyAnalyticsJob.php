@@ -47,16 +47,37 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
         }
 
         // ------------------------------------------------------------------
-        // 1. Average rating across ALL rating questions
+        // 1. Quantitative Ratings & Descriptive Statistics
         // ------------------------------------------------------------------
         $ratingValues = Response::whereIn('attempt_id', $attempts->pluck('id'))
             ->whereHas('question', fn ($q) => $q->where('question_type', 'rating'))
             ->whereNotNull('scale_value')
             ->pluck('scale_value');
 
-        $avgRating = $ratingValues->isNotEmpty()
-            ? round($ratingValues->avg(), 2)
-            : null;
+        // Initialize defaults
+        $avgRating = 0;
+        $stdDev    = 0;
+        $median    = 0;
+        $mode      = 0;
+
+        if ($ratingValues->isNotEmpty()) {
+            // Mean
+            $avgRating = round($ratingValues->avg(), 2);
+
+            // Standard Deviation
+            $variance = $ratingValues->map(fn($number) => pow($number - $avgRating, 2))->average();
+            $stdDev   = round(sqrt($variance), 2);
+
+            // Median
+            $sorted = $ratingValues->sort()->values();
+            $count  = $sorted->count();
+            $median = $count % 2 == 0 
+                ? ($sorted[$count/2 - 1] + $sorted[$count/2]) / 2 
+                : $sorted[floor($count/2)];
+
+            // Mode
+            $mode = $ratingValues->countBy()->sortDesc()->keys()->first();
+        }
 
         // ------------------------------------------------------------------
         // 2. Category scores — average rating per question category
@@ -76,7 +97,7 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
             ->toArray();
 
         // ------------------------------------------------------------------
-        // 3. Sentiment distribution from text responses
+        // 3. Sentiment distribution
         // ------------------------------------------------------------------
         $sentimentCounts = DB::table('response_sentiments')
             ->join('sentiment_types', 'response_sentiments.sentiment_type_id', '=', 'sentiment_types.id')
@@ -88,15 +109,12 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
             ->toArray();
 
         $totalSentiments = array_sum($sentimentCounts);
-        $positivePct = $totalSentiments > 0
-            ? round(($sentimentCounts['positive'] ?? 0) / $totalSentiments * 100, 2) : null;
-        $neutralPct  = $totalSentiments > 0
-            ? round(($sentimentCounts['neutral']  ?? 0) / $totalSentiments * 100, 2) : null;
-        $negativePct = $totalSentiments > 0
-            ? round(($sentimentCounts['negative'] ?? 0) / $totalSentiments * 100, 2) : null;
+        $positivePct = $totalSentiments > 0 ? round(($sentimentCounts['positive'] ?? 0) / $totalSentiments * 100, 2) : 0;
+        $neutralPct  = $totalSentiments > 0 ? round(($sentimentCounts['neutral']  ?? 0) / $totalSentiments * 100, 2) : 0;
+        $negativePct = $totalSentiments > 0 ? round(($sentimentCounts['negative'] ?? 0) / $totalSentiments * 100, 2) : 0;
 
         // ------------------------------------------------------------------
-        // 4. Top keywords from text responses (simple word frequency)
+        // 4. Top keywords
         // ------------------------------------------------------------------
         $textResponses = Response::whereIn('attempt_id', $attempts->pluck('id'))
             ->whereNotNull('text_response')
@@ -105,7 +123,7 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
         $topKeywords = $this->extractTopKeywords($textResponses->toArray());
 
         // ------------------------------------------------------------------
-        // 5. Upsert faculty_analytics
+        // 5. Upsert faculty_analytics (Saving stats inside category_scores)
         // ------------------------------------------------------------------
         FacultyAnalytics::updateOrCreate(
             ['survey_id' => $survey->id],
@@ -117,7 +135,16 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
                 'positive_sentiment_percent' => $positivePct,
                 'neutral_sentiment_percent'  => $neutralPct,
                 'negative_sentiment_percent' => $negativePct,
-                'category_scores'            => $categoryScores,
+                
+                // Nesting the new stats here so they are available to Python/AI
+                'category_scores'            => array_merge($categoryScores, [
+                    '_overall_stats' => [
+                        'median'  => $median,
+                        'mode'    => $mode,
+                        'std_dev' => $stdDev,
+                    ]
+                ]),
+                
                 'top_keywords'               => $topKeywords,
                 'last_computed_at'           => now(),
             ]
@@ -125,10 +152,6 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
 
         Log::info("ComputeFacultyAnalyticsJob: completed for survey {$this->surveyId}.");
     }
-
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
 
     private function extractTopKeywords(array $texts, int $limit = 20): array
     {
@@ -143,7 +166,6 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
         ];
 
         $wordCounts = [];
-
         foreach ($texts as $text) {
             $words = preg_split('/[\s,.\!\?\;\:\"\'\(\)\-\/]+/', strtolower($text));
             foreach ($words as $word) {
@@ -154,7 +176,6 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
         }
 
         arsort($wordCounts);
-
         return array_keys(array_slice($wordCounts, 0, $limit, true));
     }
 

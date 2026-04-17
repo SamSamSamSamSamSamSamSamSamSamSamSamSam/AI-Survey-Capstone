@@ -213,6 +213,10 @@ def build_pdf(data: dict, output_path: str):
     story.append(Spacer(1, 0.3 * cm))
 
     category_scores = data.get('category_scores', {})
+
+    # Extract the hidden stats we injected in the PHP Job
+    overall_stats = category_scores.pop('_overall_stats', {})
+
     if category_scores:
         hdr = [
             Paragraph("Category", styles['table_header']),
@@ -225,7 +229,7 @@ def build_pdf(data: dict, output_path: str):
                 numeric_score = float(score)
             except (ValueError, TypeError):
                 numeric_score = 0.0
-            
+
             interp = interpret_score(numeric_score, scale_max)
             rows.append([
                 Paragraph(cat, styles['table_cell']),
@@ -235,12 +239,11 @@ def build_pdf(data: dict, output_path: str):
 
         # Overall row
         avg = data.get('avg_rating', 0)
-        # Ensure avg is numeric for consistent formatting and interpretation
         try:
             numeric_avg = float(avg)
         except (ValueError, TypeError):
             numeric_avg = 0.0
-        
+
         rows.append([
             Paragraph("<b>Overall Mean Score</b>", styles['label_bold']),
             Paragraph(f"<b>{numeric_avg:.2f} / {scale_max}</b>", score_style(numeric_avg, scale_max, styles)),
@@ -263,6 +266,29 @@ def build_pdf(data: dict, output_path: str):
         ]))
         story.append(cat_t)
         story.append(Spacer(1, 0.4 * cm))
+
+    # ── Descriptive Statistics Section (NEW) ────────────────────────────────
+    if overall_stats:
+        story.append(sub_section_header("Descriptive Statistics", styles))
+        stats_rows = [
+            [Paragraph("<b>Median</b>", styles['label_bold']),
+             Paragraph("<b>Mode</b>", styles['label_bold']),
+             Paragraph("<b>Standard Deviation</b>", styles['label_bold'])],
+            [Paragraph(f"{overall_stats.get('median', 0):.2f}", styles['table_cell']),
+             Paragraph(f"{overall_stats.get('mode', 0):.2f}", styles['table_cell']),
+             Paragraph(f"{overall_stats.get('std_dev', 0):.2f}", styles['table_cell'])]
+        ]
+        cw_stats = [(PAGE_W - 2 * MARGIN) / 3] * 3
+        stats_t = Table(stats_rows, colWidths=cw_stats)
+        stats_t.setStyle(TableStyle([
+            ('GRID',          (0, 0), (-1, -1), 0.5, BORDER_GRAY),
+            ('BACKGROUND',    (0, 0), (-1, 0), OLIVE_PALE),
+            ('ALIGN',         (0, 0), (-1, -1), 'CENTER'),
+            ('TOPPADDING',    (0, 0), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ]))
+        story.append(stats_t)
+        story.append(Spacer(1, 0.6 * cm))
 
     # ── Sentiment summary ────────────────────────────────────────────────────
     pos = data.get('positive_pct', 0)
