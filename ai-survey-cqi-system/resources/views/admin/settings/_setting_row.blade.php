@@ -3,11 +3,27 @@
      Variable: $s (Setting model instance)
      ============================================================ --}}
 
+{{--
+    resources/views/admin/settings/_setting_row.blade.php
+
+    FIX: All input name attributes use encodeKey() to convert dots to double
+    underscores. This prevents two bugs:
+      1. PHP silently converts "app.name" POST keys to "app_name"
+      2. Laravel's $request->input('app.name') treats dot as array nesting
+
+    Example: setting key "ai.gemini_api_key" → input name "ai__gemini_api_key"
+--}}
+
+@php
+    use App\Http\Controllers\Admin\SettingsController;
+    $inputName = SettingsController::encodeKey($s->key);
+@endphp
+
 <div class="setting-row">
 
     {{-- Label + description --}}
     <div class="setting-row__meta">
-        <label class="setting-row__label" for="setting_{{ $s->key }}">
+        <label class="setting-row__label" for="setting_{{ $inputName }}">
             {{ $s->label }}
             @if ($s->is_readonly)
                 <span class="setting-badge setting-badge--readonly">Read-only</span>
@@ -26,31 +42,31 @@
 
         @if ($s->is_readonly)
             <input type="text"
-                   id="setting_{{ $s->key }}"
+                   id="setting_{{ $inputName }}"
                    class="form-control"
-                   value="{{ $s->value ?? config(str_replace('.', '.', $s->key), '—') }}"
+                   value="{{ $s->value ?? '—' }}"
                    readonly>
 
         @elseif ($s->type === 'boolean')
-            <input type="hidden" name="{{ $s->key }}" value="0">
+            <input type="hidden" name="{{ $inputName }}" value="0">
             <div class="setting-toggle-wrap">
                 <label class="setting-toggle">
                     <input type="checkbox"
-                           id="setting_{{ $s->key }}"
-                           name="{{ $s->key }}"
+                           id="setting_{{ $inputName }}"
+                           name="{{ $inputName }}"
                            value="1"
                            class="setting-toggle__input"
-                           {{ $s->cast_value ? 'checked' : '' }}>
+                           {{ filter_var($s->value, FILTER_VALIDATE_BOOLEAN) ? 'checked' : '' }}>
                     <span class="setting-toggle__slider"></span>
                 </label>
-                <span class="setting-toggle__label" id="label_{{ $s->key }}">
-                    {{ $s->cast_value ? 'Enabled' : 'Disabled' }}
+                <span class="setting-toggle__label" id="label_{{ $inputName }}">
+                    {{ filter_var($s->value, FILTER_VALIDATE_BOOLEAN) ? 'Enabled' : 'Disabled' }}
                 </span>
             </div>
             <script>
             (function () {
-                const cb  = document.getElementById('setting_{{ $s->key }}');
-                const lbl = document.getElementById('label_{{ $s->key }}');
+                const cb  = document.getElementById('setting_{{ $inputName }}');
+                const lbl = document.getElementById('label_{{ $inputName }}');
                 if (cb && lbl) {
                     cb.addEventListener('change', function () {
                         lbl.textContent = this.checked ? 'Enabled' : 'Disabled';
@@ -61,10 +77,11 @@
 
         @elseif ($s->type === 'file')
             <div class="setting-file-wrap">
-                @if ($s->value)
+                @if ($s->value && \Illuminate\Support\Facades\Storage::disk('public')->exists($s->value))
                     <div class="setting-file-preview">
-                        @if (Str::endsWith($s->value, ['.png', '.jpg', '.jpeg', '.gif', '.webp']))
-                            <img src="{{ Storage::url($s->value) }}" alt="{{ $s->label }}"
+                        @if (\Illuminate\Support\Str::endsWith($s->value, ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg']))
+                            <img src="{{ \Illuminate\Support\Facades\Storage::url($s->value) }}"
+                                 alt="{{ $s->label }}"
                                  class="setting-file-preview__img">
                         @else
                             <span class="text-muted-sm">
@@ -75,12 +92,12 @@
                 @else
                     <span class="text-muted-sm">No file uploaded</span>
                 @endif
-                <label class="setting-file-label" for="setting_{{ $s->key }}">
+                <label class="setting-file-label" for="setting_{{ $inputName }}">
                     <i class="bi bi-paperclip me-1"></i> Choose File
                     <input type="file"
-                           id="setting_{{ $s->key }}"
-                           name="{{ $s->key }}"
-                           accept="image/*"
+                           id="setting_{{ $inputName }}"
+                           name="{{ $inputName }}"
+                           accept="image/*,.ico"
                            class="setting-file-input">
                 </label>
             </div>
@@ -88,12 +105,12 @@
         @elseif ($s->key === 'app.primary_color')
             <div class="setting-color-wrap">
                 <input type="color"
-                       id="setting_{{ $s->key }}"
-                       name="{{ $s->key }}"
+                       id="setting_{{ $inputName }}"
+                       name="{{ $inputName }}"
                        value="{{ $s->value ?? '#3498db' }}"
                        class="setting-color-swatch">
                 <input type="text"
-                       id="color_text_{{ $s->key }}"
+                       id="color_text_{{ $inputName }}"
                        value="{{ $s->value ?? '#3498db' }}"
                        class="form-control setting-color-text"
                        placeholder="#3498db"
@@ -101,8 +118,8 @@
             </div>
             <script>
             (function () {
-                const picker = document.getElementById('setting_{{ $s->key }}');
-                const text   = document.getElementById('color_text_{{ $s->key }}');
+                const picker = document.getElementById('setting_{{ $inputName }}');
+                const text   = document.getElementById('color_text_{{ $inputName }}');
                 if (!picker || !text) return;
                 picker.addEventListener('input', function () { text.value  = this.value; });
                 text.addEventListener('input',   function () {
@@ -128,16 +145,19 @@
                     'Australia/Sydney'   => 'Australia/Sydney (AEDT)',
                 ];
             @endphp
-            <select name="{{ $s->key }}" id="setting_{{ $s->key }}" class="form-select">
+            <select name="{{ $inputName }}" id="setting_{{ $inputName }}" class="form-select">
                 @foreach ($timezones as $tz => $label)
                     <option value="{{ $tz }}" @selected($s->value === $tz)>{{ $label }}</option>
                 @endforeach
             </select>
 
         @elseif ($s->key === 'ai.gemini_model')
-            <select name="{{ $s->key }}" id="setting_{{ $s->key }}" class="form-select">
+            <select name="{{ $inputName }}" id="setting_{{ $inputName }}" class="form-select">
+                <option value="gemini-2.5-flash" @selected($s->value === 'gemini-2.5-flash')>
+                    gemini-2.5-flash — Fast, recommended
+                </option>
                 <option value="gemini-1.5-flash" @selected($s->value === 'gemini-1.5-flash')>
-                    gemini-1.5-flash — Fast, recommended
+                    gemini-1.5-flash — old model
                 </option>
                 <option value="gemini-1.5-pro" @selected($s->value === 'gemini-1.5-pro')>
                     gemini-1.5-pro — More capable
@@ -148,7 +168,7 @@
             </select>
 
         @elseif ($s->key === 'maintenance.banner_type')
-            <select name="{{ $s->key }}" id="setting_{{ $s->key }}" class="form-select setting-select--short">
+            <select name="{{ $inputName }}" id="setting_{{ $inputName }}" class="form-select setting-select--short">
                 @foreach (['info' => 'Info (blue)', 'success' => 'Success (green)', 'warning' => 'Warning (yellow)', 'error' => 'Error (red)'] as $val => $lbl)
                     <option value="{{ $val }}" @selected($s->value === $val)>{{ $lbl }}</option>
                 @endforeach
@@ -156,16 +176,16 @@
 
         @elseif ($s->type === 'integer')
             <input type="number"
-                   id="setting_{{ $s->key }}"
-                   name="{{ $s->key }}"
+                   id="setting_{{ $inputName }}"
+                   name="{{ $inputName }}"
                    value="{{ $s->value }}"
                    class="form-control setting-input--short"
                    min="0">
 
         @elseif ($s->is_sensitive)
             <input type="password"
-                   id="setting_{{ $s->key }}"
-                   name="{{ $s->key }}"
+                   id="setting_{{ $inputName }}"
+                   name="{{ $$inputName }}"
                    value="{{ $s->value }}"
                    class="form-control"
                    autocomplete="new-password"
@@ -173,8 +193,8 @@
 
         @else
             <input type="text"
-                   id="setting_{{ $s->key }}"
-                   name="{{ $s->key }}"
+                   id="setting_{{ $inputName }}"
+                   name="{{ $inputName }}"
                    value="{{ $s->value }}"
                    class="form-control">
         @endif

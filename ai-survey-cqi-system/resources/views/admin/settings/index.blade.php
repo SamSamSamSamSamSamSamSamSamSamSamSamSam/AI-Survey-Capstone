@@ -171,7 +171,9 @@
             </div>
             <div class="card">
                 <div class="card-body">
-                    <form method="POST" action="{{ route('admin.settings.update', 'survey') }}">
+                    <form method="POST" 
+                            action="{{ route('admin.settings.update', 'survey') }}"
+                            enctype="multipart/form-data">
                         @csrf @method('PUT')
 
                         <p class="settings-subsection">Rating &amp; Grading Thresholds</p>
@@ -211,7 +213,9 @@
             </div>
             <div class="card">
                 <div class="card-body">
-                    <form method="POST" action="{{ route('admin.settings.update', 'locale') }}">
+                    <form method="POST" 
+                            action="{{ route('admin.settings.update', 'locale') }}"
+                            enctype="multipart/form-data">
                         @csrf @method('PUT')
                         @foreach ($groups['locale'] as $s)
                             @include('admin.settings._setting_row', ['s' => $s])
@@ -248,7 +252,9 @@
             </div>
             <div class="card">
                 <div class="card-body">
-                    <form method="POST" action="{{ route('admin.settings.update', 'mail') }}">
+                    <form method="POST" 
+                            action="{{ route('admin.settings.update', 'mail') }}"
+                            enctype="multipart/form-data">
                         @csrf @method('PUT')
                         @foreach ($groups['mail'] as $s)
                             @include('admin.settings._setting_row', ['s' => $s])
@@ -275,7 +281,9 @@
             </div>
             <div class="card">
                 <div class="card-body">
-                    <form method="POST" action="{{ route('admin.settings.update', 'security') }}">
+                    <form method="POST" 
+                            action="{{ route('admin.settings.update', 'security') }}"
+                            enctype="multipart/form-data">
                         @csrf @method('PUT')
                         @foreach ($groups['security'] as $s)
                             @include('admin.settings._setting_row', ['s' => $s])
@@ -311,7 +319,9 @@
 
             <div class="card">
                 <div class="card-body">
-                    <form method="POST" action="{{ route('admin.settings.update', 'maintenance') }}">
+                    <form method="POST" 
+                            action="{{ route('admin.settings.update', 'maintenance') }}"
+                            enctype="multipart/form-data">
                         @csrf @method('PUT')
                         @foreach ($groups['maintenance'] as $s)
                             @include('admin.settings._setting_row', ['s' => $s])

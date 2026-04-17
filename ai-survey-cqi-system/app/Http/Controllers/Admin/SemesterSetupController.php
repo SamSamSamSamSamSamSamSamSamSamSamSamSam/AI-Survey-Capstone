@@ -26,10 +26,10 @@ use Illuminate\View\View;
 class SemesterSetupController extends Controller
 {
     public const STEPS = [
-        1 => ['key' => 'students',   'label' => 'Register Students',  'icon' => '👤'],
-        2 => ['key' => 'blocks',     'label' => 'Create Blocks',      'icon' => '🏫'],
-        3 => ['key' => 'offerings',  'label' => 'Import Offerings',   'icon' => '📚'],
-        4 => ['key' => 'enrollments','label' => 'Import Enrollments', 'icon' => '📋'],
+        1 => ['key' => 'students',   'label' => 'Register Students',  'icon' => 'bi-person-fill-add'],
+        2 => ['key' => 'blocks',     'label' => 'Create Blocks',      'icon' => 'bi-grid-3x3-gap-fill'],
+        3 => ['key' => 'offerings',  'label' => 'Import Offerings',   'icon' => 'bi-card-list'],
+        4 => ['key' => 'enrollments','label' => 'Import Enrollments', 'icon' => 'bi-journal-plus'],
     ];
 
     public function index(Request $request): View|RedirectResponse
