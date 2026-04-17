@@ -53,37 +53,40 @@
             <form method="POST" action="{{ route('admin.offerings.enrollments.store', $offering->id) }}" novalidate>
                 @csrf
 
+                {{-- Multiple Student Selection --}}
                 <div class="mb-4">
                     <label class="form-label" for="student_id">
-                        Student <span class="text-danger">*</span>
+                        Students <span class="text-danger">*</span>
                     </label>
-                    <select name="student_id"
-                            id="student_id"
+                    <select name="student_id[]"
+                            id="student-select-multiple"
                             class="form-select @error('student_id') is-invalid @enderror"
+                            multiple
+                            placeholder="Search and select students..."
                             required>
-                        <option value="">Select student…</option>
                         @foreach ($students as $student)
-                            <option value="{{ $student->id }}" @selected(old('student_id') == $student->id)>
+                            <option value="{{ $student->id }}" @selected(in_array($student->id, (array)old('student_id')))>
                                 {{ $student->user_id_number }} — {{ $student->name }}
                             </option>
                         @endforeach
                     </select>
                     @error('student_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
                 </div>
 
+                {{-- Status selection (applied to all selected students) --}}
                 <div class="mb-4">
-                    <label class="form-label" for="student_status_id">
-                        Student Status <span class="text-danger">*</span>
+                    <label class="form-label" for="enrollment_type_id">
+                        Enrollment Type<span class="text-muted"> optional</span>
                     </label>
-                    <select name="student_status_id"
-                            id="student_status_id"
-                            class="form-select @error('student_status_id') is-invalid @enderror"
-                            required>
-                        <option value="">Select status…</option>
+                    <select name="enrollment_type_id"
+                            id="enrollment_type_id"
+                            class="form-select @error('enrollment_type_id') is-invalid @enderror"
+                            >
+                        <option value="">Select status for these students…</option>
                         @foreach ($statuses as $status)
-                            <option value="{{ $status->id }}" @selected(old('student_status_id') == $status->id)>
+                            <option value="{{ $status->id }}" @selected(old('enrollment_type_id') == $status->id)>
                                 {{ ucfirst($status->name) }}@if($status->description) — {{ $status->description }}@endif
                             </option>
                         @endforeach
@@ -95,7 +98,7 @@
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-person-plus me-1"></i> Enroll Student
+                        <i class="bi bi-person-plus me-1"></i> Enroll Students
                     </button>
                     <a href="{{ route('admin.offerings.enrollments.index', $offering->id) }}" class="btn btn-outline-secondary">
                         Cancel
@@ -108,3 +111,22 @@
 </div>
 
 @endsection
+
+@push('scripts')
+    <script>
+    // Wait for Vite to finish loading app.js/TomSelect
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.getElementById('student-select-multiple')) {
+                new TomSelect("#student-select-multiple", {
+                    plugins: ['remove_button'],
+                    create: false,
+                    persist: false,
+                    onItemAdd: function() {
+                        this.setTextboxValue('');
+                        this.refreshOptions();
+                    }
+                });
+            }
+        });
+    </script>
+@endpush

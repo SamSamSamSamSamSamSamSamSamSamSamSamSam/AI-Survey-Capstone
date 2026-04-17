@@ -83,9 +83,12 @@
                         </td>
                         <td class="text-end">
                             <div class="table-actions">
-                                <a href="{{ route('admin.semesters.edit', $semester->id) }}"
-                                   class="btn btn-sm btn-icon" title="Edit">
-                                    <i class="bi bi-pencil"></i>
+                                <a href="{{ $semester->is_active ? '#' : route('admin.semesters.edit', $semester->id) }}" 
+                                    class="btn btn-sm btn-icon {{ $semester->is_active ? 'disabled' : '' }}" 
+                                    title="{{ $semester->is_active ? 'Cannot edit while active' : 'Edit' }}"
+                                    style="{{ $semester->is_active ? 'pointer-events: auto; cursor: not-allowed;' : '' }}">
+                                        
+                                    <i class="bi {{ $semester->is_active ? 'bi-lock-fill text-muted' : 'bi-pencil' }}"></i>
                                 </a>
 
                                 @if (! $semester->is_active)

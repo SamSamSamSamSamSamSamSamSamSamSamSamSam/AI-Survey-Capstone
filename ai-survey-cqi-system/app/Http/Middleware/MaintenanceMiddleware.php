@@ -8,18 +8,27 @@ use Illuminate\Support\Facades\Auth;
 
 class MaintenanceMiddleware
 {
-    public function handle(Request $request, Closure $next)
-    {
-        $isMaintenanceMode = app(\App\Services\SettingService::class)
-            ->get('maintenance.mode', false);
+public function handle(Request $request, Closure $next)
+{
+    $settings = app(\App\Services\SettingService::class);
+    $isMaintenanceMode = $settings->get('maintenance.mode', false);
 
-        if ($isMaintenanceMode && Auth::check() && ! Auth::user()->hasRole('admin')) {
-            $message = app(\App\Services\SettingService::class)
-                ->get('maintenance.message', 'The system is currently under maintenance.');
-
-            return response()->view('errors.maintenance', compact('message'), 503);
-        }
-
+    if (!$isMaintenanceMode) {
         return $next($request);
     }
+
+    // Always allow the login page and logout logic
+    if ($request->is('login', 'logout', 'admin/login*')) {
+        return $next($request);
+    }
+
+    // AUTH CHECK: Must be logged in AND have the admin role
+    if (Auth::check() && Auth::user()->hasRole('admin')) {
+        return $next($request);
+    }
+
+    // Show maintenance page for everyone else (Guests and non-admin Users)
+    $message = $settings->get('maintenance.message', 'The system is currently under maintenance.');
+    return response()->view('errors.maintenance', compact('message'), 503);
+}
 }

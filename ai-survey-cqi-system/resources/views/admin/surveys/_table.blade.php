@@ -61,7 +61,13 @@
                         <div class="table-actions">
                             <a href="{{ route('admin.surveys.show', $survey->id) }}" class="btn btn-sm btn-icon" title="View"><i class="bi bi-eye"></i></a>
                             @if (! $survey->trashed())
-                                <a href="{{ route('admin.surveys.edit', $survey->id) }}" class="btn btn-sm btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="{{ $survey->is_active ? '#' : route('admin.surveys.edit', $survey->id) }}" 
+                                    class="btn btn-sm btn-icon {{ $survey->is_active ? 'disabled' : '' }}" 
+                                    title="{{ $survey->is_active ? 'Cannot edit while active' : 'Edit' }}"
+                                    style="{{ $survey->is_active ? 'pointer-events: auto; cursor: not-allowed;' : '' }}">
+                                        
+                                        <i class="bi {{ $survey->is_active ? 'bi-lock-fill text-muted' : 'bi-pencil' }}"></i>
+                                </a>
                                 <form method="POST" action="{{ route('admin.surveys.toggle-active', $survey->id) }}" class="d-inline">
                                     @csrf @method('PATCH')
                                     <button type="submit" class="btn btn-sm btn-icon {{ $survey->is_active ? 'btn-icon--warning' : 'btn-icon--success' }}">

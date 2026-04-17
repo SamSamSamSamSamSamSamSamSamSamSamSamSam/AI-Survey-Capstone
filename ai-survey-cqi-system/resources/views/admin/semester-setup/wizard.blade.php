@@ -57,7 +57,7 @@
                 @endif
             </div>
             <div class="wizard-step__info">
-                <span class="wizard-step__label">{{ $s['icon'] }} {{ $s['label'] }}</span>
+                <span class="wizard-step__label"><i class="bi {{ $s['icon'] }}"></i>  {{ $s['label'] }}</span>
                 <span class="wizard-step__count">
                     {{ number_format($stats[$num] ?? 0) }} record(s)
                 </span>

@@ -37,7 +37,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Description</th>
-                        <th>Used In Questions</th>
+                        {{-- <th>Used In Questions</th> --}}
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
@@ -56,15 +56,11 @@
                             </div>
                         </td>
                         <td>{{ $cat->description ?? '—' }}</td>
-                        <td class="align-middle">
+                        {{-- <td class="align-middle">
                             <div class="usage-container">
-
-                                {{-- Total --}}
                                 <span class="total-count">
                                     {{ $cat->survey_questions_count + $cat->template_questions_count }}
                                 </span>
-
-                                {{-- Pill + Labels --}}
                                 <div class="pill-wrapper">
                                     <div class="split-pill">
                                         <span class="pill-left">
@@ -82,7 +78,7 @@
                                 </div>
 
                             </div>
-                        </td>
+                        </td> --}}
                         <td class="text-end">
                             <div class="table-actions">
                                 <a href="{{ route('admin.question-categories.edit', $cat->id) }}" 

@@ -62,7 +62,7 @@
 
            
 
-            @include('admin.surveys._form-edit')
+            @include('admin.surveys._form')
 
             <div class="form-actions mt-2">
                 <button type="submit" class="btn btn-primary">

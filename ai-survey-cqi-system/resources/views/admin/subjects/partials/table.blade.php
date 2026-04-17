@@ -14,7 +14,7 @@
                     <th>Course Code</th>
                     <th>Name</th>
                     <th class="text-center">Units</th>
-                    <th>Status</th>
+                    {{-- <th>Status</th> --}}
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
@@ -30,7 +30,7 @@
                     <td class="text-center">
                         <span class="count-badge">{{ $subject->units }}</span>
                     </td>
-                    <td>
+                    {{-- <td>
                         @if ($subject->trashed())
                             <span class="status-pill status-pill--archived">
                                 <i class="bi bi-archive me-1"></i>Archived
@@ -40,7 +40,7 @@
                                 <i class="bi bi-check-circle me-1"></i>Active
                             </span>
                         @endif
-                    </td>
+                    </td> --}}
                     <td class="text-end">
                         <div class="table-actions">
                             @if (! $subject->trashed())

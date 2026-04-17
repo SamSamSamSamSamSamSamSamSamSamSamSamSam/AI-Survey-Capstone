@@ -74,6 +74,8 @@ class SurveyController extends Controller
             'template_id'    => ['nullable', 'exists:survey_templates,id'],
             'title'          => ['required', 'string', 'max:255'],
             'description'    => ['nullable', 'string'],
+            'start_date'     => ['nullable', 'date'],
+            'end_date'       => ['nullable', 'date', 'after_or_equal:start_date'],
         ]);
 
         DB::transaction(function () use ($request) {
@@ -86,6 +88,8 @@ class SurveyController extends Controller
                     'template_id'    => $request->template_id,
                     'title'          => $request->title,
                     'description'    => $request->description,
+                    'start_date'     => $request->start_date,
+                    'end_date'       => $request->end_date,
                     'is_active'      => false,
                 ]);
 
@@ -148,10 +152,17 @@ class SurveyController extends Controller
         $templateChanged    = $incomingTemplateId && $incomingTemplateId != $survey->template_id;
 
         DB::transaction(function () use ($request, $survey, $incomingTemplateId, $templateChanged) {
-            $survey->update($request->only(
-                'offering_id', 'target_role_id', 'template_id',
-                'title', 'description', 'start_date', 'end_date'
-            ));
+            // Prepare the data
+            $data = $request->only([
+                'target_role_id', 'template_id', 'title', 
+                'description', 'start_date', 'end_date'
+            ]);
+
+            // Fix: If offering_id is an array, take the first one
+            $offeringId = $request->input('offering_id');
+            $data['offering_id'] = is_array($offeringId) ? $offeringId[0] : $offeringId;
+
+            $survey->update($data);
 
             // Replace questions only when the template actually changed
             if ($templateChanged) {

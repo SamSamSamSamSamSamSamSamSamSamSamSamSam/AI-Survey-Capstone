@@ -30,8 +30,12 @@
                 {{ $survey->is_active ? 'Deactivate' : 'Activate' }}
             </button>
         </form>
-        <a href="{{ route('admin.surveys.edit', $survey->id) }}" class="btn btn-sm btn-outline-secondary">
-            <i class="bi bi-pencil me-1"></i> Edit
+        <a href="{{ $survey->is_active ? '#' : route('admin.surveys.edit', $survey->id) }}" 
+            class="btn btn-sm btn-outline-secondary {{ $survey->is_active ? 'disabled' : '' }}" 
+            title="{{ $survey->is_active ? 'Cannot edit while active' : 'Edit' }}"
+            style="{{ $survey->is_active ? 'pointer-events: auto; cursor: not-allowed;' : '' }}">
+            
+            <i class="bi {{ $survey->is_active ? 'bi-lock-fill text-muted' : 'bi-pencil me-1' }}"></i> Edit
         </a>
         <a href="{{ route('admin.surveys.attempts', $survey->id) }}" class="btn btn-sm btn-outline-secondary">
             <i class="bi bi-chat-left-text me-1"></i> Responses
@@ -69,6 +73,10 @@
                     {{ $survey->offering->subject->course_code }} —
                     {{ $survey->offering->subject->name }}
                 </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label"><i class="bi bi-people-fill me-2 text-muted"></i>Group</span>
+                <span class="detail-value">{{ $survey->offering->group_number }}</span>
             </div>
             <div class="detail-row">
                 <span class="detail-label"><i class="bi bi-calendar3 me-2 text-muted"></i>Semester</span>

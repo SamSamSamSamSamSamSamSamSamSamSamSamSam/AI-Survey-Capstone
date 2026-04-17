@@ -10,6 +10,7 @@
 
 // 2. Vendors (Bootstrap — uses our overridden variables above)
 @import 'vendors/bootstrap';
+@import 'vendors/tom-select';
 
 // 3. Base
 @import 'base/reset';
