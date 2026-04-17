@@ -144,15 +144,20 @@
                 @if ($analytic->category_scores)
                     <div class="category-score-list">
                         @foreach ($analytic->category_scores as $cat => $score)
-                        @php
-                            $pct = ($score / 5) * 100;
-                            $interp = match(true) {
-                                $score >= 4.5 => ['label' => 'Excellent',          'cls' => 'high'],
-                                $score >= 4.0 => ['label' => 'Very Good',          'cls' => 'high'],
-                                $score >= 3.5 => ['label' => 'Good',               'cls' => 'mid'],
-                                $score >= 3.0 => ['label' => 'Fair',               'cls' => 'mid'],
-                                default       => ['label' => 'Needs Improvement',  'cls' => 'low'],
-                            };
+                            @php
+                                // Skip the stats object to avoid the calculation error
+                                if ($cat === '_overall_stats') continue;
+
+                                $score = (float) $score; // Ensure it's treated as a number
+                                $pct = ($score / 5) * 100;
+                                
+                                $interp = match(true) {
+                                    $score >= 4.5 => ['label' => 'Excellent',          'cls' => 'high'],
+                                    $score >= 4.0 => ['label' => 'Very Good',          'cls' => 'high'],
+                                    $score >= 3.5 => ['label' => 'Good',               'cls' => 'mid'],
+                                    $score >= 3.0 => ['label' => 'Fair',               'cls' => 'mid'],
+                                    default       => ['label' => 'Needs Improvement',  'cls' => 'low'],
+                                };
                         @endphp
                         <div class="category-score-row">
                             <div class="category-score-row__header">

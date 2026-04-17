@@ -74,8 +74,12 @@ class GeminiService
     {
         $categoryScores = '';
         foreach ($d['category_scores'] ?? [] as $cat => $score) {
-            $interp = $this->interpretScore($score, $d['scale_max'] ?? 5);
-            $categoryScores .= "  - {$cat}: {$score}/{$d['scale_max']} ({$interp})\n";
+            if (is_array($score)) {
+                continue;
+            }
+
+            $interp = $this->interpretScore((float)$score, $d['scale_max'] ?? 5);
+            $categoryScores .= "   - {$cat}: {$score}/{$d['scale_max']} ({$interp})\n";
         }
 
         $openEndedSamples = '';
@@ -144,8 +148,11 @@ Return ONLY the JSON object. No markdown, no explanation, no preamble.
 PROMPT;
     }
 
-    private function interpretScore(float $score, int $max): string
+    private function interpretScore(mixed $score, int $max): string
     {
+        if (is_array($score)) {
+            return 'N/A'; // Or handle as needed
+        }
         $pct = $score / $max;
         return match(true) {
             $pct >= 0.90 => 'Excellent',
