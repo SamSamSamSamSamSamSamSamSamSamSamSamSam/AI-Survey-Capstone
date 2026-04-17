@@ -18,7 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'redirect.authenticated' => RedirectIfAuthenticated::class,
-        ]);
+        ])
+        ->append(\App\Http\Middleware\MaintenanceMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

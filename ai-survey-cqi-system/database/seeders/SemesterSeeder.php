@@ -12,26 +12,38 @@ class SemesterSeeder extends Seeder
         $semesters = [
             [
                 'name' => '1st Semester',
-                'academic_start_year' => 2024,
+                'academic_start_year' => 2025,
                 'semester_number' => 1,
-                'is_active' => true, // current semester
+                'is_active' => false, // current semester
             ],
             [
                 'name' => '2nd Semester',
-                'academic_start_year' => 2024,
+                'academic_start_year' => 2025,
                 'semester_number' => 2,
-                'is_active' => false,
+                'is_active' => true,
             ],
             [
                 'name' => 'Summer',
-                'academic_start_year' => 2024,
+                'academic_start_year' => 2025,
                 'semester_number' => 3,
                 'is_active' => false,
             ],
             [
                 'name' => '1st Semester',
-                'academic_start_year' => 2025,
+                'academic_start_year' => 2026,
                 'semester_number' => 1,
+                'is_active' => false, 
+            ],
+            [
+                'name' => '2nd Semester',
+                'academic_start_year' => 2026,
+                'semester_number' => 2,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'Summer',
+                'academic_start_year' => 2026,
+                'semester_number' => 3,
                 'is_active' => false,
             ],
         ];

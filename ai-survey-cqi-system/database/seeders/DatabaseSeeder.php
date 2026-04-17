@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
     {
         // The order here is CRITICAL because of Foreign Key constraints
         $this->call([
+            SemesterSeeder::class,
             CurriculumSeeder::class,
             // ProspectusSeeder::class,
             // SubjectSeeder::class,
@@ -21,12 +22,12 @@ class DatabaseSeeder extends Seeder
             ProgramSeeder::class,
             OfferingTypeSeeder::class,
             EnrollmentTypeSeeder::class,
-            SemesterSeeder::class,
             CourseOfferingSeeder::class,
             EnrollmentSeeder::class,
             SurveyReferenceSeeder::class, // Seeder for University's official survey templates and categories
             OfficialQuestionnaireSeeder::class, 
             SentimentTypeSeeder::class, // Must be seeded before any sentiment-related data
+            SettingsSeeder::class
         ]);
     }
 }

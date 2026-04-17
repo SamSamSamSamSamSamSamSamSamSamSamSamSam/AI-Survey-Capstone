@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('curriculum_id'); // FK
             $table->unsignedBigInteger('subject_id'); // FK
             $table->tinyInteger('year_level');        // UQ part
-            $table->tinyInteger('semester_number');   // UQ part
+            $table->unsignedBigInteger('semester_id');   // changed to semester id
 
             $table->timestamps();
             $table->softDeletes(); // deleted_at
@@ -34,8 +34,13 @@ return new class extends Migration
                   ->on('subjects')
                   ->cascadeOnDelete();
 
+            $table->foreign('semester_id')
+                  ->references('id')
+                  ->on('semesters')
+                  ->cascadeOnDelete();
+
             // Unique constraint for subject/year_level/semester combination
-            $table->unique(['curriculum_id', 'subject_id', 'year_level', 'semester_number'], 
+            $table->unique(['curriculum_id', 'subject_id', 'year_level', 'semester_id'], 
                     'prospectus_curriculum_subj_year_sem_unique');
         });
     }

@@ -75,6 +75,7 @@ Route::middleware('auth')->group(function () {
                 require __DIR__ . '/academic.php';
                 require __DIR__ . '/survey.php';
                 require __DIR__ . '/cqi.php';
+                require __DIR__ . '/settings.php';
             });
 
         // -- Faculty Routes --

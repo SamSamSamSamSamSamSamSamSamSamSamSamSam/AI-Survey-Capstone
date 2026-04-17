@@ -55,11 +55,11 @@ class CurriculumSeeder extends Seeder
             // ─────────────────────────────────────────
             $curricula = [
                 ['code' => 'BSIT-2018', 'program' => 'BSIT', 'description' => 'Curriculum for BSIT effective 2018', 'year' => 2018],
-                ['code' => 'BSIT-2024', 'program' => 'BSIT', 'description' => 'Curriculum for BSIT effective 2024', 'year' => 2024],
+                ['code' => 'BSIT-2023', 'program' => 'BSIT', 'description' => 'Curriculum for BSIT effective 2023', 'year' => 2023],
                 ['code' => 'BSCS-2018', 'program' => 'BSCS', 'description' => 'Curriculum for BSCS effective 2018', 'year' => 2018],
-                ['code' => 'BSCS-2024', 'program' => 'BSCS', 'description' => 'Curriculum for BSCS effective 2024', 'year' => 2024],
+                ['code' => 'BSCS-2023', 'program' => 'BSCS', 'description' => 'Curriculum for BSCS effective 2023', 'year' => 2023],
                 ['code' => 'BSIS-2018', 'program' => 'BSIS', 'description' => 'Curriculum for BSIS effective 2018', 'year' => 2018],
-                ['code' => 'BSIS-2024', 'program' => 'BSIS', 'description' => 'Curriculum for BSIS effective 2024', 'year' => 2024],
+                ['code' => 'BSIS-2023', 'program' => 'BSIS', 'description' => 'Curriculum for BSIS effective 2023', 'year' => 2023],
             ];
 
             $curriculumIds = [];
@@ -376,8 +376,8 @@ class CurriculumSeeder extends Seeder
             $prospectuses[] = [$cid, $subjectIds['IT 5110'], 4, 2];
             $prospectuses[] = [$cid, $subjectIds['IT 5111'], 4, 2];
 
-            // BSIT-2024
-            $cid = $curriculumIds['BSIT-2024'];
+            // BSIT-2023
+            $cid = $curriculumIds['BSIT-2023'];
             $prospectuses[] = [$cid, $subjectIds['CIS 1101'], 1, 1];
             $prospectuses[] = [$cid, $subjectIds['CIS 1102N'], 1, 1];
             $prospectuses[] = [$cid, $subjectIds['CIS 1103'], 1, 1];
@@ -398,9 +398,9 @@ class CurriculumSeeder extends Seeder
             $prospectuses[] = [$cid, $subjectIds['GE-ART'], 1, 2];
             $prospectuses[] = [$cid, $subjectIds['GE-TCW'], 1, 2];
             $prospectuses[] = [$cid, $subjectIds['GE-RPH'], 1, 2];
-            $prospectuses[] = [$cid, $subjectIds['CIS 2104'], 1, 2];
-            $prospectuses[] = [$cid, $subjectIds['CIS 2201'], 1, 2];
-            $prospectuses[] = [$cid, $subjectIds['CIS 2202'], 1, 2];
+            $prospectuses[] = [$cid, $subjectIds['CIS 2104'], 1, 3];
+            $prospectuses[] = [$cid, $subjectIds['CIS 2201'], 1, 3];
+            $prospectuses[] = [$cid, $subjectIds['CIS 2202'], 1, 3];
             $prospectuses[] = [$cid, $subjectIds['CIS 2101'], 2, 1];
             $prospectuses[] = [$cid, $subjectIds['CIS 2103'], 2, 1];
             $prospectuses[] = [$cid, $subjectIds['CIS 2105'], 2, 1];
@@ -417,9 +417,9 @@ class CurriculumSeeder extends Seeder
             $prospectuses[] = [$cid, $subjectIds['GE-FREELEC 3'], 2, 2];
             $prospectuses[] = [$cid, $subjectIds['NSTP 1'], 2, 2];
             $prospectuses[] = [$cid, $subjectIds['NSTP 2'], 2, 2];
-            $prospectuses[] = [$cid, $subjectIds['IT 3104N'], 2, 2];
-            $prospectuses[] = [$cid, $subjectIds['IT 3201N'], 2, 2];
-            $prospectuses[] = [$cid, $subjectIds['IT 3204N'], 2, 2];
+            $prospectuses[] = [$cid, $subjectIds['IT 3104N'], 2, 3];
+            $prospectuses[] = [$cid, $subjectIds['IT 3201N'], 2, 3];
+            $prospectuses[] = [$cid, $subjectIds['IT 3204N'], 2, 3];
             $prospectuses[] = [$cid, $subjectIds['IT 3105N'], 3, 1];
             $prospectuses[] = [$cid, $subjectIds['IT 3203N'], 3, 1];
             $prospectuses[] = [$cid, $subjectIds['IT 3206N'], 3, 1];
@@ -439,8 +439,8 @@ class CurriculumSeeder extends Seeder
             $prospectuses[] = [$cid, $subjectIds['TPE 2103'], 3, 2];
             $prospectuses[] = [$cid, $subjectIds['TPE 2204'], 3, 2];
 
-            // BSCS-2024
-            $cid = $curriculumIds['BSCS-2024'];
+            // BSCS-2023
+            $cid = $curriculumIds['BSCS-2023'];
             $prospectuses[] = [$cid, $subjectIds['CIS 1101'], 1, 1];
             $prospectuses[] = [$cid, $subjectIds['CIS 1102N'], 1, 1];
             $prospectuses[] = [$cid, $subjectIds['CIS 1103'], 1, 1];
@@ -461,9 +461,9 @@ class CurriculumSeeder extends Seeder
             $prospectuses[] = [$cid, $subjectIds['NSTP 2'], 1, 2];
             $prospectuses[] = [$cid, $subjectIds['TPE 1202'], 1, 2];
             $prospectuses[] = [$cid, $subjectIds['EDM 2'], 1, 2];
-            $prospectuses[] = [$cid, $subjectIds['CIS 2104'], 1, 2];
-            $prospectuses[] = [$cid, $subjectIds['CIS 2201'], 1, 2];
-            $prospectuses[] = [$cid, $subjectIds['CIS 2202'], 1, 2];
+            $prospectuses[] = [$cid, $subjectIds['CIS 2104'], 1, 3];
+            $prospectuses[] = [$cid, $subjectIds['CIS 2201'], 1, 3];
+            $prospectuses[] = [$cid, $subjectIds['CIS 2202'], 1, 3];
             $prospectuses[] = [$cid, $subjectIds['CIS 2101'], 2, 1];
             $prospectuses[] = [$cid, $subjectIds['CIS 2102'], 2, 1];
             $prospectuses[] = [$cid, $subjectIds['CIS 2103'], 2, 1];
@@ -483,9 +483,9 @@ class CurriculumSeeder extends Seeder
             $prospectuses[] = [$cid, $subjectIds['MAT 3101'], 2, 2];
             $prospectuses[] = [$cid, $subjectIds['GE-FREELEC 3'], 2, 2];
             $prospectuses[] = [$cid, $subjectIds['GE-LWR'], 2, 2];
-            $prospectuses[] = [$cid, $subjectIds['CS 3105N'], 2, 2];
-            $prospectuses[] = [$cid, $subjectIds['CS 3201N'], 2, 2];
-            $prospectuses[] = [$cid, $subjectIds['CS 3206'], 2, 2];
+            $prospectuses[] = [$cid, $subjectIds['CS 3105N'], 2, 3];
+            $prospectuses[] = [$cid, $subjectIds['CS 3201N'], 2, 3];
+            $prospectuses[] = [$cid, $subjectIds['CS 3206'], 2, 3];
             $prospectuses[] = [$cid, $subjectIds['CS 3104N'], 3, 1];
             $prospectuses[] = [$cid, $subjectIds['CS 3106N'], 3, 1];
             $prospectuses[] = [$cid, $subjectIds['CS 3205'], 3, 1];
@@ -604,8 +604,8 @@ class CurriculumSeeder extends Seeder
             $prospectuses[] = [$cid, $subjectIds['CIS 2204'], 4, 2];
             $prospectuses[] = [$cid, $subjectIds['CIS 2205'], 4, 2];
 
-            // BSIS-2024
-            $cid = $curriculumIds['BSIS-2024'];
+            // BSIS-2023
+            $cid = $curriculumIds['BSIS-2023'];
             $prospectuses[] = [$cid, $subjectIds['CIS 1101'], 1, 1];
             $prospectuses[] = [$cid, $subjectIds['CIS 1102N'], 1, 1];
             $prospectuses[] = [$cid, $subjectIds['CIS 1103'], 1, 1];
@@ -626,9 +626,9 @@ class CurriculumSeeder extends Seeder
             $prospectuses[] = [$cid, $subjectIds['GE-FREELEC 1'], 1, 2];
             $prospectuses[] = [$cid, $subjectIds['NSTP 2'], 1, 2];
             $prospectuses[] = [$cid, $subjectIds['TPE 1202'], 1, 2];
-            $prospectuses[] = [$cid, $subjectIds['CIS 2104'], 1, 2];
-            $prospectuses[] = [$cid, $subjectIds['CIS 2201'], 1, 2];
-            $prospectuses[] = [$cid, $subjectIds['CIS 2202'], 1, 2];
+            $prospectuses[] = [$cid, $subjectIds['CIS 2104'], 1, 3];
+            $prospectuses[] = [$cid, $subjectIds['CIS 2201'], 1, 3];
+            $prospectuses[] = [$cid, $subjectIds['CIS 2202'], 1, 3];
             $prospectuses[] = [$cid, $subjectIds['CIS 2101'], 2, 1];
             $prospectuses[] = [$cid, $subjectIds['CIS 2103'], 2, 1];
             $prospectuses[] = [$cid, $subjectIds['CIS 2105'], 2, 1];
@@ -647,9 +647,9 @@ class CurriculumSeeder extends Seeder
             $prospectuses[] = [$cid, $subjectIds['GE-LWR'], 2, 2];
             $prospectuses[] = [$cid, $subjectIds['GE-FREELEC 3'], 2, 2];
             $prospectuses[] = [$cid, $subjectIds['TPE 2204'], 2, 2];
-            $prospectuses[] = [$cid, $subjectIds['IS 3105'], 2, 2];
-            $prospectuses[] = [$cid, $subjectIds['IS 3107'], 2, 2];
-            $prospectuses[] = [$cid, $subjectIds['IS 3201'], 2, 2];
+            $prospectuses[] = [$cid, $subjectIds['IS 3105'], 2, 3];
+            $prospectuses[] = [$cid, $subjectIds['IS 3107'], 2, 3];
+            $prospectuses[] = [$cid, $subjectIds['IS 3201'], 2, 3];
             $prospectuses[] = [$cid, $subjectIds['IS 3104'], 3, 1];
             $prospectuses[] = [$cid, $subjectIds['IS 3205'], 3, 1];
             $prospectuses[] = [$cid, $subjectIds['IS 3206'], 3, 1];
@@ -666,13 +666,13 @@ class CurriculumSeeder extends Seeder
             $prospectuses[] = [$cid, $subjectIds['IS 3207'], 3, 2];
             $prospectuses[] = [$cid, $subjectIds['GE-RPH'], 3, 2];
             $prospectuses[] = [$cid, $subjectIds['GE-STS'], 3, 2];
-            $prospectuses[] = [$cid, $subjectIds['IS5101'], 3, 2];
-            $prospectuses[] = [$cid, $subjectIds['IS5102'], 3, 2];
-            $prospectuses[] = [$cid, $subjectIds['IS5104'], 3, 2];
-            $prospectuses[] = [$cid, $subjectIds['IS5105'], 3, 2];
-            $prospectuses[] = [$cid, $subjectIds['IS5106'], 3, 2];
-            $prospectuses[] = [$cid, $subjectIds['IS5108'], 3, 2];
-            $prospectuses[] = [$cid, $subjectIds['IS5109'], 3, 2];
+            $prospectuses[] = [$cid, $subjectIds['IS5101'], 2, 2];
+            $prospectuses[] = [$cid, $subjectIds['IS5102'], 2, 2];
+            $prospectuses[] = [$cid, $subjectIds['IS5104'], 2, 2];
+            $prospectuses[] = [$cid, $subjectIds['IS5105'], 2, 2];
+            $prospectuses[] = [$cid, $subjectIds['IS5106'], 2, 2];
+            $prospectuses[] = [$cid, $subjectIds['IS5108'], 2, 2];
+            $prospectuses[] = [$cid, $subjectIds['IS5109'], 2, 2];
 
             // BSIS-2018
             $cid = $curriculumIds['BSIS-2018'];
@@ -758,7 +758,7 @@ class CurriculumSeeder extends Seeder
                     'curriculum_id'   => $p[0],
                     'subject_id'      => $p[1],
                     'year_level'      => $p[2],
-                    'semester_number' => $p[3],
+                    'semester_id' => $p[3],
                     'created_at'      => $now,
                     'updated_at'      => $now,
                 ], $chunk);

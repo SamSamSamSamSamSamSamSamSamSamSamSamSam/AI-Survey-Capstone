@@ -10,22 +10,15 @@ class Prospectus extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        // 'program_id', // removed since we can get it through curriculum
-        'curriculum_id',   // NEW — belongs to a specific curriculum
+        'curriculum_id',
         'subject_id',
         'year_level',
-        'semester_number',
-        // 'offered_type_id' REMOVED
+        'semester_id',      // ← was semester_number
     ];
 
     // -------------------------------------------------------------------------
     // Relationships
     // -------------------------------------------------------------------------
-
-    // public function program()
-    // {
-    //     return $this->belongsTo(Program::class);
-    // }
 
     public function curriculum()
     {
@@ -35,6 +28,11 @@ class Prospectus extends Model
     public function subject()
     {
         return $this->belongsTo(Subject::class);
+    }
+
+    public function semester()
+    {
+        return $this->belongsTo(Semester::class);
     }
 
     // -------------------------------------------------------------------------
@@ -62,13 +60,34 @@ class Prospectus extends Model
         };
     }
 
+    /**
+     * Semester label — derived from the related Semester record.
+     * Falls back gracefully if relation not loaded.
+     */
     public function getSemesterLabelAttribute(): string
     {
-        return match ((int) $this->semester_number) {
-            1 => '1st Semester',
-            2 => '2nd Semester',
-            3 => 'Summer',
-            default => "Semester {$this->semester_number}",
-        };
+        if ($this->relationLoaded('semester') && $this->semester) {
+            return $this->semester->full_label;
+        }
+
+        return "Semester {$this->semester_id}";
+    }
+
+    /**
+     * Short label for grouping — e.g. "1st Semester" without the A.Y.
+     * Uses the semester_number field on the related Semester.
+     */
+    public function getSemesterShortLabelAttribute(): string
+    {
+        if ($this->relationLoaded('semester') && $this->semester) {
+            return match ((int) $this->semester->semester_number) {
+                1 => '1st Semester',
+                2 => '2nd Semester',
+                3 => 'Summer',
+                default => $this->semester->name,
+            };
+        }
+
+        return "Semester";
     }
 }

@@ -95,3 +95,11 @@
     <i class="bi bi-clipboard-data"></i>
     <span>CQI Reports</span>
 </a>
+
+<p class="nav-section">System</p>
+
+<a href="{{ route('admin.settings.index') }}"
+   class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+   <i class="bi bi-gear"></i>
+   <span>System Settings</span>
+</a>

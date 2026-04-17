@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StoreProspectusRequest;
 use App\Models\Curriculum;
 use App\Models\Program;
 use App\Models\Prospectus;
+use App\Models\Semester;
 use App\Models\Subject;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,8 +16,7 @@ use Illuminate\View\View;
 class ProspectusController extends Controller
 {
     /**
-     * Show prospectus — select program first, then curriculum.
-     * Grouped by year level + semester.
+     * Show prospectus — program → curriculum → grouped by year level + semester.
      */
     public function index(Request $request): View
     {
@@ -36,15 +36,16 @@ class ProspectusController extends Controller
             if ($curriculumId = $request->input('curriculum_id')) {
                 $selectedCurriculum = Curriculum::findOrFail($curriculumId);
 
-                $entries = Prospectus::with('subject')
+                $entries = Prospectus::with(['subject', 'semester'])
                     ->where('curriculum_id', $curriculumId)
                     ->whereNull('deleted_at')
                     ->orderBy('year_level')
-                    ->orderBy('semester_number')
+                    ->orderBy('semester_id')
                     ->get();
 
+                // Group by "Year X — Semester Label"
                 $grouped = $entries->groupBy(
-                    fn ($e) => $e->year_level_label . ' — ' . $e->semester_label
+                    fn ($e) => $e->year_level_label . ' — ' . $e->semester_short_label
                 );
             }
         }
@@ -63,7 +64,12 @@ class ProspectusController extends Controller
         $programs  = Program::orderBy('name')->get();
         $subjects  = Subject::orderBy('course_code')->get();
 
-        // Pre-load curricula if program is pre-selected (e.g. from query string)
+        // Load all semesters ordered by academic year and semester number
+        $semesters = Semester::orderByDesc('academic_start_year')
+                             ->orderBy('semester_number')
+                             ->get();
+
+        // Pre-load curricula if arriving from a program context
         $curricula = collect();
         if ($programId = $request->input('program_id')) {
             $curricula = Curriculum::forProgram($programId)
@@ -72,7 +78,9 @@ class ProspectusController extends Controller
                                     ->get();
         }
 
-        return view('admin.prospectus.create', compact('programs', 'subjects', 'curricula'));
+        return view('admin.prospectus.create', compact(
+            'programs', 'subjects', 'curricula', 'semesters'
+        ));
     }
 
     public function store(StoreProspectusRequest $request): RedirectResponse
@@ -88,7 +96,7 @@ class ProspectusController extends Controller
 
     public function destroy(Prospectus $prospectus): RedirectResponse
     {
-        $programId    = $prospectus->program_id;
+        $programId    = $prospectus->curriculum->program_id;
         $curriculumId = $prospectus->curriculum_id;
 
         $prospectus->delete();
