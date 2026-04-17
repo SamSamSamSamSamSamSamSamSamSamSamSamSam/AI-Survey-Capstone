@@ -121,7 +121,7 @@
                         @csrf @method('PUT')
 
                         <p class="settings-subsection">Gemini AI (CQI Report Generation)</p>
-                        @foreach ($groups['ai']->where('key', 'like', 'ai.gemini%') as $s)
+                        @foreach ($groups['ai']->filter(fn ($s) => str_starts_with($s->key, 'ai.gemini')) as $s)
                             @include('admin.settings._setting_row', ['s' => $s])
                         @endforeach
 
@@ -133,7 +133,7 @@
                         </div>
 
                         <p class="settings-subsection">NLP Sentiment Server (Flask)</p>
-                        @foreach ($groups['ai']->where('key', 'like', 'ai.nlp%') as $s)
+                        @foreach ($groups['ai']->filter(fn ($s) => str_starts_with($s->key, 'ai.nlp')) as $s)
                             @include('admin.settings._setting_row', ['s' => $s])
                         @endforeach
 
@@ -145,7 +145,7 @@
                         </div>
 
                         <p class="settings-subsection">CQI Report Identity Override</p>
-                        @foreach ($groups['ai']->whereIn('key', ['ai.cqi_report_institution', 'ai.cqi_report_department']) as $s)
+                        @foreach ($groups['ai']->filter(fn ($s) => str_starts_with($s->key, 'ai.cqi')) as $s)
                             @include('admin.settings._setting_row', ['s' => $s])
                         @endforeach
 

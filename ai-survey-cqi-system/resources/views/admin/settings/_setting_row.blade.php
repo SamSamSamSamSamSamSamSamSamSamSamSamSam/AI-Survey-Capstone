@@ -185,7 +185,7 @@
         @elseif ($s->is_sensitive)
             <input type="password"
                    id="setting_{{ $inputName }}"
-                   name="{{ $$inputName }}"
+                   name="{{ $inputName }}"
                    value="{{ $s->value }}"
                    class="form-control"
                    autocomplete="new-password"
