@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class GeminiTest extends Command
 {
@@ -24,6 +25,21 @@ class GeminiTest extends Command
         $this->line('  <fg=cyan;options=bold>Gemini API Connection Test</>');
         $this->line('  ' . str_repeat('─', 44));
         $this->newLine();
+
+        $dbValue = setting('ai.gemini_api_key');
+
+        if ($dbValue) {
+            Log::info('Gemini API Key accessed from Database.');
+            $apiKey = $dbValue;
+        } else {
+            // 2. Fallback to config (.env)
+            $apiKey = config('services.gemini.api_key', '');
+            
+            if (!empty($apiKey)) {
+                Log::warning('Gemini API Key accessed from .env fallback (Database record missing).');
+            }
+        }
+        \Log::emergency("THE CODE REACHED THIS POINT");
 
         // ── Key check ─────────────────────────────────────────────────────────
         $apiKey = setting('ai.gemini_api_key', config('services.gemini.api_key', ''));

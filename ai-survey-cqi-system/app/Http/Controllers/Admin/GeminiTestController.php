@@ -9,7 +9,7 @@ class GeminiTestController extends Controller
 {
     public function test()
     {
-        $apiKey   = config('services.gemini.key');
+        $apiKey   = setting('ai.gemini_api_key', config('services.gemini.api_key', ''));
         $model    = 'gemini-2.5-flash';
         $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
