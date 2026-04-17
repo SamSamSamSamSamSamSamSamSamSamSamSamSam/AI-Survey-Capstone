@@ -50,37 +50,22 @@
         <i class="bi bi-calendar-check-fill"></i>
         Enrolling for: <strong>{{ $activeSemester->full_label }}</strong>
     </div>
-
-    <div class="enrollment-offering-grid mb-4">
-        @foreach ($availableOfferings as $offering)
-        <div class="enrollment-offering-card">
-            <div class="enrollment-offering-card__code">
-                {{ $offering->subject->course_code }}
+    {{-- search --}}
+    <div class="row mb-3">
+        <div class="col-md-6"> {{-- This makes it half-width on tablets/desktops --}}
+            <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by course code, name, or teacher...">
             </div>
-            <div class="enrollment-offering-card__name">
-                {{ $offering->subject->name }}
-            </div>
-            @if ($offering->offeringType)
-                <span class="role-pill role-pill--faculty mb-2">{{ $offering->offeringType->name }}</span>
-            @endif
-            <div class="enrollment-offering-card__meta">
-                <div><i class="bi bi-person me-1"></i>{{ $offering->teacher->name }}</div>
-                <div><i class="bi bi-journal me-1"></i>{{ $offering->subject->units }} unit(s)</div>
-                @if ($offering->group_number)
-                    <div><i class="bi bi-people me-1"></i>Group {{ $offering->group_number }}</div>
-                @endif
-            </div>
-            <form method="POST" action="{{ route('student.enrollments.store') }}">
-                @csrf
-                <input type="hidden" name="offering_id" value="{{ $offering->id }}">
-                <button type="submit" class="btn btn-primary btn-sm w-100 mt-2">
-                    <i class="bi bi-plus-lg me-1"></i> Enroll
-                </button>
-            </form>
         </div>
-        @endforeach
+    </div>
+
+    {{-- dynamic container --}}
+    <div id="offerings-container">
+        @include('student.enrollments._offering_cards')
     </div>
 @endif
+
 
 {{-- ===== ENROLLMENT HISTORY ===== --}}
 <div class="d-flex align-items-center justify-content-between mb-3">
@@ -156,5 +141,42 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/modules/confirm-action.js') }}"></script>
+{{-- <script src="{{ asset('js/modules/confirm-action.js') }}"></script> --}}
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    let timer;
+    const input = document.getElementById("searchInput");
+    const container = document.getElementById("offerings-container");
+
+    // Helper function to fetch data
+    const fetchOfferings = (url) => {
+        fetch(url, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(res => res.json())
+        .then(data => {
+            container.innerHTML = data.html;
+        })
+        .catch(err => console.error("Search Error:", err));
+    };
+
+    // Search Input Logic
+    input.addEventListener("keyup", function () {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            // We always go back to page 1 when a new search starts
+            fetchOfferings(`?search=${encodeURIComponent(input.value)}`);
+        }, 400);
+    });
+
+    // Pagination Click Logic (using Event Delegation)
+    document.addEventListener("click", function (e) {
+        const link = e.target.closest(".pagination a");
+        if (link) {
+            e.preventDefault();
+            fetchOfferings(link.href);
+        }
+    });
+});
+    </script>
 @endpush

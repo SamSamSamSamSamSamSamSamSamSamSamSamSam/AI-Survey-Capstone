@@ -24,7 +24,7 @@
     <aside class="sidebar" id="appSidebar">
         <div class="sidebar-brand">
             <span class="brand-name">
-                <i class="bi bi-mortarboard-fill me-2" style="color: var(--bs-blue)"></i>CQI System
+                <i class="bi bi-mortarboard-fill me-2" style="color: var(--bs-blue)"></i>{{ setting('app.name') }}
             </span>
             <span class="brand-role">{{ auth()->user()?->primaryRole() }}</span>
         </div>

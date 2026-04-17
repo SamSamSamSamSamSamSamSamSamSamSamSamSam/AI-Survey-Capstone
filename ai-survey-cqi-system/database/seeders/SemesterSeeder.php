@@ -14,13 +14,13 @@ class SemesterSeeder extends Seeder
                 'name' => '1st Semester',
                 'academic_start_year' => 2025,
                 'semester_number' => 1,
-                'is_active' => false, // current semester
+                'is_active' => true, // current semester sample
             ],
             [
                 'name' => '2nd Semester',
                 'academic_start_year' => 2025,
                 'semester_number' => 2,
-                'is_active' => true,
+                'is_active' => false,
             ],
             [
                 'name' => 'Summer',
@@ -38,7 +38,7 @@ class SemesterSeeder extends Seeder
                 'name' => '2nd Semester',
                 'academic_start_year' => 2026,
                 'semester_number' => 2,
-                'is_active' => true,
+                'is_active' => false,
             ],
             [
                 'name' => 'Summer',

@@ -17,34 +17,44 @@ class EnrollmentController extends Controller
     /**
      * Show available offerings for the active semester.
      */
-    public function index(): View
+    public function index()
     {
         $activeSemester = Semester::current();
-
-        $availableOfferings = collect();
+        $availableOfferings = collect(); // Default to empty collection
 
         if ($activeSemester) {
-            $enrolledOfferingIds = Enrollment::where('student_id', Auth::id())
-                                             ->pluck('offering_id');
+            $enrolledIds = Enrollment::where('student_id', Auth::id())->pluck('offering_id');
 
-            $availableOfferings = CourseOffering::with(['subject', 'teacher', 'offeringType'])
+            $query = CourseOffering::with(['subject', 'teacher', 'offeringType'])
                 ->where('semester_id', $activeSemester->id)
-                ->whereNotIn('id', $enrolledOfferingIds)
-                ->whereNull('deleted_at')
-                ->get();
+                ->whereNotIn('id', $enrolledIds)
+                ->whereNull('deleted_at');
+
+            // Apply search if present
+            if ($search = request('search')) {
+                $query->where(function ($q) use ($search) {
+                    $q->whereHas('subject', function ($sub) use ($search) {
+                        $sub->where('name', 'like', "%$search%")->orWhere('course_code', 'like', "%$search%");
+                    })->orWhereHas('teacher', function ($t) use ($search) {
+                        $t->where('name', 'like', "%$search%");
+                    });
+                });
+            }
+
+            $availableOfferings = $query->paginate(8)->withQueryString();
         }
 
-        // Student's current enrollments — all semesters for history
-        $myEnrollments = Enrollment::with(['offering.subject', 'offering.semester', 'enrollmentType'])
-                                   ->where('student_id', Auth::id())
-                                   ->latest()
-                                   ->get();
+        if (request()->ajax()) {
+            return response()->json([
+                // Make sure this path is 100% correct!
+                'html' => view('student.enrollments._offering_cards', compact('availableOfferings'))->render()
+            ]);
+        }
 
-        return view('student.enrollments.index', compact(
-            'activeSemester',
-            'availableOfferings',
-            'myEnrollments',
-        ));
+        // Standard view variables
+        $myEnrollments = Enrollment::where('student_id', Auth::id())->latest()->get();
+
+        return view('student.enrollments.index', compact('activeSemester', 'availableOfferings', 'myEnrollments'));
     }
 
     /**
