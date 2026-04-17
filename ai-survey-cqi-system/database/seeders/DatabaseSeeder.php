@@ -13,15 +13,15 @@ class DatabaseSeeder extends Seeder
     {
         // The order here is CRITICAL because of Foreign Key constraints
         $this->call([
+            CurriculumSeeder::class,
+            // ProspectusSeeder::class,
+            // SubjectSeeder::class,
             RoleSeeder::class,
             UserSeeder::class,
             ProgramSeeder::class,
-            CurriculumSeeder::class,
-            SubjectSeeder::class,
             OfferingTypeSeeder::class,
             EnrollmentTypeSeeder::class,
             SemesterSeeder::class,
-            ProspectusSeeder::class,
             CourseOfferingSeeder::class,
             EnrollmentSeeder::class,
             SurveyReferenceSeeder::class, // Seeder for University's official survey templates and categories

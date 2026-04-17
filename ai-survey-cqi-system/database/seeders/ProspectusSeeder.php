@@ -1,91 +1,70 @@
 <?php
+// database/seeders/ProspectusSeeder.php
 
-namespace Database\Seeders;
-
-use Illuminate\Database\Seeder;
-use App\Models\Prospectus;
 use App\Models\Curriculum;
 use App\Models\Subject;
+use App\Models\Prospectus;
 
 class ProspectusSeeder extends Seeder
 {
     public function run(): void
     {
-        $curriculum = Curriculum::where('curriculum_code', 'BSIT-2024')->first();
+        $this->seed('BSIT-2018', 'formatted_BSIT2018-4years_csv.csv');
+        $this->seed('BSIT-2023', 'formatted_BSIT2023-3years_csv.csv');
+    }
 
-        // $regular = OfferingType::where('name', 'Regular')->first();
-        // $offsem  = OfferingType::where('name', 'Offsemester')->first();
-        // $summer  = OfferingType::where('name', 'Summer')->first();
+    private function seed($curriculumCode, $fileName)
+    {
+        $curriculum = Curriculum::where('curriculum_code', $curriculumCode)->first();
 
-        $entries = [
+        $rows = array_map('str_getcsv', file(database_path("data/$fileName")));
+        $header = array_shift($rows);
 
-            // Year 1 - Semester 1
-            [
-                'subject_code' => 'IT101',
-                'year_level' => 1,
-                'semester_number' => 1,
-            ],
+        foreach ($rows as $row) {
+            $data = array_combine($header, $row);
 
-            [
-                'subject_code' => 'IT102',
-                'year_level' => 1,
-                'semester_number' => 1,
-            ],
-
-            // Year 1 - Semester 2
-            [
-                'subject_code' => 'IT103',
-                'year_level' => 1,
-                'semester_number' => 2,
-            ],
-
-            // Year 2 - Semester 1
-            [
-                'subject_code' => 'IT201',
-                'year_level' => 2,
-                'semester_number' => 1,
-            ],
-
-            [
-                'subject_code' => 'IT202',
-                'year_level' => 2,
-                'semester_number' => 1,
-            ],
-
-            // Year 2 - Semester 2
-            [
-                'subject_code' => 'IT203',
-                'year_level' => 2,
-                'semester_number' => 2,
-            ],
-
-            // Year 4
-            [
-                'subject_code' => 'IT401',
-                'year_level' => 4,
-                'semester_number' => 1,
-            ],
-
-            [
-                'subject_code' => 'IT402',
-                'year_level' => 4,
-                'semester_number' => 2,
-            ],
-
-        ];
-
-        foreach ($entries as $entry) {
-
-            $subject = Subject::where('course_code', $entry['subject_code'])->first();
-
-            Prospectus::updateOrCreate(
+            // -------------------------------
+            // 1. Create / Get Subject
+            // -------------------------------
+            $subject = Subject::firstOrCreate(
+                ['course_code' => $data['Course Code']],
                 [
-                    'curriculum_id' => $curriculum->id,
-                    'subject_id' => $subject->id,
-                    'year_level' => $entry['year_level'],
-                    'semester_number' => $entry['semester_number'],
-                ],
+                    'name' => $data['Title'],
+                    'units' => $data['Acad Units'],
+                    'description' => 'Lec: '.$data['Lec Units'].' Lab: '.$data['Lab Units'],
+                ]
             );
+
+            // -------------------------------
+            // 2. Create Prospectus Entry
+            // -------------------------------
+            Prospectus::create([
+                'curriculum_id'    => $curriculum->id,
+                'subject_id'       => $subject->id,
+                'year_level'       => $this->mapYear($data['Year']),
+                'semester_number'  => $this->mapSemester($data['Semester']),
+            ]);
         }
+    }
+
+    private function mapYear($year)
+    {
+        return match (trim($year)) {
+            'First Year' => 1,
+            'Second Year' => 2,
+            'Third Year' => 3,
+            'Fourth Year' => 4,
+            default => null,
+        };
+    }
+
+    private function mapSemester($semester)
+    {
+        return match (trim($semester)) {
+            'First Semester' => 1,
+            'Second Semester' => 2,
+            'Summer' => 3,
+            default => null,
+        };
     }
 }

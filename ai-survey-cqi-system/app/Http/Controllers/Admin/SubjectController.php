@@ -31,6 +31,10 @@ class SubjectController extends Controller
 
         $subjects = $query->latest()->paginate(15)->withQueryString();
 
+        if ($request->ajax()) {
+            return view('admin.subjects.partials.table', compact('subjects'));
+        }
+
         return view('admin.subjects.index', compact('subjects'));
     }
 
