@@ -26,7 +26,7 @@ class GeminiTest extends Command
         $this->newLine();
 
         // ── Key check ─────────────────────────────────────────────────────────
-        $apiKey = config('services.gemini.key');
+        $apiKey = setting('ai.gemini_api_key', config('services.gemini.api_key', ''));
 
         if (empty($apiKey)) {
             $this->error('  ✗  GEMINI_API_KEY is not set in your .env file.');
