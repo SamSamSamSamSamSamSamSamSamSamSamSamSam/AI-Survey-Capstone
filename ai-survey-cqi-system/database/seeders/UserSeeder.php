@@ -24,11 +24,58 @@ class UserSeeder extends Seeder
         $admin = User::create([
             'user_id_number' => 'ADMIN001',
             'name' => 'System Administrator',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password'),
+            'email' => 'admin1@example.com',
+            'password' => Hash::make(env('ADMIN_PASSWORD1', 'default_password')),
             'email_verified_at' => now(),
             'must_change_password' => false,
         ]);
+
+                $admin = User::create([
+            'user_id_number' => 'ADMIN002',
+            'name' => 'System Administrator',
+            'email' => 'admin2@example.com',
+            'password' => Hash::make(env('ADMIN_PASSWORD2', 'default_password')),
+            'email_verified_at' => now(),
+            'must_change_password' => false,
+        ]);
+
+                $admin = User::create([
+            'user_id_number' => 'ADMIN003',
+            'name' => 'System Administrator',
+            'email' => 'admin3@example.com',
+            'password' => Hash::make(env('ADMIN_PASSWORD3', 'default_password')),
+            'email_verified_at' => now(),
+            'must_change_password' => false,
+        ]);
+
+                $admin = User::create([
+            'user_id_number' => 'ADMIN004',
+            'name' => 'System Administrator',
+            'email' => 'admin4@example.com',
+            'password' => Hash::make(env('ADMIN_PASSWORD4', 'default_password')),
+            'email_verified_at' => now(),
+            'must_change_password' => false,
+        ]);
+
+                $admin = User::create([
+            'user_id_number' => 'ADMIN005',
+            'name' => 'System Administrator',
+            'email' => 'admin5@example.com',
+            'password' => Hash::make(env('ADMIN_PASSWORD5', 'default_password')),
+            'email_verified_at' => now(),
+            'must_change_password' => false,
+        ]);
+
+                $admin = User::create([
+            'user_id_number' => 'ADMIN006',
+            'name' => 'System Administrator',
+            'email' => 'admin6@example.com',
+            'password' => Hash::make(env('ADMIN_PASSWORD6', 'default_password')),
+            'email_verified_at' => now(),
+            'must_change_password' => false,
+        ]);
+
+        
 
         $admin->roles()->attach($adminRole);
 
