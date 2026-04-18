@@ -21,10 +21,21 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
-        $lifetime = setting('security.session_lifetime', 120);
-
+        // Use the Bootstrap 5 paginator (always safe)
         Paginator::useBootstrapFive();
-        Config::set('session.lifetime', $lifetime);
+
+        // Only run database-dependent logic if NOT running in the console (Terminal)
+        if (!app()->runningInConsole()) {
+            try {
+                // Fetch the lifetime from the database
+                $lifetime = setting('security.session_lifetime', 120);
+                
+                // Set the configuration dynamically
+                Config::set('session.lifetime', $lifetime);
+            } catch (\Exception $e) {
+                // Fallback to default if the table isn't ready or error occurs
+                Config::set('session.lifetime', 120);
+            }
+        }
     }
 }
