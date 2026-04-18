@@ -14,6 +14,11 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(\App\Services\SettingService::class);
+
+        // Add this: Only register Debugbar if it exists and we are in local env
+        if ($this->app->environment('local') && class_exists(\Fruitcake\LaravelDebugbar\ServiceProvider::class)) {
+            $this->app->register(\Fruitcake\LaravelDebugbar\ServiceProvider::class);
+        }
     }
 
     /**

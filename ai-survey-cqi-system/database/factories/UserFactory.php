@@ -16,9 +16,10 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id_number' => $this->faker->unique()->numerify('20########'),
-            'name' => $this->faker->name(),
-            'email' => $this->faker->unique()->safeEmail(),
+            // Use the fake() helper instead of $this->faker
+            'user_id_number' => fake()->unique()->numerify('20########'),
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'must_change_password' => false,
