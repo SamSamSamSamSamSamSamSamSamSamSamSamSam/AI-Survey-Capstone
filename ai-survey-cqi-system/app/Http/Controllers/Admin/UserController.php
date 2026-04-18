@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
-use App\Mail\UserCredentialsMail;
 use App\Models\Role;
 use App\Models\User;
+use App\Mail\WelcomeUserMail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password; 
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -66,24 +67,26 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request): RedirectResponse
     {
-        $plainPassword = $this->generatePassword();
-
+        // 1. Create the user with a temporary random password
         $user = User::create([
             'user_id_number' => $request->user_id_number,
             'name'           => $request->name,
             'email'          => $request->email,
-            'password'       => Hash::make($plainPassword),
-            'email_verified_at' => now(), // Admin-created accounts are pre-verified
+            'password'       => Hash::make(Str::random(32)), 
+            'must_change_password' => true,
         ]);
 
-        // Assign roles
+        // 2. Assign roles
         $user->roles()->sync($request->input('roles', []));
 
-        // Email credentials
-        Mail::to($user->email)->send(new UserCredentialsMail($user, $plainPassword));
+        // 3. Generate a Password Reset Token for the "Set Password" link
+        $token = Password::createToken($user);
+
+        // 4. Send the Welcome email (using the WelcomeUserMail class)
+        Mail::to($user->email)->send(new WelcomeUserMail($user, $token));
 
         return redirect()->route('admin.users.index')
-                         ->with('success', "User {$user->name} created. Credentials sent to {$user->email}.");
+                         ->with('success', "User {$user->name} created. Invitation sent to {$user->email}.");
     }
 
     // -------------------------------------------------------------------------
@@ -128,13 +131,12 @@ class UserController extends Controller
 
     public function resetPassword(User $user): RedirectResponse
     {
-        $plainPassword = $this->generatePassword();
+        // Generate token for manual reset requests
+        $token = Password::createToken($user);
 
-        $user->update(['password' => Hash::make($plainPassword)]);
+        Mail::to($user->email)->send(new WelcomeUserMail($user, $token));
 
-        Mail::to($user->email)->send(new UserCredentialsMail($user, $plainPassword, isReset: true));
-
-        return back()->with('success', "Password reset. New credentials sent to {$user->email}.");
+        return back()->with('success', "Password reset link sent to {$user->email}.");
     }
 
     // -------------------------------------------------------------------------
