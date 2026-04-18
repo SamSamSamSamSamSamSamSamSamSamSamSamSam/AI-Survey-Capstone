@@ -11,73 +11,44 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        // 1. Fetch Roles
         $adminRole = Role::where('name', 'admin')->first();
         $teacherRole = Role::where('name', 'faculty')->first();
         $studentRole = Role::where('name', 'student')->first();
 
         /*
         |--------------------------------------------------------------------------
-        | Create Default Admin
+        | Create Default Admins (Reduced to 5)
         |--------------------------------------------------------------------------
         */
 
-        $admin = User::create([
-            'user_id_number' => 'ADMIN001',
-            'name' => 'System Administrator',
-            'email' => 'admin1@example.com',
-            'password' => Hash::make(env('ADMIN_PASSWORD1', 'default_password')),
-            'email_verified_at' => now(),
-            'must_change_password' => false,
-        ]);
+        $admins = [
+            ['id' => 'ADMIN001', 'email' => 'admin1@example.com', 'env' => 'ADMIN_PASSWORD1'],
+            ['id' => 'ADMIN002', 'email' => 'admin2@example.com', 'env' => 'ADMIN_PASSWORD2'],
+            ['id' => 'ADMIN003', 'email' => 'admin3@example.com', 'env' => 'ADMIN_PASSWORD3'],
+            ['id' => 'ADMIN004', 'email' => 'admin4@example.com', 'env' => 'ADMIN_PASSWORD4'],
+            ['id' => 'ADMIN005', 'email' => 'admin5@example.com', 'env' => 'ADMIN_PASSWORD5'],
+        ];
 
-                $admin = User::create([
-            'user_id_number' => 'ADMIN002',
-            'name' => 'System Administrator',
-            'email' => 'admin2@example.com',
-            'password' => Hash::make(env('ADMIN_PASSWORD2', 'default_password')),
-            'email_verified_at' => now(),
-            'must_change_password' => false,
-        ]);
+        foreach ($admins as $adminData) {
+            $admin = User::create([
+                'user_id_number' => $adminData['id'],
+                'name' => 'System Administrator',
+                'email' => $adminData['email'],
+                'password' => Hash::make(env($adminData['env'], 'default_password')),
+                'email_verified_at' => now(),
+                'must_change_password' => false,
+            ]);
+            
+            // This ensures EVERY admin in the loop gets the role attached
+            $admin->roles()->attach($adminRole);
+        }
 
-                $admin = User::create([
-            'user_id_number' => 'ADMIN003',
-            'name' => 'System Administrator',
-            'email' => 'admin3@example.com',
-            'password' => Hash::make(env('ADMIN_PASSWORD3', 'default_password')),
-            'email_verified_at' => now(),
-            'must_change_password' => false,
-        ]);
-
-                $admin = User::create([
-            'user_id_number' => 'ADMIN004',
-            'name' => 'System Administrator',
-            'email' => 'admin4@example.com',
-            'password' => Hash::make(env('ADMIN_PASSWORD4', 'default_password')),
-            'email_verified_at' => now(),
-            'must_change_password' => false,
-        ]);
-
-                $admin = User::create([
-            'user_id_number' => 'ADMIN005',
-            'name' => 'System Administrator',
-            'email' => 'admin5@example.com',
-            'password' => Hash::make(env('ADMIN_PASSWORD5', 'default_password')),
-            'email_verified_at' => now(),
-            'must_change_password' => false,
-        ]);
-
-                $admin = User::create([
-            'user_id_number' => 'ADMIN006',
-            'name' => 'System Administrator',
-            'email' => 'admin6@example.com',
-            'password' => Hash::make(env('ADMIN_PASSWORD6', 'default_password')),
-            'email_verified_at' => now(),
-            'must_change_password' => false,
-        ]);
-
-        
-
-        $admin->roles()->attach($adminRole);
+        /*
+        |--------------------------------------------------------------------------
+        | Create Sample Student & Teacher
+        |--------------------------------------------------------------------------
+        */
 
         $studentsample = User::create([
             'user_id_number' => '20230001',
@@ -87,6 +58,7 @@ class UserSeeder extends Seeder
             'email_verified_at' => now(),
             'must_change_password' => false,
         ]);
+        $studentsample->roles()->attach($studentRole);
         
         $teachersample = User::create([
             'user_id_number' => 'TEACHER001',
@@ -97,31 +69,7 @@ class UserSeeder extends Seeder
             'must_change_password' => false,
         ]);
         $teachersample->roles()->attach($teacherRole);
-        $studentsample->roles()->attach($studentRole);
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Create Teacher Users
-        |--------------------------------------------------------------------------
-        */
-
-        $teacherUsers = User::factory()->count(5)->create();
-
-        foreach ($teacherUsers as $teacher) {
-            $teacher->roles()->attach($teacherRole);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Create Student Users
-        |--------------------------------------------------------------------------
-        */
-
-        $studentUsers = User::factory()->count(30)->create();
-
-        foreach ($studentUsers as $student) {
-            $student->roles()->attach($studentRole);
-        }
     }
 }
