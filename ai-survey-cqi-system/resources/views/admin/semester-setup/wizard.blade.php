@@ -41,14 +41,15 @@
         </div>
 
         @foreach ($steps as $num => $s)
-        @php
-            $isCompleted = ($stats[$num] ?? 0) > 0;
-            $isActive    = $num == $step;
-            $isDisabled  = $num > $step && ! $isCompleted;
-            $state       = $isActive ? 'active' : ($isCompleted ? 'done' : 'pending');
-        @endphp
-        <a href="{{ $isDisabled ? '#' : route('admin.semester-setup.index', ['step' => $num]) }}"
-           class="wizard-step wizard-step--{{ $state }} {{ $isDisabled ? 'wizard-step--disabled' : '' }}">
+            @php
+                $isCompleted = ($stats[$num] ?? 0) > 0;
+                $isActive    = $num == $step;
+                // We remove the isDisabled logic so all links work
+                $state       = $isActive ? 'active' : ($isCompleted ? 'done' : 'pending');
+            @endphp
+
+            <a href="{{ route('admin.semester-setup.index', ['step' => $num]) }}"
+            class="wizard-step wizard-step--{{ $state }}">
             <div class="wizard-step__dot wizard-step__dot--{{ $state }}">
                 @if ($isCompleted && ! $isActive)
                     <i class="bi bi-check-lg"></i>
@@ -70,15 +71,6 @@
             $totalSteps     = count($steps);
             $progressPct    = $totalSteps > 0 ? round(($completedCount / $totalSteps) * 100) : 0;
         @endphp
-        <div class="wizard-rail__footer">
-            <div class="d-flex justify-content-between mb-1">
-                <span class="wizard-rail__progress-label">Overall Progress</span>
-                <span class="wizard-rail__progress-pct">{{ $progressPct }}%</span>
-            </div>
-            <div class="wizard-rail__progress-track">
-                <div class="wizard-rail__progress-fill" style="width: {{ $progressPct }}%"></div>
-            </div>
-        </div>
 
     </div>
 

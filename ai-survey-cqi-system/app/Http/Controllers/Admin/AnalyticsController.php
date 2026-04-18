@@ -13,13 +13,15 @@ use Illuminate\View\View;
 
 class AnalyticsController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request)
     {
         $semesters          = Semester::orderByDesc('academic_start_year')->orderByDesc('semester_number')->get();
         $activeSemester     = Semester::current();
         $selectedSemesterId = $request->input('semester_id', $activeSemester?->id);
+        
+        // Define the search variable from the request
+        $search = $request->input('search');
 
-        // Surveys that have analytics computed
         $query = FacultyAnalytics::with([
             'survey.offering.subject',
             'survey.offering.teacher',
@@ -27,15 +29,33 @@ class AnalyticsController extends Controller
             'survey.targetRole',
         ]);
 
+        // Semester Filter
         if ($selectedSemesterId) {
             $query->whereHas('survey.offering', fn ($q) =>
                 $q->where('semester_id', $selectedSemesterId)
             );
         }
 
+        // Dynamic Search Filter
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->whereHas('faculty', function($f) use ($search) {
+                    $f->where('name', 'like', "%{$search}%");
+                })
+                ->orWhereHas('survey.offering.subject', function($s) use ($search) {
+                    $s->where('course_code', 'like', "%{$search}%")
+                    ->orWhere('name', 'like', "%{$search}%");
+                });
+            });
+        }
+
         $analytics = $query->latest('last_computed_at')->paginate(15)->withQueryString();
 
-        return view('admin.analytics.index', compact('analytics', 'semesters', 'activeSemester', 'selectedSemesterId'));
+        if ($request->ajax()) {
+            return view('admin.analytics._table', compact('analytics', 'selectedSemesterId'))->render();
+        }
+
+        return view('admin.analytics.index', compact('analytics', 'semesters', 'selectedSemesterId', 'search'));
     }
 
     public function show(FacultyAnalytics $analytic): View
