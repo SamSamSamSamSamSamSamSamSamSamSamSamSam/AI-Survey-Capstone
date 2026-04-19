@@ -21,14 +21,14 @@
     <label class="form-label" for="user_id_number">
         ID Number <span class="text-danger">*</span>
     </label>
-    <p class="form-text mt-0 mb-1">Format: YYYY-NNNNN (e.g. 2024-00042)</p>
+    <p class="form-text mt-0 mb-1">Format: 2010XXXX</p>
     <input
         type="text"
         id="user_id_number"
         name="user_id_number"
         class="form-control @error('user_id_number') is-invalid @enderror"
         value="{{ old('user_id_number', $user->user_id_number ?? '') }}"
-        placeholder="2024-00001"
+        placeholder="20100000"
         required
     >
     @error('user_id_number')
