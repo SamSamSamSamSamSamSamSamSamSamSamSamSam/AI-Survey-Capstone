@@ -179,7 +179,7 @@ class SurveyController extends Controller
     public function destroy(Survey $survey): RedirectResponse
     {
         $survey->delete();
-        return redirect()->route('admin.surveys.index')->with('success', 'Survey archived.');
+        return redirect()->route('admin.surveys.index')->with('danger', 'Survey archived.');
     }
 
     public function restore(string $id): RedirectResponse
