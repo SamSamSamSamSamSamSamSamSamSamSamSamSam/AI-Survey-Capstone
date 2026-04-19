@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('analytics',                     [AnalyticsController::class, 'index'])    ->name('analytics.index');
 Route::get('analytics/{analytic}',          [AnalyticsController::class, 'show'])     ->name('analytics.show');
 Route::post('analytics/{survey}/recompute', [AnalyticsController::class, 'recompute'])->name('analytics.recompute');
+Route::patch('analytics/{id}/restore', [AnalyticsController::class, 'restore'])       ->name('analytics.restore');
+Route::resource('analytics', AnalyticsController::class)->only(['index', 'show', 'destroy']);
+
 
 // CQI Reports
 Route::get('cqi-reports',                   [CqiReportController::class, 'index'])         ->name('cqi-reports.index');

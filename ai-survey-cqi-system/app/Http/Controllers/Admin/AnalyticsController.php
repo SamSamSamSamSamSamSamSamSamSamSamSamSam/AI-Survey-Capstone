@@ -22,7 +22,8 @@ class AnalyticsController extends Controller
         // Define the search variable from the request
         $search = $request->input('search');
 
-        $query = FacultyAnalytics::with([
+        $query = FacultyAnalytics::withTrashed() 
+        ->with([
             'survey.offering.subject',
             'survey.offering.teacher',
             'survey.offering.semester',
@@ -56,6 +57,19 @@ class AnalyticsController extends Controller
         }
 
         return view('admin.analytics.index', compact('analytics', 'semesters', 'selectedSemesterId', 'search'));
+    }
+
+    public function destroy(FacultyAnalytics $analytic): RedirectResponse
+    {
+        $analytic->delete();
+        return back()->with('success', 'Analytic record archived.');
+    }
+
+    public function restore($id): RedirectResponse
+    {
+        $analytic = FacultyAnalytics::withTrashed()->findOrFail($id);
+        $analytic->restore();
+        return back()->with('success', 'Analytic record restored.');
     }
 
     public function show(FacultyAnalytics $analytic): View

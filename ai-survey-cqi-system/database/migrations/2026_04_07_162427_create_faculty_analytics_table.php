@@ -31,6 +31,7 @@ return new class extends Migration
             $table->timestamp('last_computed_at')->nullable();
 
             $table->timestamps();
+            $table->softDeletes();
 
             $table->unique(['survey_id']); // one analytics record per survey
 
@@ -48,6 +49,7 @@ return new class extends Migration
             $table->foreign('faculty_id')
                   ->references('id')->on('users')
                   ->cascadeOnDelete();
+            
         });
     }
 
