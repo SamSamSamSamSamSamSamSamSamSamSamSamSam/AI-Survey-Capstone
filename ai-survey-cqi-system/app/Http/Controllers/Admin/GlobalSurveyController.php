@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\Semester;
 use App\Models\Survey;
 use App\Models\SurveyTemplate;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,11 +35,17 @@ class GlobalSurveyController extends Controller
                 ->count();
         }
 
+        // Show expected respondent counts per role for informational purposes
+        $facultyCount = User::whereHas('roles', fn ($q) => $q->where('name', 'faculty'))->count();
+        $adminCount   = User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->count();
+
         return view('admin.surveys.global-assign', compact(
             'activeSemester',
             'officialTemplate',
             'roles',
             'offeringsWithoutSurvey',
+            'facultyCount',
+            'adminCount',
         ));
     }
 
@@ -102,7 +109,24 @@ class GlobalSurveyController extends Controller
             }
         });
 
+        $roleLabel = match ($targetRole->name) {
+            'faculty' => 'all faculty (excluding each offering\'s own teacher)',
+            'admin'   => 'all admin users',
+            'student' => 'enrolled students per offering',
+            default   => $targetRole->name,
+        };
+
         return redirect()->route('admin.surveys.index')
-                         ->with('success', "{$created} survey(s) created and activated for the active semester.");
+                         ->with('success', "{$created} survey(s) created and activated for {$roleLabel}.");
+    }
+
+    private function buildDescription(string $roleName, CourseOffering $offering): string
+    {
+        return match ($roleName) {
+            'faculty' => "Peer evaluation survey for {$offering->subject->name}. Open to all faculty except the assigned teacher.",
+            'admin'   => "Administrative evaluation for {$offering->subject->name}.",
+            'student' => "Official faculty evaluation survey for {$offering->subject->name}.",
+            default   => "Survey for {$offering->subject->name}.",
+        };
     }
 }

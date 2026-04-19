@@ -76,6 +76,40 @@ class Survey extends Model
                      );
     }
 
+    /**
+     * Surveys the given user is eligible to take — role-aware scope.
+     *
+     * student → enrolled in offering
+     * faculty → has faculty role AND is NOT the teacher of the offering
+     * admin   → has admin role
+     */
+    public function scopeEligibleFor($query, User $user)
+    {
+        $role = $user->primaryRole()?->name;
+
+        $query->scopeLive($query);
+
+        return match ($role) {
+
+            'student' => $query
+                ->whereHas('targetRole', fn ($q) => $q->where('name', 'student'))
+                ->whereHas('offering.enrollments', fn ($q) =>
+                    $q->where('student_id', $user->id)
+                ),
+
+            'faculty' => $query
+                ->whereHas('targetRole', fn ($q) => $q->where('name', 'faculty'))
+                ->whereDoesntHave('offering', fn ($q) =>
+                    $q->where('teacher_id', $user->id)
+                ),
+
+            'admin' => $query
+                ->whereHas('targetRole', fn ($q) => $q->where('name', 'admin')),
+
+            default => $query->whereRaw('1 = 0'), // no matches
+        };
+    }
+
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
@@ -91,6 +125,57 @@ class Survey extends Model
     public function hasBeenAttemptedBy(string $userId): bool
     {
         return $this->attempts()->where('student_id', $userId)->whereNotNull('submitted_at')->exists();
+    }
+
+    /**
+     * Check if a user is eligible to take this survey based on role logic.
+     *
+     * student → must be enrolled in the offering
+     * faculty → must have faculty role AND must NOT be the teacher of this offering
+     * admin   → must have admin role
+     */
+    public function isEligibleFor(User $user): bool
+    {
+        if (! $this->isLive()) return false;
+
+        $targetRole = $this->targetRole?->name ?? null;
+
+        return match ($targetRole) {
+
+            'student' => $user->hasRole('student')
+                && Enrollment::where('offering_id', $this->offering_id)
+                             ->where('student_id', $user->id)
+                             ->exists(),
+
+            'faculty' => $user->hasRole('faculty')
+                && ($this->offering?->teacher_id !== $user->id),
+
+            'admin' => $user->hasRole('admin'),
+
+            default => false,
+        };
+    }
+
+    /**
+     * Get count of eligible respondents for this survey.
+     * Useful for admin survey management view.
+     */
+    public function getEligibleCountAttribute(): int
+    {
+        $targetRole = $this->targetRole?->name ?? null;
+
+        return match ($targetRole) {
+
+            'student' => Enrollment::where('offering_id', $this->offering_id)->count(),
+
+            'faculty' => User::whereHas('roles', fn ($q) => $q->where('name', 'faculty'))
+                             ->where('id', '!=', $this->offering?->teacher_id)
+                             ->count(),
+
+            'admin' => User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))->count(),
+
+            default => 0,
+        };
     }
 
     public function isTargetedAt(User $user): bool

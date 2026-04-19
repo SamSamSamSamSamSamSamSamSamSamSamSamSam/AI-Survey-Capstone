@@ -39,19 +39,22 @@ class DashboardController extends Controller
 
         $enrollments = $enrollmentsQuery->latest()->get();
 
+        $surveyController = app(\App\Http\Controllers\Survey\SurveyTakeController::class);
+        $pendingSurveys   = $surveyController->getPendingSurveys($user);
+
         // ── Pending surveys (live, targeted at student, not yet submitted) ───
-        $pendingSurveys = Survey::with(['offering.subject', 'offering.teacher', 'offering.semester'])
-            ->whereHas('offering.enrollments', fn ($q) => $q->where('student_id', $user->id))
-            ->whereHas('targetRole', fn ($q) => $q->where('name', 'student'))
-            ->where('is_active', true)
-            ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', now()))
-            ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()))
-            ->whereDoesntHave('attempts', fn ($q) =>
-                $q->where('student_id', $user->id)->whereNotNull('submitted_at')
-            )
-            ->whereNull('deleted_at')
-            ->withCount('questions')
-            ->get();
+        // $pendingSurveys = Survey::with(['offering.subject', 'offering.teacher', 'offering.semester'])
+        //     ->whereHas('offering.enrollments', fn ($q) => $q->where('student_id', $user->id))
+        //     ->whereHas('targetRole', fn ($q) => $q->where('name', 'student'))
+        //     ->where('is_active', true)
+        //     ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', now()))
+        //     ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()))
+        //     ->whereDoesntHave('attempts', fn ($q) =>
+        //         $q->where('student_id', $user->id)->whereNotNull('submitted_at')
+        //     )
+        //     ->whereNull('deleted_at')
+        //     ->withCount('questions')
+        //     ->get();
 
         $completedAttempts = SurveyAttempt::with([
                 'survey' => function($query) {

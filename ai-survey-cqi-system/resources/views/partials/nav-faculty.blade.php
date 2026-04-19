@@ -2,7 +2,7 @@
 
 <a href="{{ route('survey.index') }}"
    class="nav-link {{ request()->routeIs('survey.*') ? 'active' : '' }}">
-    <i class="bi bi-people"></i>
+    <i class="bi bi-pencil-square"></i>
     <span>My Surveys</span>
 </a>
 

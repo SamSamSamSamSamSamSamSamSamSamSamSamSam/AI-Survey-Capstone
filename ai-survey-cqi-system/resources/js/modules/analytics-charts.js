@@ -120,7 +120,7 @@
     // ══════════════════════════════════════════════════════════
     async function loadOverview() {
         const d   = await apiFetch('overview', params());
-        // console.log("API Response Data:", d);
+        console.log("API Response Data:", d);
         const tab = document.getElementById('tab-overview');
 
         if (d.empty) {
@@ -169,7 +169,13 @@
         });
 
         // Category horizontal bar
-        const catKeys = Object.keys(d.category_scores);
+        const rawCatKeys = Object.keys(d.category_scores);
+        const catKeys = rawCatKeys.map(key => {
+            return key.replace(/_/g, ' ')              // Replace underscores with space
+                    .replace(/\b\w/g, l => l.toUpperCase()); // Capitalize words
+        });
+
+        // const catKeys = Object.keys(d.category_scores);
         const catVals = Object.values(d.category_scores);
         const pass    = cfg.passingThreshold || 3.0;
         destroyChart('cats-ov');
@@ -256,12 +262,17 @@
         drawCategoryCharts();
     }
 
+    const formatLabel = (key) => {
+        return key.replace(/_/g, ' ')
+                .replace(/\b\w/g, l => l.toUpperCase());
+    };
+
     function drawCategoryCharts() {
         if (!catData) return;
         const sort = document.getElementById('cat-sort')?.value || 'score';
         const pass = catData.passing_threshold || 3.0;
 
-        let cats = Object.entries(catData.latest_scores || {}).map(([k, v]) => ({ name: k, val: v, dept: (catData.dept_avg || {})[k] || 0 }));
+        let cats = Object.entries(catData.latest_scores || {}).map(([k, v]) => ({ name: formatLabel(k), val: v, dept: (catData.dept_avg || {})[k] || 0 }));
         if (sort === 'score') cats.sort((a, b) => b.val - a.val);
         else cats.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -368,11 +379,13 @@
         const dep = benchData.dept_category_avg  || {};
         const detailEl = document.getElementById('bench-detail');
         if (detailEl) detailEl.innerHTML = Object.keys(my).map(cat => {
+            const displayLabel = cat.replace(/_/g, ' ')
+                                .replace(/\b\w/g, l => l.toUpperCase());
             const mv = my[cat] ?? 0, dv = dep[cat] ?? 0;
             const diff  = (mv - dv).toFixed(2);
             const badge = diff > 0.05 ? `<span class="an-badge an-badge--up">+${diff}</span>` : diff < -0.05 ? `<span class="an-badge an-badge--dn">${diff}</span>` : `<span class="an-badge an-badge--eq">≈ same</span>`;
             const pct   = (mv / 5 * 100).toFixed(0);
-            return `<div class="an-bench-cat"><div class="an-bench-cat-label">${cat}</div><div class="an-bench-cat-row"><div class="an-rbar-wrap" style="flex:1"><div class="an-rbar" style="width:${pct}%;background:${mv >= dv ? PAL[0] : '#E24B4A'}"></div></div><span class="an-rval">${mv}</span>${badge}</div></div>`;
+            return `<div class="an-bench-cat"><div class="an-bench-cat-label">${displayLabel}</div><div class="an-bench-cat-row"><div class="an-rbar-wrap" style="flex:1"><div class="an-rbar" style="width:${pct}%;background:${mv >= dv ? PAL[0] : '#E24B4A'}"></div></div><span class="an-rval">${mv}</span>${badge}</div></div>`;
         }).join('');
 
         const rankEl = document.getElementById('rank-list');
@@ -394,7 +407,10 @@
 
     function drawPivotChart() {
         if (!pivotData) return;
-        const rows   = pivotData.rows || [];
+        const rows = (pivotData.rows || []).map(r => ({
+            ...r,
+            cleanLabel: formatLabel(r.label)
+        }));
         const ctype  = document.getElementById('piv-chart')?.value || 'bar';
         const yLabels= { avg_rating: 'Avg rating', response_count: 'Responses', positive_sentiment_percent: 'Positive %', negative_sentiment_percent: 'Negative %' };
 
@@ -403,15 +419,15 @@
 
         let datasets, labels;
         if (!rows[0]?.group) {
-            labels   = rows.map(r => r.label);
+            labels   = rows.map(r => r.cleanLabel);
             datasets = [{ label: yLabels[pivotData.metric], data: rows.map(r => r.value), backgroundColor: rows.map((_, i) => PAL[i % PAL.length]), borderColor: PAL[0], borderWidth: ctype === 'line' ? 2 : 0, borderRadius: 3, fill: false, tension: 0.35, pointRadius: 4 }];
             makeLegend('leg-pivot', [], []);
         } else {
             const groups = [...new Set(rows.map(r => r.group))];
-            labels   = [...new Set(rows.map(r => r.label))];
+            labels   = [...new Set(rows.map(r => r.cleanLabel))];
             datasets = groups.map((grp, i) => ({
                 label: grp,
-                data: labels.map(l => { const r = rows.find(r => r.label === l && r.group === grp); return r ? r.value : null; }),
+                data: labels.map(l => { const r = rows.find(r => r.cleanLabel === l && r.group === grp); return r ? r.value : null; }),
                 backgroundColor: PAL[i % PAL.length] + '44', borderColor: PAL[i % PAL.length],
                 borderWidth: 2, borderRadius: 3, fill: false, tension: 0.35, pointRadius: 3,
             }));
@@ -441,8 +457,8 @@
         tbl += '</tr></thead><tbody>';
         labels.forEach(l => {
             tbl += `<tr><td style="padding:4px 8px;font-size:12px;border-bottom:1px solid #f3f4f6">${l}</td>`;
-            if (!groups) { const r = rows.find(r => r.label === l); tbl += `<td style="text-align:right;padding:4px 8px;font-size:12px;font-weight:500;border-bottom:1px solid #f3f4f6">${r?.value ?? '—'}</td>`; }
-            else groups.forEach(g => { const r = rows.find(r => r.label === l && r.group === g); tbl += `<td style="text-align:right;padding:4px 8px;font-size:12px;border-bottom:1px solid #f3f4f6">${r?.value ?? '—'}</td>`; });
+            if (!groups) { const r = rows.find(r => r.cleanLabel === l); tbl += `<td style="text-align:right;padding:4px 8px;font-size:12px;font-weight:500;border-bottom:1px solid #f3f4f6">${r?.value ?? '—'}</td>`; }
+            else groups.forEach(g => { const r = rows.find(r => r.cleanLabel === l && r.group === g); tbl += `<td style="text-align:right;padding:4px 8px;font-size:12px;border-bottom:1px solid #f3f4f6">${r?.value ?? '—'}</td>`; });
             tbl += '</tr>';
         });
         const tableEl = document.getElementById('piv-table');

@@ -3,7 +3,7 @@
 
 @section('breadcrumbs')
 <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{{ route('student.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="{{ url(auth()->user()->dashboardRoute()) }}">Dashboard</a></li>
     <li class="breadcrumb-item active">My Surveys</li>
 </ol>
 @endsection
@@ -24,6 +24,18 @@
     $pending   = $surveys->filter(fn($s) => ! in_array($s->id, $attemptedIds));
     $completed = $surveys->filter(fn($s) => in_array($s->id, $attemptedIds));
 @endphp
+
+{{-- Role-specific context banner --}}
+@if ($user->hasRole('faculty'))
+    <div class="alert" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:8px;padding:.75rem 1rem;margin-bottom:1.25rem;font-size:.85rem;">
+        <strong>Peer Evaluation Surveys</strong> — these are courses taught by other faculty that you are invited to evaluate.
+        You will not see surveys for courses you are assigned to teach.
+    </div>
+@elseif ($user->hasRole('admin'))
+    <div class="alert" style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:8px;padding:.75rem 1rem;margin-bottom:1.25rem;font-size:.85rem;">
+        <strong>Admin Surveys</strong> — surveys targeted at administrators for your response.
+    </div>
+@endif
 
 {{-- ===== TABS ===== --}}
 <div class="survey-tabs mb-3">

@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Faculty;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Survey\SurveyTakeController;
 use App\Models\CourseOffering;
 use App\Models\CqiReport;
 use App\Models\Enrollment;
 use App\Models\FacultyAnalytics;
 use App\Models\Semester;
-use App\Models\Survey;
-use App\Models\SurveyAttempt;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -20,7 +19,7 @@ class DashboardController extends Controller
         $user           = Auth::user();
         $activeSemester = Semester::current();
 
-        // ── Active semester offerings taught by this faculty ─────────────────
+        // ── Active semester offerings taught ─────────────────────────────────
         $activeOfferings = CourseOffering::with(['subject', 'semester', 'block', 'offeringType'])
             ->where('teacher_id', $user->id)
             ->when($activeSemester, fn ($q) => $q->where('semester_id', $activeSemester->id))
@@ -28,35 +27,41 @@ class DashboardController extends Controller
             ->withCount('enrollments')
             ->get();
 
-        // ── Surveys for this faculty's offerings ─────────────────────────────
-        $surveys = Survey::with(['offering.subject', 'targetRole'])
-            ->whereHas('offering', fn ($q) => $q->where('teacher_id', $user->id))
-            ->when($activeSemester, fn ($q) =>
-                $q->whereHas('offering', fn ($q2) => $q2->where('semester_id', $activeSemester->id))
+        // ── Surveys targeting THIS faculty as respondent ─────────────────────
+        // Uses shared method — correctly excludes own courses
+        $surveyController = app(SurveyTakeController::class);
+        $pendingSurveys   = $surveyController->getPendingSurveys($user);
+
+        // Split active/inactive surveys for the courses this faculty TEACHES
+        // (separate from pending — these are surveys on their own courses for analytics)
+        $taughtSurveys = \App\Models\Survey::with(['offering.subject', 'targetRole'])
+            ->whereHas('offering', fn ($q) =>
+                $q->where('teacher_id', $user->id)
+                  ->when($activeSemester, fn ($q2) => $q2->where('semester_id', $activeSemester->id))
             )
             ->whereNull('deleted_at')
             ->withCount(['attempts' => fn ($q) => $q->whereNotNull('submitted_at')])
             ->get();
 
-        $activeSurveys   = $surveys->where('is_active', true);
-        $inactiveSurveys = $surveys->where('is_active', false);
+        $activeSurveys   = $taughtSurveys->where('is_active', true);
+        $inactiveSurveys = $taughtSurveys->where('is_active', false);
 
-        // ── Analytics summary across all surveys ─────────────────────────────
+        // ── Analytics summary ────────────────────────────────────────────────
         $analyticsRecords = FacultyAnalytics::with(['survey.offering.subject'])
             ->where('faculty_id', $user->id)
             ->when($activeSemester, fn ($q) =>
-                $q->whereHas('survey.offering', fn ($q2) => $q2->where('semester_id', $activeSemester->id))
+                $q->whereHas('survey.offering', fn ($q2) =>
+                    $q2->where('semester_id', $activeSemester->id)
+                )
             )
             ->get();
 
-        // Aggregate stats
-        $overallAvgRating   = $analyticsRecords->whereNotNull('avg_rating')->avg('avg_rating');
-        $totalResponses     = $analyticsRecords->sum('response_count');
-        $avgPositivePct     = $analyticsRecords->whereNotNull('positive_sentiment_percent')->avg('positive_sentiment_percent');
-        $avgNegativePct     = $analyticsRecords->whereNotNull('negative_sentiment_percent')->avg('negative_sentiment_percent');
-        $avgNeutralPct      = $analyticsRecords->whereNotNull('neutral_sentiment_percent')->avg('neutral_sentiment_percent');
+        $overallAvgRating = $analyticsRecords->whereNotNull('avg_rating')->avg('avg_rating');
+        $totalResponses   = $analyticsRecords->sum('response_count');
+        $avgPositivePct   = $analyticsRecords->whereNotNull('positive_sentiment_percent')->avg('positive_sentiment_percent');
+        $avgNegativePct   = $analyticsRecords->whereNotNull('negative_sentiment_percent')->avg('negative_sentiment_percent');
+        $avgNeutralPct    = $analyticsRecords->whereNotNull('neutral_sentiment_percent')->avg('neutral_sentiment_percent');
 
-        // Category scores — merge all analytics into averaged category scores
         $allCategoryScores = [];
         foreach ($analyticsRecords as $rec) {
             foreach ($rec->category_scores ?? [] as $cat => $score) {
@@ -64,11 +69,11 @@ class DashboardController extends Controller
             }
         }
         $avgCategoryScores = collect($allCategoryScores)
-            ->map(fn ($scores) => round(array_sum(array_column($scores, 'score')) / count($scores), 2))
+            ->map(fn ($scores) => round(array_sum($scores) / count($scores), 2))
             ->sortByDesc(fn ($v) => $v)
             ->toArray();
 
-        // ── CQI Reports ───────────────────────────────────────────────────────
+        // ── CQI Reports ──────────────────────────────────────────────────────
         $cqiReports = CqiReport::with(['survey.offering.subject', 'survey.offering.semester'])
             ->where('faculty_id', $user->id)
             ->whereNull('deleted_at')
@@ -76,7 +81,7 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        // ── All-time totals (for history section) ─────────────────────────────
+        // ── All-time totals ──────────────────────────────────────────────────
         $totalOfferings = CourseOffering::where('teacher_id', $user->id)
                                         ->whereNull('deleted_at')->count();
 
@@ -88,7 +93,8 @@ class DashboardController extends Controller
             'user',
             'activeSemester',
             'activeOfferings',
-            'activeSurveys',
+            'pendingSurveys',        // surveys this faculty should respond to (peer eval)
+            'activeSurveys',         // surveys on own courses (for analytics tracking)
             'inactiveSurveys',
             'analyticsRecords',
             'overallAvgRating',

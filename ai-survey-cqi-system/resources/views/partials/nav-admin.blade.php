@@ -64,6 +64,12 @@
     <span>Categories</span>
 </a>
 
+<a href="{{ route('survey.index') }}"
+   class="nav-link {{ request()->routeIs('survey.*') ? 'active' : '' }}">
+    <i class="bi bi-pencil-square"></i>
+    <span>My Surveys</span>
+</a>
+
 <p class="nav-section">Academic Structure</p>
 
 <a href="{{ route('admin.programs.index') }}"
