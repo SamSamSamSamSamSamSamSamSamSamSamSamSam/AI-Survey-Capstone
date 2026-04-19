@@ -9,7 +9,7 @@
     </div>
 </div>
 
-// ----- Filter Form -----
+{{-- Filter Card --}}
 <div class="card filter-card mb-3">
     <div class="card-body">
         <form id="filter-form" method="GET" action="{{ route('admin.analytics.index') }}">

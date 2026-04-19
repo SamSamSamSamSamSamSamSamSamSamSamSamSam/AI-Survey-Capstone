@@ -1,4 +1,3 @@
-// This partial view renders the analytics table for the admin analytics index page.
 <div id="analytics-table-container">
     <div class="card">
         @if ($analytics->isEmpty())
