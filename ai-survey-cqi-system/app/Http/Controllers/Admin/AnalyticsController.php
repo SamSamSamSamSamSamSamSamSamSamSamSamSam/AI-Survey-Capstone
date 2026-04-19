@@ -64,6 +64,7 @@ class AnalyticsController extends Controller
         $analytic->delete();
         return back()->with('success', 'Analytic record archived.');
     }
+    
 
     public function restore($id): RedirectResponse
     {
