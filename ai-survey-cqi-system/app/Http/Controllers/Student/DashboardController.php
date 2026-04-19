@@ -53,8 +53,13 @@ class DashboardController extends Controller
             ->withCount('questions')
             ->get();
 
-        // ── Completed surveys ────────────────────────────────────────────────
-        $completedAttempts = SurveyAttempt::with(['survey.offering.subject', 'survey.offering.semester'])
+        $completedAttempts = SurveyAttempt::with([
+                'survey' => function($query) {
+                    $query->withTrashed(); // This allows the title to load even if archived
+                }, 
+                'survey.offering.subject', 
+                'survey.offering.semester'
+            ])
             ->where('student_id', $user->id)
             ->whereNotNull('submitted_at')
             ->latest('submitted_at')

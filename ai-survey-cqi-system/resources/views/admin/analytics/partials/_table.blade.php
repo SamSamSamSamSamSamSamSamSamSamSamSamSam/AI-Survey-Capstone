@@ -3,11 +3,11 @@
         @if ($analytics->isEmpty())
             <div class="empty-state">
                 <div class="empty-state-icon"><i class="bi bi-bar-chart"></i></div>
-                <p class="empty-state-text">No analytics found matching your criteria.</p>
+                <p class="empty-state-text">No active analytics found matching your criteria.</p>
             </div>
         @else
             <div class="table-responsive">
-                <table class="table data-table align-middle mb-0">
+                <table class="table data-table align-middle mb-0" id="faculty-analytics-table">
                     <thead>
                         <tr>
                             <th>Faculty</th>
@@ -22,18 +22,14 @@
                     </thead>
                     <tbody>
                         @foreach ($analytics as $analytic)
-                        {{-- Added: row-muted class if trashed --}}
-                        <tr class="{{ $analytic->trashed() ? 'row-muted opacity-75' : '' }}">
+                        {{-- Logic: Only active records reach this loop now --}}
+                        <tr id="row-{{ $analytic->id }}">
                             <td>
                                 <div class="user-cell">
                                     <div class="user-avatar-sm">
                                         {{ strtoupper(substr($analytic->faculty->name, 0, 2)) }}
                                     </div>
                                     <span class="fw-500">{{ $analytic->faculty->name }}</span>
-                                    {{-- Added: Archived badge --}}
-                                    @if($analytic->trashed())
-                                        <span class="badge bg-secondary ms-2 small">Archived</span>
-                                    @endif
                                 </div>
                             </td>
                             <td>
@@ -86,28 +82,16 @@
                                         <i class="bi bi-graph-up"></i>
                                     </a>
 
-                                    @if (! $analytic->trashed())
-                                        {{-- ARCHIVE FORM --}}
-                                        <form method="POST" 
-                                              action="{{ route('admin.analytics.destroy', $analytic->id) }}" 
-                                              class="d-inline"
-                                              data-confirm="Archive these analytics? This can be restored later.">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-icon btn-icon--danger" title="Archive">
-                                                <i class="bi bi-archive"></i>
-                                            </button>
-                                        </form>
-                                    @else
-                                        {{-- RESTORE FORM --}}
-                                        <form method="POST" 
-                                              action="{{ route('admin.analytics.restore', $analytic->id) }}" 
-                                              class="d-inline">
-                                            @csrf @method('PATCH')
-                                            <button type="submit" class="btn btn-sm btn-icon btn-icon--success" title="Restore">
-                                                <i class="bi bi-arrow-counterclockwise"></i>
-                                            </button>
-                                        </form>
-                                    @endif
+                                    {{-- Archive Form with AJAX class --}}
+                                    <form method="POST" 
+                                          action="{{ route('admin.analytics.destroy', $analytic->id) }}" 
+                                          class="d-inline archive-form"
+                                          data-id="{{ $analytic->id }}">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-icon btn-icon--danger" title="Archive">
+                                            <i class="bi bi-archive"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
