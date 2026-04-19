@@ -44,7 +44,7 @@
                 </div>
 
                 <div class="col-md-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filter</button>
                     <a href="{{ route('admin.cqi-reports.index') }}" class="btn btn-outline-secondary">Reset</a>
                 </div>
             </div>

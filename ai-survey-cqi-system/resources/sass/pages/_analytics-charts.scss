@@ -1,0 +1,454 @@
+// ============================================================
+// _analytics-charts.scss
+// Styles for the analytics chart pages (admin + faculty)
+// All classes prefixed with .an- to avoid collisions
+// ============================================================
+
+// ============================================================
+// Wrapper
+// ============================================================
+
+.an-wrap { font-size: .875rem; }
+
+// ============================================================
+// Toolbar
+// ============================================================
+
+.an-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 10px 16px;
+    background: $light-surface;
+    border: 1px solid $light-border;
+    border-radius: $radius-md;
+
+    [data-bs-theme="dark"] & {
+        background: $dark-surface;
+        border-color: $dark-border;
+    }
+}
+
+.an-toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.an-toolbar-label {
+    font-size: .72rem;
+    font-weight: 600;
+    color: $light-text-muted;
+    white-space: nowrap;
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+.an-toolbar-sep {
+    width: 1px;
+    height: 20px;
+    background: $light-border;
+    [data-bs-theme="dark"] & { background: $dark-border; }
+}
+
+.an-select {
+    font-size: .8rem;
+    padding: 4px 10px;
+    border: 1px solid $light-border;
+    border-radius: $radius-sm;
+    background: $light-surface;
+    color: $light-text-primary;
+    transition: border-color .15s;
+
+    &:focus {
+        outline: none;
+        border-color: $brand-action;
+        box-shadow: 0 0 0 3px rgba($brand-action, .12);
+    }
+
+    [data-bs-theme="dark"] & {
+        background: rgba(255,255,255,.05);
+        border-color: $dark-border;
+        color: $dark-text-primary;
+    }
+}
+
+// ============================================================
+// Tabs
+// ============================================================
+
+.an-tabs {
+    display: flex;
+    border-bottom: 2px solid $light-border;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+
+    [data-bs-theme="dark"] & { border-color: $dark-border; }
+}
+
+.an-tab {
+    padding: 8px 16px;
+    font-size: .845rem;
+    color: $light-text-muted;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+    white-space: nowrap;
+
+    &:hover { color: $light-text-primary; }
+
+    &--active {
+        color: $brand-action;
+        border-bottom-color: $brand-action;
+        font-weight: 600;
+
+        [data-bs-theme="dark"] & {
+            color: $brand-accent;
+            border-bottom-color: $brand-accent;
+        }
+    }
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; &:hover { color: $dark-text-primary; } }
+}
+
+// ============================================================
+// Panels
+// ============================================================
+
+.an-panel { display: none; }
+.an-panel--active { display: block; }
+
+// ============================================================
+// Metric cards (overview KPI row)
+// ============================================================
+
+.an-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+
+    @media (max-width: 800px) { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 480px) { grid-template-columns: 1fr 1fr; }
+}
+
+.an-metric {
+    background: $light-bg;
+    border: 1px solid $light-border;
+    border-radius: $radius-md;
+    padding: 14px 16px;
+
+    [data-bs-theme="dark"] & {
+        background: rgba(255,255,255,.04);
+        border-color: $dark-border;
+    }
+}
+
+.an-metric-label {
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: $light-text-muted;
+    margin-bottom: 6px;
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+.an-metric-val {
+    font-family: $font-heading;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: $light-text-primary;
+    line-height: 1;
+
+    [data-bs-theme="dark"] & { color: $dark-text-primary; }
+}
+
+.an-metric-sub {
+    font-size: .7rem;
+    color: $light-text-muted;
+    margin-top: 4px;
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+// ============================================================
+// Chart cards
+// ============================================================
+
+.an-card {
+    background: $light-surface;
+    border: 1px solid $light-border;
+    border-radius: $radius-md;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+
+    [data-bs-theme="dark"] & {
+        background: $dark-surface;
+        border-color: $dark-border;
+    }
+}
+
+.an-card-title {
+    font-size: .875rem;
+    font-weight: 600;
+    color: $light-text-primary;
+    margin-bottom: 2px;
+
+    [data-bs-theme="dark"] & { color: $dark-text-primary; }
+}
+
+.an-card-sub {
+    font-size: .75rem;
+    color: $light-text-muted;
+    margin-bottom: 12px;
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+// ============================================================
+// Layout grids
+// ============================================================
+
+.an-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+
+    @media (max-width: 720px) { grid-template-columns: 1fr; }
+}
+
+.an-three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+
+    @media (max-width: 720px) { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+// ============================================================
+// Legend
+// ============================================================
+
+.an-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: .75rem;
+    color: $light-text-muted;
+
+    span { display: flex; align-items: center; gap: 4px; }
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+.an-ld {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    display: inline-block;
+}
+
+// ============================================================
+// Controls row (inside panels)
+// ============================================================
+
+.an-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.an-controls-label {
+    font-size: .72rem;
+    color: $light-text-muted;
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+// ============================================================
+// Pivot bar
+// ============================================================
+
+.an-pivot-bar {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    background: $light-bg;
+    border: 1px solid $light-border;
+    border-radius: $radius-md;
+    margin-bottom: 12px;
+
+    > div { display: flex; flex-direction: column; gap: 4px; }
+
+    [data-bs-theme="dark"] & {
+        background: rgba(255,255,255,.03);
+        border-color: $dark-border;
+    }
+}
+
+.an-pivot-label {
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: $light-text-muted;
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+// ============================================================
+// Rank rows
+// ============================================================
+
+.an-rank-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid $light-border;
+    font-size: .8rem;
+
+    &:last-child { border-bottom: none; }
+
+    &--me {
+        background: rgba($brand-action, .06);
+        margin: 0 -4px;
+        padding: 7px 4px;
+        border-radius: $radius-sm;
+
+        [data-bs-theme="dark"] & { background: rgba($brand-accent, .08); }
+    }
+
+    [data-bs-theme="dark"] & { border-color: $dark-border; }
+}
+
+.an-rn {
+    width: 22px;
+    color: $light-text-muted;
+    font-size: .72rem;
+    flex-shrink: 0;
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+.an-rname {
+    flex: 1;
+    color: $light-text-primary;
+    [data-bs-theme="dark"] & { color: $dark-text-primary; }
+}
+
+.an-rbar-wrap {
+    width: 100px; height: 5px;
+    background: $light-border;
+    border-radius: 3px;
+    overflow: hidden;
+    flex-shrink: 0;
+    [data-bs-theme="dark"] & { background: $dark-border; }
+}
+
+.an-rbar { height: 100%; border-radius: 3px; }
+
+.an-rval {
+    width: 36px;
+    text-align: right;
+    font-weight: 600;
+    color: $light-text-primary;
+    font-size: .78rem;
+    font-family: $font-mono;
+    [data-bs-theme="dark"] & { color: $dark-text-primary; }
+}
+
+.an-you {
+    font-size: .68rem;
+    color: $light-text-muted;
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+// ============================================================
+// Benchmark categories
+// ============================================================
+
+.an-bench-cat {
+    padding: 8px 0;
+    border-bottom: 1px solid $light-border;
+    &:last-child { border-bottom: none; }
+    [data-bs-theme="dark"] & { border-color: $dark-border; }
+}
+
+.an-bench-cat-label {
+    font-size: .75rem;
+    color: $light-text-muted;
+    margin-bottom: 5px;
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+.an-bench-cat-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+// ============================================================
+// Change badges
+// ============================================================
+
+.an-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: $radius-sm;
+    font-size: .72rem;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &--up  { background: rgba(#22c55e,.12); color: #15803d; [data-bs-theme="dark"] & { background: rgba(#22c55e,.18); color: #4ade80; } }
+    &--dn  { background: rgba(#ef4444,.12); color: #dc2626; [data-bs-theme="dark"] & { background: rgba(#ef4444,.18); color: #f87171; } }
+    &--eq  { background: $light-border; color: $light-text-muted; [data-bs-theme="dark"] & { background: $dark-border; color: $dark-text-muted; } }
+}
+
+// ============================================================
+// Keyword cloud
+// ============================================================
+
+.an-kw-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-top: 4px;
+}
+
+.an-kw {
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: .78rem;
+    font-weight: 500;
+    cursor: default;
+    transition: transform .15s;
+
+    &:hover { transform: translateY(-1px); }
+}
+
+// ============================================================
+// Empty state
+// ============================================================
+
+.an-empty {
+    text-align: center;
+    padding: 3rem;
+    color: $light-text-muted;
+    font-size: .875rem;
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}

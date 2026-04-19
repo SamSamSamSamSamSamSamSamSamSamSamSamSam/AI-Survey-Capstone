@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\CqiReportController;
+use App\Http\Controllers\Admin\AnalyticsViewController as AdminAnalyticsView;
 use Illuminate\Support\Facades\Route;
 
 // ---------------------------------------------------------------------------
@@ -10,9 +11,10 @@ use Illuminate\Support\Facades\Route;
 
 // Faculty Analytics
 Route::get('analytics',                     [AnalyticsController::class, 'index'])    ->name('analytics.index');
+Route::get('analytics/charts',              [AdminAnalyticsView::class, 'index'])->name('analytics.charts');
 Route::get('analytics/{analytic}',          [AnalyticsController::class, 'show'])     ->name('analytics.show');
 Route::post('analytics/{survey}/recompute', [AnalyticsController::class, 'recompute'])->name('analytics.recompute');
-Route::patch('analytics/{id}/restore', [AnalyticsController::class, 'restore'])       ->name('analytics.restore');
+Route::patch('analytics/{id}/restore',      [AnalyticsController::class, 'restore'])       ->name('analytics.restore');
 Route::resource('analytics', AnalyticsController::class)->only(['index', 'show', 'destroy']);
 
 

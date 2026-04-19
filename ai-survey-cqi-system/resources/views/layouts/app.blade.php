@@ -52,6 +52,7 @@
         </nav>
 
         <div class="sidebar-footer">
+            
             <span class="sidebar-user">
                 <i class="bi bi-person-circle me-1"></i>{{ auth()->user()->name }}
             </span>

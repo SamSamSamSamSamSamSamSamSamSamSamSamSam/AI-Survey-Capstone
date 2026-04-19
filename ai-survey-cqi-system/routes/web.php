@@ -8,6 +8,8 @@ use App\Http\Controllers\Student\DashboardController as StudentDashboard;
 use App\Http\Controllers\Survey\SurveyTakeController;
 use App\Http\Controllers\Faculty\MyReportsController;
 use App\Http\Controllers\Admin\GeminiTestController;
+use App\Http\Controllers\Faculty\AnalyticsViewController as FacultyAnalyticsView;
+use App\Http\Controllers\Api\AnalyticsDataController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -62,6 +64,16 @@ Route::middleware('auth')->group(function () {
             Route::post('/{survey}/submit', [SurveyTakeController::class, 'submit'])->name('submit');
         });
 
+        Route::prefix('api/analytics')->name('api.analytics.')->group(function () {
+            Route::get('meta',       [AnalyticsDataController::class, 'meta'])      ->name('meta');
+            Route::get('overview',   [AnalyticsDataController::class, 'overview'])  ->name('overview');
+            Route::get('trends',     [AnalyticsDataController::class, 'trends'])    ->name('trends');
+            Route::get('categories', [AnalyticsDataController::class, 'categories'])->name('categories');
+            Route::get('sentiment',  [AnalyticsDataController::class, 'sentiment']) ->name('sentiment');
+            Route::get('benchmark',  [AnalyticsDataController::class, 'benchmark']) ->name('benchmark');
+            Route::get('pivot',      [AnalyticsDataController::class, 'pivot'])     ->name('pivot');
+        });
+
         // -- Admin Routes --
         Route::middleware('role:admin')
             ->prefix('admin')->name('admin.')
@@ -86,6 +98,9 @@ Route::middleware('auth')->group(function () {
                 Route::get('my-reports',                    [MyReportsController::class, 'index'])->name('reports.index');
                 Route::get('my-reports/{cqiReport}',        [MyReportsController::class, 'show'])->name('reports.show');
                 Route::get('my-reports/{cqiReport}/download', [MyReportsController::class, 'download'])->name('reports.download');
+                // Faculty Analytics
+                Route::get('my-analytics', [FacultyAnalyticsView::class, 'index'])->name('analytics.charts');
+
             });
 
         // -- Student Routes --

@@ -13,3 +13,9 @@
     <i class="bi bi-people"></i>
     <span>My Reports</span>
 </a>
+
+<a href="{{ route('faculty.analytics.charts') }}"
+   class="nav-link {{ request()->routeIs('faculty.analytics.charts') ? 'active' : '' }}">
+    <i class="bi bi-pie-chart-fill"></i>
+    <span>My Analytics</span>
+</a>

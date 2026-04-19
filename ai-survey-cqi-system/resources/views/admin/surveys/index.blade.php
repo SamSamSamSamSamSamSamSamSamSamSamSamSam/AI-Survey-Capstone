@@ -7,9 +7,16 @@
         <h2 class="page-heading">Surveys</h2>
         <p class="page-subheading">Create and manage course evaluation surveys.</p>
     </div>
-    <a href="{{ route('admin.surveys.create') }}" class="btn btn-primary">
-        <i class="bi bi-plus-lg me-1"></i> New Survey
-    </a>
+
+    <div class="d-flex gap-2">
+        <a href="{{ route('admin.surveys.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> New Survey
+        </a>
+        <a href="{{ route('admin.surveys.global-assign') }}" class="btn btn-outline-primary">
+            <i class="bi bi-share me-1"></i> Survey Deployment
+        </a>
+    </div>
+
 </div>
 
 <div class="card filter-card mb-3">
@@ -47,7 +54,7 @@
                 </div>
 
                 <div class="col-md-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filter</button>
                     <a href="{{ route('admin.surveys.index') }}" class="btn btn-outline-secondary">Reset</a>
                 </div>
             </div>
@@ -72,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const performSearch = () => {
         const formData = new URLSearchParams(new FormData(filterForm)).toString();
-        tableContainer.style(opacity = '0.6');
+        tableContainer.style.opacity = '0.6';
 
         fetch(`${filterForm.action}?${formData}`, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -80,7 +87,8 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.text())
         .then(html => {
             tableContainer.innerHTML = html;
-            tableContainer.style(opacity = '1');
+            tableContainer.style.opacity = '1';
+            window.history.pushState({}, '', url);
         });
     };
 

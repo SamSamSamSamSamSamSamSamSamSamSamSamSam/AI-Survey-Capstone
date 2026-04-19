@@ -2,18 +2,21 @@
 
 ## Modules
 __*priority*__
-- [ ] CSV UPPLOAD
+- [X] CSV UPPLOAD
 - [X] ADMIN DASHBOARD
 - [X] CQI REPORT
-- [ ] Seeder file for Prospectus
+- [X] Seeder file for Prospectus
+- [X] enrollments remove auto verify
+- [X] USER email verification
+- [X] System Settings Not Working
 
 ## LOGIC FIXES
-- [ ] SCHEDULING NOT WORKING YET (start/end date don't work yet in create new survey)
-- [ ] CHANGE TEMPLATE ON EDIT SURVEY (Does not work)
-- [ ] csv file upload logic not working
+- [X] SCHEDULING NOT WORKING YET (start/end date don't work yet in create new survey)
+- [X] CHANGE TEMPLATE ON EDIT SURVEY (Does not work)
+- [X] csv file upload logic not working
 - [X] cqi report not working
 - [ ] FACULTY AND ADMIN SURVEY REMOVE COURSE OFFERINGS
-- [ ] SURVEY EDIT (USE ANOTHER TEMPLATE NOT WORKING YET)
+- [X] SURVEY EDIT (USE ANOTHER TEMPLATE NOT WORKING YET)
 * some edit fields should be locked
     - [X] survey edit
     - [ ] others edits...
@@ -36,3 +39,27 @@ __*priority*__
 - [ ] all academic modules
 - [ ] PROGRAMS SHOW PAGE
 - [ ]
+
+
+## UI INPROGRESS PAGES
+#### ADMIN
+- [X] settings pages
+- [X] new prospectus pages
+- [X] admin setup wizard UI
+- [X] curricula UI
+- [X] subjects UI
+- [X] semesters UI
+- [X] prospectus UI
+- [X] course offering UI
+#### FACULTY
+- [X] Faculty Dashboard UI
+- [X] Faculty Survey UI
+- [X] Faculty Reports UI
+#### STUDENT
+- [X] Student Dashboard UI
+- [X] Student Survey UI
+- [X] Student Enrollemnts UI
+
+## BUG FIXES
+- [X] Student Dashboard peding survey not showing
+- [ ] 

@@ -51,6 +51,7 @@ class Survey extends Model
     public function template()   { return $this->belongsTo(SurveyTemplate::class, 'template_id'); }
     public function questions()  { return $this->hasMany(SurveyQuestion::class)->orderBy('order_number'); }
     public function attempts()   { return $this->hasMany(SurveyAttempt::class); }
+    public function analytics()  { return $this->hasMany(FacultyAnalytics::class, 'survey_id'); }
 
     // -------------------------------------------------------------------------
     // Scopes

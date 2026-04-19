@@ -64,7 +64,7 @@ class DashboardController extends Controller
             }
         }
         $avgCategoryScores = collect($allCategoryScores)
-            ->map(fn ($scores) => round(array_sum($scores) / count($scores), 2))
+            ->map(fn ($scores) => round(array_sum(array_column($scores, 'score')) / count($scores), 2))
             ->sortByDesc(fn ($v) => $v)
             ->toArray();
 

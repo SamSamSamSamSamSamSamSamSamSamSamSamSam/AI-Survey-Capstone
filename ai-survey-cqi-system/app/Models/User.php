@@ -60,6 +60,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(Role::class, 'role_user')->withTimestamps();
     }
 
+    public function analytics()
+    {
+        return $this->hasMany(FacultyAnalytics::class, 'faculty_id');
+    }
+
     // -------------------------------------------------------------------------
     // Role helpers
     // -------------------------------------------------------------------------

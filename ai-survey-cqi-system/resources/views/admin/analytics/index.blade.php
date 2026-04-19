@@ -1,12 +1,22 @@
 @extends('layouts.app')
 @section('title', 'Faculty Analytics')
 
+@section('breadcrumbs')
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+    <li class="breadcrumb-item active">Analytics</li>
+</ol>
+@endsection
+
 @section('content')
 <div class="page-header">
     <div>
         <h2 class="page-heading">Faculty Analytics</h2>
         <p class="page-subheading">Survey performance metrics and sentiment analysis across all faculty.</p>
     </div>
+    <a href="{{ route('admin.analytics.charts') }}" class="btn btn-primary">
+        <i class="bi bi-clipboard-data me-1"></i> View Analytics
+    </a>
 </div>
 
 {{-- ===== FILTERS ===== --}}
@@ -30,7 +40,7 @@
                     </select>
                 </div>
                 <div class="col-md-5 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-funnel me-1"></i> Filter</button>
                     <a href="{{ route('admin.analytics.index') }}" class="btn btn-outline-secondary">Reset</a>
                 </div>
             </div>

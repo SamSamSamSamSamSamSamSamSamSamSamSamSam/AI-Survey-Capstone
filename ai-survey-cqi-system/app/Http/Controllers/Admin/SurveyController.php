@@ -16,7 +16,7 @@ use Illuminate\View\View;
 
 class SurveyController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request)//: View
     {
         $semesters          = Semester::orderByDesc('academic_start_year')->orderByDesc('semester_number')->get();
         $activeSemester     = Semester::current();

@@ -45,7 +45,51 @@ class FacultyAnalytics extends Model
         });
     }
 
+    // -------------------------------------------------------------------------
+    // Relationships
+    // -------------------------------------------------------------------------
+
     public function survey()   { return $this->belongsTo(Survey::class, 'survey_id'); }
     public function offering() { return $this->belongsTo(CourseOffering::class, 'offering_id'); }
     public function faculty()  { return $this->belongsTo(User::class, 'faculty_id'); }
+
+        // -------------------------------------------------------------------------
+    // Scopes
+    // -------------------------------------------------------------------------
+
+    public function scopeForFaculty($query, string $facultyId)
+    {
+        return $query->where('faculty_id', $facultyId);
+    }
+
+    public function scopeForSemester($query, int $semesterId)
+    {
+        return $query->whereHas('survey.offering', fn ($q) =>
+            $q->where('semester_id', $semesterId)
+        );
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    public function getInterpretationAttribute(): string
+    {
+        $pct = $this->avg_rating ? ($this->avg_rating / 5) * 100 : 0;
+
+        return match (true) {
+            $pct >= 90 => 'Excellent',
+            $pct >= 80 => 'Very Good',
+            $pct >= 70 => 'Good',
+            $pct >= 60 => 'Fair',
+            default    => 'Needs Improvement',
+        };
+    }
+
+    public function getPassesThresholdAttribute(): bool
+    {
+        $threshold = (float) setting('survey.passing_threshold', 3.0);
+        return ($this->avg_rating ?? 0) >= $threshold;
+    }
+
 }
