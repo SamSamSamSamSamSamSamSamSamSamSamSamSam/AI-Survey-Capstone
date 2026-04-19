@@ -275,32 +275,26 @@
 {{-- ===== GENERATE CQI REPORT ===== --}}
 <div class="card">
     <div class="card-body">
+        {{-- ... (Header and Existing Report logic stays the same) ... --}}
 
-        <div class="d-flex align-items-start gap-3 mb-3">
-            <div class="kpi-icon kpi-icon--blue" style="flex-shrink:0;">
-                <i class="bi bi-robot"></i>
-            </div>
-            <div>
-                <h5 class="card-title mb-1">Generate CQI Report</h5>
-                <p class="text-muted-sm mb-0">
-                    Use Gemini AI to generate a Continuous Quality Improvement report
-                    based on collected survey responses and sentiment data.
-                </p>
-            </div>
-        </div>
+        @php
+            $hasGeminiKey = !empty(setting('ai.gemini_api_key'));
+        @endphp
 
-        @if ($existingReport)
-            <div class="ai-processing-bar mb-3" style="background: rgba(#22c55e, .07); border-color: rgba(#22c55e, .2);">
-                <i class="bi bi-check-circle-fill" style="color: #16a34a; font-size: 1rem;"></i>
-                <span style="color: #15803d;">
-                    A CQI report already exists for this survey.
-                    <a href="{{ route('admin.cqi-reports.show', $existingReport->id) }}" class="fw-600">View it →</a>
-                    Generating again will create a new version.
-                </span>
+        @if (!$hasGeminiKey)
+            {{-- API KEY MISSING WARNING --}}
+            <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+                <div>
+                    <h6 class="alert-heading fw-bold mb-1">AI Configuration Missing</h6>
+                    <p class="mb-0 small">
+                        The Gemini API key is not configured. Please 
+                        <a href="{{ route('admin.settings.index', ['tab' => 'ai']) }}" class="alert-link">visit Settings</a> 
+                        to set up the API key before generating reports.
+                    </p>
+                </div>
             </div>
-        @endif
-
-        @if (! $analytic->survey->is_active)
+        @elseif (! $analytic->survey->is_active)
             <form method="POST" action="{{ route('admin.cqi-reports.generate') }}"
                   id="generateCqiForm"
                   data-confirm="Generate a CQI report using Gemini AI? This may take up to a minute.">
@@ -321,15 +315,14 @@
                 </button>
             </form>
         @else
+            {{-- Survey still active notice --}}
             <div class="info-notice">
                 <i class="bi bi-lock-fill info-notice__icon"></i>
                 <div>
                     The survey must be <strong>deactivated</strong> before generating a CQI report.
-                    This ensures all responses have been collected.
                 </div>
             </div>
         @endif
-
     </div>
 </div>
 
