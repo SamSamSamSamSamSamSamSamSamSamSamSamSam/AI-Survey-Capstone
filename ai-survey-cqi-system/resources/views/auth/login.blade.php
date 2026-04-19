@@ -233,15 +233,19 @@
                         @enderror
                     </div>
 
-                    {{-- Remember me --}}
+                    {{-- Remember me & Forgot Password --}}
                     <div class="d-flex align-items-center justify-content-between mb-4">
                         <div class="form-check mb-0">
-                            <input class="form-check-input" type="checkbox"
-                                   id="remember" name="remember">
+                            <input class="form-check-input" type="checkbox" id="remember" name="remember">
                             <label class="form-check-label small" for="remember">
                                 Remember me
                             </label>
                         </div>
+                        @if (Route::has('password.request'))
+                            <a class="small text-primary text-decoration-none fw-500" href="{{ route('password.request') }}">
+                                Forgot password?
+                            </a>
+                        @endif
                     </div>
 
                     {{-- Submit --}}

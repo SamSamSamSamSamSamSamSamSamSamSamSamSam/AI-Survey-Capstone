@@ -10,6 +10,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeUserMail;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -102,5 +104,10 @@ class User extends Authenticatable implements MustVerifyEmail
                     ->salutation('Best regards, ' . config('app.name'));
             }
         });
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        Mail::to($this->email)->send(new WelcomeUserMail($this, $token));
     }
 }
