@@ -54,6 +54,10 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+    Route::get('/session-keep-alive', function () {
+            return response()->json(['status' => 'session extended']);
+        })->name('session.keep-alive');
+
     /* NOTE: We are keeping the 'verified' middleware check for dashboards.
        Imported users will bypass the old VerifyEmailController because 
        NewPasswordController marks them as verified automatically.

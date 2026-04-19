@@ -17,173 +17,201 @@
 
 <body>
 
-<div class="app-wrapper {{ !auth()->check() ? 'guest-mode' : '' }}">
-
-    {{-- ===================== SIDEBAR (Auth Only) ===================== --}}
+    {{-- ===================== SESSION TIMEOUT MODAL ===================== --}}
     @auth
-    <aside class="sidebar" id="appSidebar">
-        <div class="sidebar-brand">
-            <span class="brand-name">
-                <i class="bi bi-mortarboard-fill me-2" style="color: var(--bs-blue)"></i>{{ setting('app.name') }}
-            </span>
-            <span class="brand-role">{{ auth()->user()?->primaryRole() }}</span>
-        </div>
-
-        <nav class="sidebar-nav">
-            {{-- Dashboard (all roles) --}}
-            <a href="{{ route(auth()->user()->primaryRole() . '.dashboard') }}"
-               class="nav-link {{ request()->routeIs('*.dashboard') ? 'active' : '' }}">
-                <i class="bi bi-speedometer2"></i>
-                <span>Dashboard</span>
-            </a>
-
-            {{-- Role-based nav partials --}}
-            @if(auth()->user()->hasRole('admin'))
-                @include('partials.nav-admin')
-            @endif
-
-            @if(auth()->user()->hasRole('faculty'))
-                @include('partials.nav-faculty')
-            @endif
-
-            @if(auth()->user()->hasRole('student'))
-                @include('partials.nav-student')
-            @endif
-        </nav>
-
-        <div class="sidebar-footer">
-            
-            <span class="sidebar-user">
-                <i class="bi bi-person-circle me-1"></i>{{ auth()->user()->name }}
-            </span>
-            <div class="theme-switch" title="Toggle dark mode">
-                <label class="switch">
-                    <input type="checkbox" id="themeToggle">
-                    <span class="slider">
-                        <i class="bi bi-sun-fill icon sun"></i>
-                        <i class="bi bi-moon-fill icon moon"></i>
-                    </span>
-                </label>
+    <div class="modal fade" id="sessionTimeoutModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-body text-center p-4">
+                    <div class="mb-3 text-warning">
+                        <i class="bi bi-clock-history" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4 class="mb-3">Session Expiring</h4>
+                    <p>You will be logged out in <span id="session-countdown" class="fw-bold text-danger">60</span> seconds due to inactivity.</p>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-primary" id="extendSessionBtn">Keep me signed in</button>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                            @csrf
+                        </form>
+                        <a href="{{ route('logout') }}" class="btn btn-link text-muted" 
+                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                           Logout Now
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-    </aside>
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    </div>
+
+    {{-- Pass session data to the window object for the Vite module to read --}}
+    <script>
+        window.__cqiSession = {
+            lifetimeMinutes: {{ config('session.lifetime') }},
+            keepAliveUrl:    "{{ route('session.keep-alive') }}",
+            loginUrl:        "{{ route('login') }}"
+        };
+    </script>
     @endauth
 
-    {{-- ===================== MAIN ===================== --}}
-    <main class="main {{ !auth()->check() ? 'ms-0 w-100' : '' }}">
+    <div class="app-wrapper {{ !auth()->check() ? 'guest-mode' : '' }}">
 
-        {{-- Topbar (Auth Only) --}}
+        {{-- ===================== SIDEBAR (Auth Only) ===================== --}}
         @auth
-        <header class="topbar">
-            <div class="topbar-left">
-                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Open menu">
-                    <i class="bi bi-list"></i>
-                </button>
-
-                <div class="topbar-title-group">
-                    <h1 class="topbar-title">@yield('title', 'Dashboard')</h1>
-                    @hasSection('breadcrumbs')
-                        <nav class="breadcrumbs" aria-label="breadcrumb">
-                            @yield('breadcrumbs')
-                        </nav>
-                    @endif
-                </div>
+        <aside class="sidebar" id="appSidebar">
+            <div class="sidebar-brand">
+                <span class="brand-name">
+                    <i class="bi bi-mortarboard-fill me-2" style="color: var(--bs-blue)"></i>{{ setting('app.name') }}
+                </span>
+                <span class="brand-role">{{ auth()->user()?->primaryRole() }}</span>
             </div>
 
-            <div class="topbar-right">
-                <div class="dropdown">
-                    <button class="topbar-user-btn dropdown-toggle" type="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                        <div class="topbar-avatar">
-                            {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                        </div>
-                        <div class="d-none d-sm-block text-start">
-                            <div class="topbar-user-name">{{ auth()->user()->name }}</div>
-                            <div class="topbar-user-id">{{ auth()->user()->user_id_number }}</div>
-                        </div>
-                        <i class="bi bi-chevron-down" style="font-size:.65rem; color: var(--bs-secondary-color)"></i>
-                    </button>
+            <nav class="sidebar-nav">
+                <a href="{{ route(auth()->user()->primaryRole() . '.dashboard') }}"
+                   class="nav-link {{ request()->routeIs('*.dashboard') ? 'active' : '' }}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
 
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                        <li>
-                            <span class="dropdown-item-text small text-muted">
-                                {{ auth()->user()->user_id_number }}
-                            </span>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="dropdown-item text-danger">
-                                    <i class="bi bi-box-arrow-right me-2"></i>Sign Out
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
+                @if(auth()->user()->hasRole('admin'))
+                    @include('partials.nav-admin')
+                @endif
+
+                @if(auth()->user()->hasRole('faculty'))
+                    @include('partials.nav-faculty')
+                @endif
+
+                @if(auth()->user()->hasRole('student'))
+                    @include('partials.nav-student')
+                @endif
+            </nav>
+
+            <div class="sidebar-footer">
+                <span class="sidebar-user">
+                    <i class="bi bi-person-circle me-1"></i>{{ auth()->user()->name }}
+                </span>
+                <div class="theme-switch" title="Toggle dark mode">
+                    <label class="switch">
+                        <input type="checkbox" id="themeToggle">
+                        <span class="slider">
+                            <i class="bi bi-sun-fill icon sun"></i>
+                            <i class="bi bi-moon-fill icon moon"></i>
+                        </span>
+                    </label>
                 </div>
             </div>
-        </header>
+        </aside>
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
         @endauth
 
-        {{-- ===================== CONTENT ===================== --}}
-        <section class="content {{ !auth()->check() ? 'pt-4' : '' }}">
-            {{-- Flash alerts --}}
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle-fill me-2"></i>
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        {{-- ===================== MAIN ===================== --}}
+        <main class="main {{ !auth()->check() ? 'ms-0 w-100' : '' }}">
+
+            @auth
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Open menu">
+                        <i class="bi bi-list"></i>
+                    </button>
+
+                    <div class="topbar-title-group">
+                        <h1 class="topbar-title">@yield('title', 'Dashboard')</h1>
+                        @hasSection('breadcrumbs')
+                            <nav class="breadcrumbs" aria-label="breadcrumb">
+                                @yield('breadcrumbs')
+                            </nav>
+                        @endif
+                    </div>
                 </div>
-            @endif
 
-            @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="topbar-right">
+                    <div class="dropdown">
+                        <button class="topbar-user-btn dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="topbar-avatar">
+                                {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                            </div>
+                            <div class="d-none d-sm-block text-start">
+                                <div class="topbar-user-name">{{ auth()->user()->name }}</div>
+                                <div class="topbar-user-id">{{ auth()->user()->user_id_number }}</div>
+                            </div>
+                            <i class="bi bi-chevron-down" style="font-size:.65rem; color: var(--bs-secondary-color)"></i>
+                        </button>
+
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                            <li>
+                                <span class="dropdown-item-text small text-muted">
+                                    {{ auth()->user()->user_id_number }}
+                                </span>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Sign Out
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-            @endif
+            </header>
+            @endauth
 
-            @yield('content')
-        </section>
+            <section class="content {{ !auth()->check() ? 'pt-4' : '' }}">
+                @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
 
-    </main>
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endif
 
-</div>
+                @yield('content')
+            </section>
+        </main>
+    </div>
 
-{{-- Scripts stay the same --}}
-<script>
-(function () {
-    const THEME_KEY = 'cqi-theme';
-    const html = document.documentElement;
-    const toggle = document.getElementById('themeToggle');
+    {{-- Theme and Sidebar logic only --}}
+    <script>
+    (function () {
+        const THEME_KEY = 'cqi-theme';
+        const html = document.documentElement;
+        const toggle = document.getElementById('themeToggle');
 
-    const saved = localStorage.getItem(THEME_KEY) || 'light';
-    html.setAttribute('data-bs-theme', saved);
-    if (toggle) toggle.checked = (saved === 'dark');
+        const saved = localStorage.getItem(THEME_KEY) || 'light';
+        html.setAttribute('data-bs-theme', saved);
+        if (toggle) toggle.checked = (saved === 'dark');
 
-    if (toggle) {
-        toggle.addEventListener('change', function () {
-            const next = this.checked ? 'dark' : 'light';
-            html.setAttribute('data-bs-theme', next);
-            localStorage.setItem(THEME_KEY, next);
-        });
-    }
+        if (toggle) {
+            toggle.addEventListener('change', function () {
+                const next = this.checked ? 'dark' : 'light';
+                html.setAttribute('data-bs-theme', next);
+                localStorage.setItem(THEME_KEY, next);
+            });
+        }
 
-    const sidebar = document.getElementById('appSidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    const burger = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('appSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const burger  = document.getElementById('sidebarToggle');
 
-    function openSidebar() { if(sidebar) sidebar.classList.add('show'); if(overlay) overlay.classList.add('show'); }
-    function closeSidebar() { if(sidebar) sidebar.classList.remove('show'); if(overlay) overlay.classList.remove('show'); }
+        function openSidebar()  { if (sidebar) sidebar.classList.add('show');    if (overlay) overlay.classList.add('show'); }
+        function closeSidebar() { if (sidebar) sidebar.classList.remove('show'); if (overlay) overlay.classList.remove('show'); }
 
-    if (burger) burger.addEventListener('click', openSidebar);
-    if (overlay) overlay.addEventListener('click', closeSidebar);
-})();
-</script>
+        if (burger)  burger.addEventListener('click', openSidebar);
+        if (overlay) overlay.addEventListener('click', closeSidebar);
+    })();
+    </script>
 
-@stack('scripts')
+    @stack('scripts')
 
 </body>
 </html>
