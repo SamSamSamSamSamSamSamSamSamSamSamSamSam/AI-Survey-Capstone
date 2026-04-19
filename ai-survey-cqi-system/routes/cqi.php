@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\CqiReportController;
 use Illuminate\Support\Facades\Route;
 
 // ---------------------------------------------------------------------------
-// ADMIN group (middleware: auth, verified, role:admin)
+// ADMIN group (middleware: auth, verified, role:admin).
 // ---------------------------------------------------------------------------
 
 // Faculty Analytics

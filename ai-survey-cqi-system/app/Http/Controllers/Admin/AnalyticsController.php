@@ -65,7 +65,6 @@ class AnalyticsController extends Controller
         return back()->with('success', 'Analytic record archived.');
     }
     
-
     public function restore($id): RedirectResponse
     {
         $analytic = FacultyAnalytics::withTrashed()->findOrFail($id);

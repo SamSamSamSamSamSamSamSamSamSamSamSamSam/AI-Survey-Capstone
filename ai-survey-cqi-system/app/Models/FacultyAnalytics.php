@@ -11,6 +11,7 @@ class FacultyAnalytics extends Model
     public $incrementing = false;
     protected $keyType   = 'string';
 
+    // Fillable fields for mass assignment
     protected $fillable = [
         'survey_id',
         'offering_id',

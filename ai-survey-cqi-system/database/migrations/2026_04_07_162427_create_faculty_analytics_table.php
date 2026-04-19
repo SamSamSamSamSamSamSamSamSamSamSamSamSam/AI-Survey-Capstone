@@ -31,7 +31,7 @@ return new class extends Migration
             $table->timestamp('last_computed_at')->nullable();
 
             $table->timestamps();
-            $table->softDeletes();
+            $table->softDeletes();// Add soft deletes
 
             $table->unique(['survey_id']); // one analytics record per survey
 
