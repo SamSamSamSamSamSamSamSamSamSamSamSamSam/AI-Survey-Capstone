@@ -16,6 +16,6 @@
 
 <a href="{{ route('faculty.analytics.charts') }}"
    class="nav-link {{ request()->routeIs('faculty.analytics.charts') ? 'active' : '' }}">
-    <i class="bi bi-pie-chart-fill"></i>
+    <i class="bi bi-clipboard-data"></i>
     <span>My Analytics</span>
 </a>

@@ -1,5 +1,11 @@
 # TO DO - *sam*
 
+## Todays Agenda
+- [ ] CQI error messages
+- [ ] Faculty Survey Not Available to every faculty yet
+- [X] analytics charts
+
+
 ## Modules
 __*priority*__
 - [X] CSV UPPLOAD
@@ -63,3 +69,10 @@ __*priority*__
 ## BUG FIXES
 - [X] Student Dashboard peding survey not showing
 - [ ] 
+
+
+SURVEYS
+TEMPLATES
+SUBJECTS
+SEMESTERS
+CURRICULUM

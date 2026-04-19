@@ -19,11 +19,9 @@
             {{ $totalAnalytics }} survey(s) analysed
         </p>
     </div>
-    @if ($activeSemester)
-        <span class="status-pill status-pill--active" style="font-size:.72rem;">
-            <i class="bi bi-calendar-check me-1"></i>{{ $activeSemester->full_label }}
-        </span>
-    @endif
+    <a href="{{ route('admin.analytics.index') }}" class="btn btn-primary">
+        <i class="bi bi-arrow-left me-1"></i> Back
+    </a>
 </div>
 
 @if (! $hasData)
