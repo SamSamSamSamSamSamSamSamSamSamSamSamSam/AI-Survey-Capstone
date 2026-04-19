@@ -19,7 +19,7 @@
     </a>
 </div>
 
-{{-- ===== FILTERS ===== --}}
+{{-- Filter Card --}}
 <div class="card filter-card mb-3">
     <div class="card-body">
         <form id="filter-form" method="GET" action="{{ route('admin.analytics.index') }}">
@@ -83,7 +83,8 @@ $(document).ready(function() {
         e.preventDefault();
         updateTable($(this).attr('href'));
     });
-});
+}); 
+
 </script>
 @endpush
 @endsection

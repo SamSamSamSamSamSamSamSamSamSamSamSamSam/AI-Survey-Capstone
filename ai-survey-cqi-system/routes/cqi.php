@@ -6,7 +6,7 @@ use App\Http\Controllers\Admin\AnalyticsViewController as AdminAnalyticsView;
 use Illuminate\Support\Facades\Route;
 
 // ---------------------------------------------------------------------------
-// ADMIN group (middleware: auth, verified, role:admin)
+// ADMIN group (middleware: auth, verified, role:admin).
 // ---------------------------------------------------------------------------
 
 // Faculty Analytics

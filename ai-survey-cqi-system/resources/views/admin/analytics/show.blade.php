@@ -272,7 +272,7 @@
 </div>
 @endif
 
-{{-- ===== GENERATE CQI REPORT ===== --}}
+<!-- // ----- Generate CQI Report Section ----- -->
 <div class="card">
     <div class="card-body">
         {{-- ... (Header and Existing Report logic stays the same) ... --}}

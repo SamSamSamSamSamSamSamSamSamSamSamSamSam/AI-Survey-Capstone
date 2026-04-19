@@ -30,8 +30,13 @@ class WelcomeUserMail extends Mailable
      */
     public function envelope(): Envelope
     {
+        // Dynamic subject line
+        $subject = $this->user->must_change_password 
+            ? 'Welcome to DCISM AI Survey System - Set Your Password' 
+            : 'Reset Your DCISM AI Survey Password';
+
         return new Envelope(
-            subject: 'Welcome to DCISM AI Survey System',
+            subject: $subject,
         );
     }
 

@@ -22,13 +22,13 @@ class AnalyticsController extends Controller
         // Define the search variable from the request
         $search = $request->input('search');
 
-        $query = FacultyAnalytics::withTrashed() 
-        ->with([
-            'survey.offering.subject',
-            'survey.offering.teacher',
-            'survey.offering.semester',
-            'survey.targetRole',
-        ]);
+    $query = FacultyAnalytics::query() // Removed withTrashed()
+    ->with([
+        'survey.offering.subject',
+        'survey.offering.teacher',
+        'survey.offering.semester',
+        'survey.targetRole',
+    ]);
 
         // Semester Filter
         if ($selectedSemesterId) {
@@ -64,7 +64,7 @@ class AnalyticsController extends Controller
         $analytic->delete();
         return back()->with('success', 'Analytic record archived.');
     }
-
+    
     public function restore($id): RedirectResponse
     {
         $analytic = FacultyAnalytics::withTrashed()->findOrFail($id);
