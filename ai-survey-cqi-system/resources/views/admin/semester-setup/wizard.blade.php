@@ -126,7 +126,7 @@
                         </thead>
                         <tbody>
                             @if ($step == 1)
-                                <tr><td><code>user_id_number</code></td><td>2021-00123</td><td>Must be unique</td></tr>
+                                <tr><td><code>user_id_number</code></td><td>2010XXXX</td><td>Must be unique</td></tr>
                                 <tr><td><code>name</code></td><td>Juan dela Cruz</td><td></td></tr>
                                 <tr><td><code>email</code></td><td>juan@school.edu</td><td>Must be unique</td></tr>
                             @elseif ($step == 2)
@@ -138,7 +138,7 @@
                                 <tr><td><code>teacher_id_number</code></td><td>2010-00001</td><td>Faculty account</td></tr>
                                 <tr><td><code>group_number</code></td><td>1</td><td><span class="csv-spec__optional">optional</span></td></tr>
                             @elseif ($step == 4)
-                                <tr><td><code>student_id_number</code></td><td>2021-00123</td><td>Must exist</td></tr>
+                                <tr><td><code>student_id_number</code></td><td>2010XXXX</td><td>Must exist</td></tr>
                                 <tr><td><code>subject_code</code></td><td>IT4101</td><td>Offering must exist</td></tr>
                             @endif
                         </tbody>
