@@ -23,7 +23,7 @@
             <option value="{{ $offering->id }}"
                 @selected(in_array($offering->id, (array) old('offering_id', $isEdit ? $survey->offering_id : [])))>
                 {{ $offering->subject->course_code }} — {{ $offering->subject->name }}
-                | {{ $offering->teacher->name }}
+                | {{ $offering->teacher->name }} - Group {{$offering->group_number}}
             </option>
         @endforeach
     </select>

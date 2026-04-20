@@ -144,6 +144,7 @@
     <span class="survey-submit-bar__count" id="answeredCount">
         0 / {{ $survey->questions->where('question_type', 'rating')->count() }} required answered
     </span>
+    @include('survey._notification_toggles')
     <button type="submit" form="surveyForm" class="btn btn-primary survey-submit-bar__btn"
             id="submitBtn">
         <i class="bi bi-send me-1"></i> Submit Survey

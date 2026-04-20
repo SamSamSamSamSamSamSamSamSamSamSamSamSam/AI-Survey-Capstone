@@ -11,6 +11,7 @@ use App\Http\Controllers\Faculty\MyReportsController;
 use App\Http\Controllers\Admin\GeminiTestController;
 use App\Http\Controllers\Faculty\AnalyticsViewController as FacultyAnalyticsView;
 use App\Http\Controllers\Api\AnalyticsDataController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -80,6 +81,12 @@ Route::middleware('auth')->group(function () {
             Route::get('benchmark',  [AnalyticsDataController::class, 'benchmark']) ->name('benchmark');
             Route::get('pivot',      [AnalyticsDataController::class, 'pivot'])     ->name('pivot');
         });
+
+        // Notification routes — accessible by all authenticated roles
+        Route::post('notifications/{id}/read', [NotificationController::class, 'markRead'])
+            ->name('notifications.mark-read');
+        Route::post('notifications/read-all', [NotificationController::class, 'markAllRead'])
+            ->name('notifications.mark-all-read');
 
         // -- Admin Routes --
         Route::middleware('role:admin')

@@ -14,10 +14,14 @@ class SurveyAttempt extends Model
         'survey_id',
         'student_id',
         'submitted_at',
+        'notify_email',
+        'notify_dashboard',
     ];
 
     protected $casts = [
         'submitted_at' => 'datetime',
+        'notify_email'     => 'boolean',
+        'notify_dashboard' => 'boolean',
     ];
 
     protected static function boot(): void
@@ -37,6 +41,11 @@ class SurveyAttempt extends Model
     public function survey()
     {
         return $this->belongsTo(Survey::class)->withTrashed();
+    }
+
+    public function student()
+    {
+        return $this->belongsTo(User::class, 'student_id');
     }
 
     public function respondent()

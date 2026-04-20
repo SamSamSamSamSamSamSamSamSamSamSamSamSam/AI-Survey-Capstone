@@ -124,6 +124,7 @@
                 </div>
 
                 <div class="topbar-right">
+                    <x-notification-bell />
                     <div class="dropdown">
                         <button class="topbar-user-btn dropdown-toggle" type="button"
                                 data-bs-toggle="dropdown" aria-expanded="false">

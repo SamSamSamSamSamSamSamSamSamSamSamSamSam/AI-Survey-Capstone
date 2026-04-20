@@ -1,12 +1,10 @@
-<p class="nav-section">Surveys</p>
+<p class="nav-section">Main</p>
 
 <a href="{{ route('survey.index') }}"
    class="nav-link {{ request()->routeIs('survey.*') ? 'active' : '' }}">
     <i class="bi bi-pencil-square"></i>
     <span>My Surveys</span>
 </a>
-
-<p class="nav-section">Enrollments</p>
 
 <a href="{{ route('student.enrollments.index') }}"
    class="nav-link {{ request()->routeIs('student.enrollments.*') ? 'active' : '' }}">

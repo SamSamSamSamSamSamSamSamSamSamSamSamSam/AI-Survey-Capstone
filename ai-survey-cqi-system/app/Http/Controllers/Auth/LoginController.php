@@ -35,7 +35,7 @@ class LoginController extends Controller
         $credentials = [$field => $request->login, 'password' => $request->password];
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey($request), self::DECAY_SECONDS);
+            RateLimiter::hit($this->throttleKey($request), setting('security.lockout_duration', self::DECAY_SECONDS));
 
             throw ValidationException::withMessages([
                 'login' => __('auth.failed'),
@@ -85,7 +85,7 @@ class LoginController extends Controller
 
     private function ensureIsNotRateLimited(Request $request): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey($request), self::MAX_ATTEMPTS)) {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey($request), setting('security.max_login_attempts', self::MAX_ATTEMPTS))) {
             return;
         }
 

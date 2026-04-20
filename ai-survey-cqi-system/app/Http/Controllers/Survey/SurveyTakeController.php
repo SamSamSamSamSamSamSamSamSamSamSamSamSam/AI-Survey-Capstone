@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Survey;
 
 use App\Http\Controllers\Controller;
 use App\Models\Survey;
+use App\Jobs\AnalyzeSentimentJob;
+use App\Jobs\SendSurveySubmittedNotificationJob;
 use App\Models\SurveyAttempt;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -98,12 +100,21 @@ class SurveyTakeController extends Controller
             }
         }
 
+        // Notification preference toggles — both optional booleans
+        $rules['notify_email']     = ['boolean'];
+        $rules['notify_dashboard'] = ['boolean'];
+
         $request->validate($rules);
 
-        DB::transaction(function () use ($request, $survey, $user) {
+        $notifyEmail     = $request->boolean('notify_email',     false);
+        $notifyDashboard = $request->boolean('notify_dashboard', false);
+
+        DB::transaction(function () use ($request, $survey, $user, $notifyEmail, $notifyDashboard, &$attempt) {
             $attempt = SurveyAttempt::create([
                 'survey_id'  => $survey->id,
                 'student_id' => $user->id,
+                'notify_email'     => $notifyEmail,     // store preference
+                'notify_dashboard' => $notifyDashboard, // store preference
             ]);
 
             foreach ($survey->questions as $question) {
@@ -120,8 +131,18 @@ class SurveyTakeController extends Controller
 
             $attempt->submit();
 
-            \App\Jobs\AnalyzeSentimentJob::dispatch($attempt->id);
+            AnalyzeSentimentJob::dispatch($attempt->id);
         });
+
+        // ── Dispatch notification job only if at least one toggle is on ──
+        // This is conditional and asynchronous — runs outside the transaction
+        if ($notifyEmail || $notifyDashboard) {
+            SendSurveySubmittedNotificationJob::dispatch(
+                $attempt->id,
+                $notifyEmail,
+                $notifyDashboard,
+            );
+        }
 
         return redirect()->route('survey.index')
                          ->with('success', 'Your response has been submitted. Thank you!');
