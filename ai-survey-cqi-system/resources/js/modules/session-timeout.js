@@ -10,6 +10,7 @@ export function initSessionTimeout({ lifetimeMinutes, keepAliveUrl, loginUrl }) 
     const sessionLifetimeMs = lifetimeMinutes * 60 * 1000;
     const warningDurationMs = 60 * 1000;
 
+    // Trigger warning 1 minute before expiry, or at 50% if lifetime is very short
     const triggerAfterMs = sessionLifetimeMs > warningDurationMs
         ? sessionLifetimeMs - warningDurationMs
         : Math.max(3000, sessionLifetimeMs * 0.5);
@@ -56,19 +57,33 @@ export function initSessionTimeout({ lifetimeMinutes, keepAliveUrl, loginUrl }) 
     // "Keep me signed in" logic
     extendBtn.addEventListener('click', () => {
         console.log("Extension requested...");
+        
         fetch(keepAliveUrl, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            method: 'GET',
+            headers: { 
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
         })
-        .then(r => {
-            if (r.ok) {
+        .then(response => {
+            // If 401 or 419, the session is already dead on the server
+            if (response.status === 401 || response.status === 419) {
+                window.location.href = loginUrl;
+                return;
+            }
+
+            if (response.ok) {
                 console.log("Session successfully extended.");
                 getModal().hide();
                 resetTimers();
             } else {
-                window.location.reload();
+                window.location.href = loginUrl;
             }
         })
-        .catch(() => window.location.reload());
+        .catch(() => {
+            // Network error usually means the session is invalid/expired
+            window.location.href = loginUrl;
+        });
     });
 
     resetTimers();
