@@ -32,7 +32,9 @@ class CqiPdfService
         // Call the Python PDF generator
         $pythonScript = base_path('resources/python/cqi_pdf_generator.py');
         $envPython  = env('PYTHON_EXECUTABLE');
-        $venvPython = base_path('resources/python/myenv/Scripts/python.exe');
+        $venvPython = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN'
+            ? base_path('resources/python/myenv/Scripts/python.exe')
+            : base_path('resources/python/myenv/bin/python');
 
         if (file_exists($venvPython)) {
             $python = $venvPython;        // venv takes priority — fully self-contained
