@@ -53,29 +53,23 @@ class EnrollmentController extends Controller
      */
     public function store(StoreEnrollmentRequest $request, CourseOffering $offering): RedirectResponse
     {
-        // If you aren't using StoreEnrollmentRequest, validate here.
-        // If you ARE using it, update the rules in that file (see step 2).
-        $request->validate([
-            'student_id'        => 'required|array|min:1',
-            'student_id.*'      => 'exists:users,id',
-            'enrollment_type_id' => 'required|exists:enrollment_types,id',
-        ]);
-
-        $count = 0;
+        $createdCount = 0;
 
         foreach ($request->student_id as $studentId) {
-            Enrollment::firstOrCreate([
+            $enrollment = Enrollment::firstOrCreate([
                 'offering_id' => $offering->id,
                 'student_id'  => $studentId,
             ], [
                 'enrollment_type_id' => $request->enrollment_type_id,
             ]);
             
-            $count++;
+            if ($enrollment->wasRecentlyCreated) {
+                $createdCount++;
+            }
         }
 
         return redirect()->route('admin.offerings.enrollments.index', $offering->id)
-                        ->with('success', "{$count} students enrolled successfully.");
+                        ->with('success', "{$createdCount} students enrolled successfully.");
     }
 
     /**

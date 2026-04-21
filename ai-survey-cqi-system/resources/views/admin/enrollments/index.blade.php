@@ -23,7 +23,7 @@
         <a href="{{ route('admin.offerings.enrollments.create', $offering->id) }}" class="btn btn-primary">
             <i class="bi bi-person-plus me-1"></i> Enroll Student
         </a>
-        <a href="{{ route('admin.offerings.show', $offering->id) }}" class="btn btn-outline-secondary btn-sm">
+        <a href="{{ route('admin.offerings.index', $offering->id) }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left me-1"></i> Back to Offering
         </a>
     </div>
@@ -44,6 +44,11 @@
     <div class="attempts-meta-strip__item">
         <i class="bi bi-people me-1"></i>
         <strong>{{ $enrollments->total() }}</strong>&nbsp;{{ Str::plural('student', $enrollments->total()) }} enrolled
+    </div>
+    <div class="attempts-meta-strip__sep"></div>
+    <div class="attempts-meta-strip__item">
+        <i class="bi bi-people me-1"></i>
+         Group - {{ $offering->group_number }}
     </div>
 </div>
 

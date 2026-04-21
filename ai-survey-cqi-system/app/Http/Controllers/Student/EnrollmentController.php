@@ -10,6 +10,7 @@ use App\Models\EnrollmentType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class EnrollmentController extends Controller
@@ -73,31 +74,33 @@ class EnrollmentController extends Controller
         }
 
         $offering = CourseOffering::where('id', $request->offering_id)
-                                  ->where('semester_id', $activeSemester->id)
-                                  ->whereNull('deleted_at')
-                                  ->firstOrFail();
+            ->where('semester_id', $activeSemester->id)
+            ->whereNull('deleted_at')
+            ->firstOrFail();
 
-        // Prevent duplicate enrollment
-        $alreadyEnrolled = Enrollment::where('offering_id', $offering->id)
-                                     ->where('student_id', Auth::id())
-                                     ->exists();
+        $alreadyEnrolled = DB::table('enrollments')
+            ->join('course_offerings', 'enrollments.offering_id', '=', 'course_offerings.id')
+            ->where('enrollments.student_id', Auth::id())
+            ->where('course_offerings.subject_id', $offering->subject_id)
+            ->where('course_offerings.semester_id', $offering->semester_id)
+            ->exists();
 
         if ($alreadyEnrolled) {
-            return back()->with('error', 'You are already enrolled in this course.');
+            return back()->with('error', 'You are already enrolled in this course for this semester.');
         }
 
-        // Default status: 'regular' — adjust as needed
+        // Default enrollment type
         $defaultEnrollmentType = EnrollmentType::whereName('block-enrolled')->first()
-                      ?? EnrollmentType::first();
+            ?? EnrollmentType::first();
 
         Enrollment::create([
-            'offering_id'       => $offering->id,
-            'student_id'        => Auth::id(),
+            'offering_id'        => $offering->id,
+            'student_id'         => Auth::id(),
             'enrollment_type_id' => $defaultEnrollmentType?->id,
         ]);
 
         return redirect()->route('student.enrollments.index')
-                         ->with('success', "Enrolled in {$offering->subject->name} successfully.");
+            ->with('success', "Enrolled in {$offering->subject->name} successfully.");
     }
 
     /**

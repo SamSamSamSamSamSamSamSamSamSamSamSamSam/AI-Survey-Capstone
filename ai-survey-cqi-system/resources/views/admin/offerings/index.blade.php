@@ -114,8 +114,9 @@
                     <tr class="{{ $offering->trashed() ? 'row-muted' : '' }}">
 
                         <td>
-                            <div class="program-code-badge program-code-badge--subject mb-1">
-                                {{ $offering->subject->course_code }}
+                            {{-- <div class="program-code-badge program-code-badge--subject mb-1"> --}}
+                            <div>
+                                {{ $offering->subject->course_code }} - Group {{$offering->group_number}}
                             </div>
                             <div class="text-muted-sm">
                                 {{ Str::limit($offering->subject->name, 30) }}

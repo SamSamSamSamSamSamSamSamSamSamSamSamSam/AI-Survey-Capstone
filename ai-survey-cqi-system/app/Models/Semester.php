@@ -62,7 +62,8 @@ class Semester extends Model
             default => "Semester {$this->semester_number}",
         };
 
-        return "{$sem} A.Y. {$this->academic_start_year}–" . ($this->academic_start_year + 1);
+        return "{$sem}";
+        // return "{$sem} S.Y. {$this->academic_start_year}–" . ($this->academic_start_year + 1);
     }
 
     // -------------------------------------------------------------------------

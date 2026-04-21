@@ -21,8 +21,8 @@
 </div>
 
 @php
-    $pending   = $surveys->filter(fn($s) => ! in_array($s->id, $attemptedIds));
-    $completed = $surveys->filter(fn($s) => in_array($s->id, $attemptedIds));
+    $pending   = $pendingsurveys;
+    $completed = $completedsurveys
 @endphp
 
 {{-- Role-specific context banner --}}

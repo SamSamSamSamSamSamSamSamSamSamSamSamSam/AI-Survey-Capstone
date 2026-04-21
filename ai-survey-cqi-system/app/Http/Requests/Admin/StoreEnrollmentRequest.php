@@ -3,7 +3,10 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class StoreEnrollmentRequest extends FormRequest
 {
@@ -17,22 +20,40 @@ class StoreEnrollmentRequest extends FormRequest
         $offeringId = $this->route('offering')->id;
 
         return [
-            // Validate that student_id is an array
             'student_id' => ['required', 'array', 'min:1'],
 
-            // Validate each ID inside the array
             'student_id.*' => [
                 'exists:users,id',
-                // Unique check: student_id must be unique for this specific offering_id
-                Rule::unique('enrollments', 'student_id')->where(function ($query) use ($offeringId) {
-                    return $query->where('offering_id', $offeringId);
-                }),
+                'distinct', // prevent duplicates in request
             ],
 
-            // Note: Ensure your table name is 'enrollment_types' or 'student_statuses' 
-            // Based on your controller, it was EnrollmentType
             'enrollment_type_id' => ['required', 'exists:enrollment_types,id'],
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+
+            $offering = $this->route('offering');
+
+            foreach ($this->student_id as $studentId) {
+
+                $exists = DB::table('enrollments')
+                    ->join('course_offerings', 'enrollments.offering_id', '=', 'course_offerings.id')
+                    ->where('enrollments.student_id', $studentId)
+                    ->where('course_offerings.subject_id', $offering->subject_id)
+                    ->where('course_offerings.semester_id', $offering->semester_id)
+                    ->exists();
+
+                if ($exists) {
+                    $validator->errors()->add(
+                        'student_id',
+                        'Student is already enrolled in this subject for this semester.'
+                    );
+                }
+            }
+        });
     }
 
     public function messages(): array

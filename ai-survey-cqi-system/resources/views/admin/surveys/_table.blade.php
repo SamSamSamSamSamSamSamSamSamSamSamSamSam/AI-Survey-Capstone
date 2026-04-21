@@ -29,7 +29,7 @@
                     </td>
                     <td>
                         <div class="text-mono" style="font-size:.8rem;">
-                            {{ $survey->offering->subject->course_code }}
+                            {{ $survey->offering->subject->course_code }} - Group {{ $survey->offering->group_number }}
                         </div>
                         <div class="text-muted-sm">{{ $survey->offering->teacher->name }}</div>
                     </td>

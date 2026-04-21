@@ -7,11 +7,14 @@ use App\Models\Survey;
 use App\Jobs\AnalyzeSentimentJob;
 use App\Jobs\SendSurveySubmittedNotificationJob;
 use App\Models\SurveyAttempt;
+use App\Models\User;
+use App\Models\Enrollment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Illuminate\Database\Eloquent\Collection;
 
 class SurveyTakeController extends Controller
 {
@@ -25,17 +28,24 @@ class SurveyTakeController extends Controller
         $user->load('roles');
 
         // Use the shared helper so the same eligibility logic applies everywhere
-        $surveys     = $this->getPendingSurveys($user);
+        $pendingsurveys     = $this->getPendingSurveys($user);
+        $completedsurveys     = $this->getCompletedSurveys($user);
         $attemptedIds = SurveyAttempt::where('student_id', $user->id)
                                      ->whereNotNull('submitted_at')
                                      ->pluck('survey_id')
                                      ->toArray();
 
-        $completed = \App\Models\Survey::with(['offering.subject', 'offering.teacher', 'offering.semester'])
-                                   ->whereIn('id', $attemptedIds)
-                                   ->get();
+        // $completed = SurveyAttempt::with([
+        //         'survey' => function($query) {
+        //             $query->withTrashed(); // This allows the title to load even if archived
+        //         }, 
+        //         'survey.offering.subject', 
+        //         'survey.offering.semester'
+        //     ])
+        //     ->where('student_id', $user->id)
+        //     ->get();
                                 
-        return view('survey.index', compact('surveys', 'attemptedIds', 'user'));
+        return view('survey.index', compact('pendingsurveys','completedsurveys', 'attemptedIds', 'user'));
     }
 
     // -------------------------------------------------------------------------
@@ -188,7 +198,7 @@ class SurveyTakeController extends Controller
             return false;
         }
 
-        return \App\Models\Enrollment::where('offering_id', $survey->offering_id)
+        return Enrollment::where('offering_id', $survey->offering_id)
             ->where('student_id', $user->id)
             ->exists();
     }
@@ -217,47 +227,71 @@ class SurveyTakeController extends Controller
      * Get all pending surveys for a user — used by both dashboards and index.
      * Single source of truth for eligibility filtering.
      */
-    public function getPendingSurveys(\App\Models\User $user): \Illuminate\Database\Eloquent\Collection
+    /**
+     * Shared base query logic.
+     */
+    protected function getBaseSurveyQuery(User $user)
     {
-        $role = $user->primaryRole();
-
-        $base = Survey::with([
-                'offering.subject',
-                'offering.teacher',
-                'offering.semester',
-                'targetRole',
-                'template',
-            ])
+        return Survey::with(['offering.subject', 'offering.teacher', 'offering.semester', 'targetRole', 'template'])
             ->withCount('questions')
             ->active()
             ->whereNull('deleted_at')
             ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', now()))
-            ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()))
-            ->whereDoesntHave('attempts', fn ($q) =>
+            ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()));
+    }
+
+    public function getCompletedSurveys(User $user): Collection
+    {
+        $role = $user->primaryRole();
+        $base = $this->getBaseSurveyQuery($user)
+            ->whereHas('attempts', fn ($q) => 
                 $q->where('student_id', $user->id)->whereNotNull('submitted_at')
             );
 
         return match ($role) {
-
-            // Students: surveys targeting students for offerings they're enrolled in
             'student' => $base
                 ->whereHas('targetRole', fn ($q) => $q->where('name', 'student'))
-                ->whereHas('offering.enrollments', fn ($q) =>
-                    $q->where('student_id', $user->id)
-                )
+                ->whereHas('offering.enrollments', fn ($q) => $q->where('student_id', $user->id))
                 ->latest()
                 ->get(),
 
-            // Faculty: surveys targeting faculty, EXCLUDING courses they teach
             'faculty' => $base
                 ->whereHas('targetRole', fn ($q) => $q->where('name', 'faculty'))
-                ->whereDoesntHave('offering', fn ($q) =>
-                    $q->where('teacher_id', $user->id)
-                )
+                ->whereDoesntHave('offering', fn ($q) => $q->where('teacher_id', $user->id))
                 ->latest()
                 ->get(),
 
-            // Admin: surveys targeting admins
+            'admin' => $base
+                ->whereHas('targetRole', fn ($q) => $q->where('name', 'admin'))
+                ->latest()
+                ->get(),
+
+            default => collect(),
+        };
+    }
+    public function getPendingSurveys(User $user): Collection
+    {
+        $role = $user->primaryRole();
+        
+        // Now uses the shared base query + the specific 'pending' constraint
+        $base = $this->getBaseSurveyQuery($user)
+            ->whereDoesntHave('attempts', fn ($q) => 
+                $q->where('student_id', $user->id)->whereNotNull('submitted_at')
+            );
+
+        return match ($role) {
+            'student' => $base
+                ->whereHas('targetRole', fn ($q) => $q->where('name', 'student'))
+                ->whereHas('offering.enrollments', fn ($q) => $q->where('student_id', $user->id))
+                ->latest()
+                ->get(),
+
+            'faculty' => $base
+                ->whereHas('targetRole', fn ($q) => $q->where('name', 'faculty'))
+                ->whereDoesntHave('offering', fn ($q) => $q->where('teacher_id', $user->id))
+                ->latest()
+                ->get(),
+
             'admin' => $base
                 ->whereHas('targetRole', fn ($q) => $q->where('name', 'admin'))
                 ->latest()
