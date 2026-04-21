@@ -31,8 +31,15 @@ class CqiPdfService
 
         // Call the Python PDF generator
         $pythonScript = base_path('resources/python/cqi_pdf_generator.py');
-        $venvPython   = base_path('resources/python/myenv/Scripts/python.exe'); // Adjust for your venv path
-        $python       = file_exists($venvPython) ? $venvPython : 'python3';
+        $venvPython  = base_path('resources/python/myenv/Scripts/python.exe');
+
+        if (file_exists($venvPython)) {
+            $python = $venvPython;
+        } elseif (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $python = 'python';   // Windows uses "python", not "python3"
+        } else {
+            $python = 'python3';  // Linux/macOS (production server)
+        }
 
         $process = new Process([$python, $pythonScript, $tmpJson, $outputPath]);
         $process->setTimeout(60);

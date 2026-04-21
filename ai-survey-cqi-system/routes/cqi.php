@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\CqiReportController;
+use \App\Http\Controllers\CqiSseController;
 use App\Http\Controllers\Admin\AnalyticsViewController as AdminAnalyticsView;
 use Illuminate\Support\Facades\Route;
+
 
 // ---------------------------------------------------------------------------
 // ADMIN group (middleware: auth, verified, role:admin).
@@ -25,3 +27,5 @@ Route::post('cqi-reports/generate',         [CqiReportController::class, 'genera
 Route::get('cqi-reports/{cqiReport}/download', [CqiReportController::class, 'download'])   ->name('cqi-reports.download');
 Route::post('cqi-reports/{cqiReport}/send-to-faculty', [CqiReportController::class, 'sendToFaculty'])->name('cqi-reports.send-to-faculty');
 Route::delete('cqi-reports/{cqiReport}',    [CqiReportController::class, 'destroy'])       ->name('cqi-reports.destroy');
+Route::get('cqi-reports/sse/{survey_id}',   [CqiSseController::class, 'stream'])           ->name('cqi-reports.sse');
+
