@@ -10,7 +10,7 @@ class CourseOfferingSeeder extends Seeder
 {
     public function run(): void
     {
-        $prospectuses = Prospectus::all();
+        $prospectuses = Prospectus::where('semester_id', 1)->get()->random(5);
         
         // Get all faculty members once to avoid repeated queries
         $facultyMembers = \App\Models\User::whereHas('roles', function($query) {
@@ -33,7 +33,6 @@ class CourseOfferingSeeder extends Seeder
                     ],
                     [
                         'offering_type_id' => $pros->offered_type_id,
-                        // Pull a random faculty ID just like your factory does
                         'teacher_id'       => $facultyMembers->random()->id,
                     ]
                 );
