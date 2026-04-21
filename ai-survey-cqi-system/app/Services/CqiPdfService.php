@@ -31,15 +31,24 @@ class CqiPdfService
 
         // Call the Python PDF generator
         $pythonScript = base_path('resources/python/cqi_pdf_generator.py');
-        $venvPython  = base_path('resources/python/myenv/Scripts/python.exe');
+        $envPython  = env('PYTHON_EXECUTABLE');
+        $venvPython = base_path('resources/python/myenv/Scripts/python.exe');
 
         if (file_exists($venvPython)) {
-            $python = $venvPython;
+            $python = $venvPython;        // venv takes priority — fully self-contained
+        } elseif ($envPython && file_exists($envPython)) {
+            $python = $envPython;         // .env explicit path
         } elseif (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            $python = 'python';   // Windows uses "python", not "python3"
+            $python = 'python';
         } else {
-            $python = 'python3';  // Linux/macOS (production server)
+            $python = 'python3';
         }
+
+        Log::info('CqiPdfService: resolved Python binary', [
+            'python'     => $python,
+            'exists'     => file_exists($python),
+            'venv_exists'=> file_exists($venvPython),
+        ]);
 
         $process = new Process([$python, $pythonScript, $tmpJson, $outputPath]);
         $process->setTimeout(60);
