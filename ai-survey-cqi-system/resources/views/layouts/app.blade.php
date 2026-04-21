@@ -26,16 +26,13 @@
                     <div class="mb-3 text-warning">
                         <i class="bi bi-clock-history" style="font-size: 3rem;"></i>
                     </div>
-                    <h4 class="mb-3">Session Expiring</h4>
-                    <p>You will be logged out in <span id="session-countdown" class="fw-bold text-danger">60</span> seconds due to inactivity.</p>
+                    <h4 class="mb-1">Session Expiring</h4>                    
                     <div class="d-grid gap-2">
                         <button type="button" class="btn btn-primary" id="extendSessionBtn">Keep me signed in</button>
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                            @csrf
-                        </form>
-                        <a href="{{ route('logout') }}" class="btn btn-link text-muted" 
-                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                           Logout Now
+                        
+                        {{-- Direct link to login prevents 419 errors if the session is already dead --}}
+                        <a href="{{ route('login') }}" class="btn btn-link text-muted">
+                            Logout Now
                         </a>
                     </div>
                 </div>

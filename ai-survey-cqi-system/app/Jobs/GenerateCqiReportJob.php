@@ -14,29 +14,83 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class GenerateCqiReportJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries   = 5;                    // Max attempts in case of failure 
-    public int $timeout = 300;                  // Max execution time (5 minutes) to allow for API calls and PDF generation
+    public int $tries   = 5;
+    public int $timeout = 300;
 
-    public function backoff(): array            // Exponential backoff strategy for retries (in seconds)
+    public function backoff(): array
     {
         return [10, 30, 60, 120, 240];
     }
 
     public function __construct(
-        public readonly string  $surveyId,
-        public readonly string  $generatedBy,   // admin user ID
-        public readonly string  $scopeType,     // survey | offering | faculty
-        public readonly bool    $isRegenerated = false,
+        public readonly string $surveyId,
+        public readonly string $generatedBy,
+        public readonly string $scopeType,
+        public readonly bool   $isRegenerated = false,
     ) {}
+
+    // -------------------------------------------------------------------------
+    // Status helper — writes to cache so SSE stream can broadcast it
+    // -------------------------------------------------------------------------
+    private function setStatus(string $status, string $message, array $extra = []): void
+    {
+        Cache::put("cqi_status_{$this->surveyId}", array_merge([
+            'status'     => $status,
+            'message'    => $message,
+            'survey_id'  => $this->surveyId,
+            'updated_at' => now()->toISOString(),
+        ], $extra), now()->addMinutes(15));
+    }
+
+    // -------------------------------------------------------------------------
+    // Friendly error messages for common Gemini / PDF failures
+    // -------------------------------------------------------------------------
+    private function friendlyError(string $message): string
+    {
+
+        $lower = strtolower($message);
+
+        if (str_contains($lower, 'python was not found') || str_contains($lower, 'microsoft store')) {
+            return 'Python is not installed or not configured correctly on this server. Install Python from python.org and ensure the virtual environment at resources/python/myenv exists.';
+        }
+        if (str_contains($message, '429') || str_contains($lower, 'quota') || str_contains($lower, 'resource_exhausted')) {
+            return 'Gemini API quota exceeded. Please wait a few minutes and try again.';
+        }
+        if (str_contains($message, '503') || str_contains($lower, 'overloaded') || str_contains($lower, 'unavailable')) {
+            return 'Gemini is currently overloaded or unavailable. Please retry in a few moments.';
+        }
+        if (str_contains($message, '401') || str_contains($message, '403') || str_contains($lower, 'api key')) {
+            return 'Gemini API key is invalid or unauthorized. Check your API key in Settings → AI Configuration.';
+        }
+        if (str_contains($lower, 'timeout') || str_contains($lower, 'timed out')) {
+            return 'The request to Gemini timed out. The service may be under load — please retry.';
+        }
+        if (str_contains($lower, 'invalid json') || str_contains($lower, 'json response')) {
+            return 'Gemini returned an unexpected response format. This is usually temporary — please retry.';
+        }
+        if (str_contains($lower, 'pdf generation failed') || str_contains($lower, 'python')) {
+            return 'PDF generation failed. Ensure the Python environment is correctly configured on the server.';
+        }
+        if (str_contains($lower, 'no query results') || str_contains($lower, 'not found')) {
+            return 'Survey or analytics data not found. Please recompute analytics and try again.';
+        }
+
+        return 'An unexpected error occurred: ' . Str::limit($message, 150);
+    }
 
     public function handle(GeminiService $gemini, CqiPdfService $pdf): void
     {
+        // Step 1
+        $this->setStatus('processing', 'Loading survey and analytics data…');
+
         $survey = Survey::with([
             'offering.subject',
             'offering.semester',
@@ -49,11 +103,11 @@ class GenerateCqiReportJob implements ShouldQueue
 
         $analytics = FacultyAnalytics::where('survey_id', $this->surveyId)->firstOrFail();
 
-        // ------------------------------------------------------------------
-        // 1. Collect open-ended response samples per question
-        // ------------------------------------------------------------------
+        // Step 2
+        $this->setStatus('processing', 'Collecting open-ended responses…');
+
         $openEndedSamples = [];
-        $textQuestions = $survey->questions->where('question_type', 'text');
+        $textQuestions    = $survey->questions->where('question_type', 'text');
 
         foreach ($textQuestions as $question) {
             $responses = Response::whereHas('attempt', fn ($q) =>
@@ -71,22 +125,18 @@ class GenerateCqiReportJob implements ShouldQueue
             }
         }
 
-        // ------------------------------------------------------------------
-        // 2. Build data payload for Gemini
-        // ------------------------------------------------------------------
+        // Step 3 — Build payload
+        $this->setStatus('processing', 'Preparing data payload…');
+
         $teacher  = $survey->offering->teacher;
         $subject  = $survey->offering->subject;
         $semester = $survey->offering->semester;
         $scaleMax = $survey->questions->first()?->scale?->max_value ?? 5;
 
-        $nameParts = explode(' ', $teacher->name);
-        $lastName  = strtoupper(end($nameParts));
-
+        $nameParts    = explode(' ', $teacher->name);
+        $lastName     = strtoupper(end($nameParts));
         $academicYear = $semester->academic_start_year . '–' . ($semester->academic_start_year + 1);
 
-        // Ensure numeric values are explicitly cast to float/int 
-        // before they get sent to the PDF service. 
-        // This can help prevent issues with JSON encoding and ensure consistent formatting in the PDF.
         $analyticsPayload = [
             'institution'        => config('cqi.institution', 'University'),
             'department'         => config('cqi.department', ''),
@@ -111,14 +161,22 @@ class GenerateCqiReportJob implements ShouldQueue
             'scope_type'         => $this->scopeType,
         ];
 
-        // ------------------------------------------------------------------
-        // 3. Generate AI content
-        // ------------------------------------------------------------------
-        $aiContent = $gemini->generateCqiReport($analyticsPayload);
+        // Step 4 — Gemini
+        $this->setStatus('processing', 'Sending data to Gemini AI — this may take up to a minute…');
 
-        // ------------------------------------------------------------------
-        // 4. Build full PDF payload
-        // ------------------------------------------------------------------
+        try {
+            $aiContent = $gemini->generateCqiReport($analyticsPayload);
+        } catch (\Throwable $e) {
+            $this->setStatus('failed', $this->friendlyError($e->getMessage()), [
+                'raw_error' => $e->getMessage(),
+                'step'      => 'gemini',
+            ]);
+            throw $e;
+        }
+
+        // Step 5 — PDF
+        $this->setStatus('processing', 'Generating PDF report…');
+
         $pdfPayload = array_merge($analyticsPayload, [
             'title'        => "CQI Report — {$teacher->name} — {$subject->course_code}",
             'ai_content'   => $aiContent,
@@ -126,32 +184,34 @@ class GenerateCqiReportJob implements ShouldQueue
             'generated_at' => now()->format('F d, Y h:i A'),
         ]);
 
-        // ------------------------------------------------------------------
-        // 5. Generate PDF
-        // ------------------------------------------------------------------
-        $pdfPath = $pdf->generate($pdfPayload);
+        try {
+            $pdfPath = $pdf->generate($pdfPayload);
+        } catch (\Throwable $e) {
+            $this->setStatus('failed', $this->friendlyError($e->getMessage()), [
+                'raw_error' => $e->getMessage(),
+                'step'      => 'pdf',
+            ]);
+            throw $e;
+        }
 
-        // ------------------------------------------------------------------
-        // 6. Save CqiReport record
-        // ------------------------------------------------------------------
+        // Step 6 — Save
+        $this->setStatus('processing', 'Saving report to database…');
+
         $report = CqiReport::create([
-            'scope_type'    => $this->scopeType,
-            'survey_id'     => $survey->id,
-            'offering_id'   => $survey->offering_id,
-            'faculty_id'    => $teacher->id,
-            'generated_by'  => $this->generatedBy,
-            'title'         => "CQI Report — {$teacher->name} — {$subject->course_code} ({$semester->full_label})",
-            'report_text'   => $aiContent,
-            'statistics'    => array_merge($analyticsPayload, ['open_ended_samples' => $openEndedSamples]),
-            'model_name'    => 'gemini',
-            'model_version' => config('services.gemini.model', 'gemini-1.5-flash'),
-            'pdf_path'      => $pdfPath,
-            'is_regenerated'=> $this->isRegenerated,
+            'scope_type'     => $this->scopeType,
+            'survey_id'      => $survey->id,
+            'offering_id'    => $survey->offering_id,
+            'faculty_id'     => $teacher->id,
+            'generated_by'   => $this->generatedBy,
+            'title'          => "CQI Report — {$teacher->name} — {$subject->course_code} ({$semester->full_label})",
+            'report_text'    => $aiContent,
+            'statistics'     => array_merge($analyticsPayload, ['open_ended_samples' => $openEndedSamples]),
+            'model_name'     => 'gemini',
+            'model_version'  => config('services.gemini.model', 'gemini-2.5-flash'),
+            'pdf_path'       => $pdfPath,
+            'is_regenerated' => $this->isRegenerated,
         ]);
 
-        // ------------------------------------------------------------------
-        // 7. Log the action
-        // ------------------------------------------------------------------
         CqiReportLog::create([
             'report_id'    => $report->id,
             'performed_by' => $this->generatedBy,
@@ -159,13 +219,26 @@ class GenerateCqiReportJob implements ShouldQueue
             'notes'        => "Scope: {$this->scopeType}. Model: {$report->model_version}.",
         ]);
 
+        // Step 7 — Done
+        $this->setStatus('completed', 'CQI Report generated successfully!', [
+            'report_id'    => $report->id,
+            'report_title' => $report->title,
+        ]);
+
         Log::info("GenerateCqiReportJob: report {$report->id} generated for survey {$this->surveyId}.");
     }
 
     public function failed(\Throwable $exception): void
     {
+        // This fires after all retries are exhausted
+        $this->setStatus('failed', $this->friendlyError($exception->getMessage()), [
+            'raw_error'   => $exception->getMessage(),
+            'step'        => 'unknown',
+            'retry_exhausted' => true,
+        ]);
+
         Log::error("GenerateCqiReportJob failed for survey {$this->surveyId}", [
             'error' => $exception->getMessage(),
         ]);
     }
-}
+}       

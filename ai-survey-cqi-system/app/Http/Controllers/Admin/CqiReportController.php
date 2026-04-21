@@ -74,11 +74,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
             'scope_type' => ['required', 'in:survey,offering,faculty'],
         ]);
 
-        // Check analytics exist
         $analytics = FacultyAnalytics::where('survey_id', $request->survey_id)->first();
 
         if (! $analytics) {
-            return back()->with('error', 'Analytics have not been computed for this survey yet. Please wait for the analytics job to complete or recompute manually.');
+            return back()->with('error', 'Analytics have not been computed for this survey yet. Please recompute manually.');
         }
 
         if ($analytics->response_count === 0) {
@@ -97,7 +96,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
         $action = $isRegenerated ? 'regeneration' : 'generation';
 
         return redirect()->route('admin.cqi-reports.index')
-                         ->with('success', "CQI report {$action} has been queued. It will be available shortly.");
+                        ->with('success', "CQI report {$action} has been queued.")
+                        ->with('cqi_pending_survey_id', $request->survey_id); // ← ADD THIS
     }
 
     public function download(CqiReport $cqiReport): StreamedResponse|RedirectResponse

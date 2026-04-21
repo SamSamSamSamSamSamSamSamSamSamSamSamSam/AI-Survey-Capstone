@@ -196,7 +196,7 @@
                                 class="form-control auth-input @error('login') is-invalid @enderror"
                                 name="login"
                                 id="login"
-                                placeholder="you@example.com or 2021-XXXXX"
+                                placeholder="you@example.com"
                                 value="{{ old('login') }}"
                                 autocomplete="username"
                                 autofocus

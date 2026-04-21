@@ -33,8 +33,8 @@ class CsvValidationService
             $line = $i + 2;
             $v = Validator::make($row, [
                 'user_id_number' => 'required',
-                'name' => 'required',
-                'email' => 'required|email'
+                'name'           => 'required',
+                'email'          => 'required|email'
             ]);
 
             if ($v->fails()) {
@@ -42,12 +42,20 @@ class CsvValidationService
                 continue;
             }
 
-            if (User::where('user_id_number', $row['user_id_number'])->exists()) {
-                $this->warnings[] = ['line' => $line, 'message' => "Student {$row['user_id_number']} exists (skipped)."];
-                $this->skippedCount++;
+            // Check if the student exists in the database
+            $user = User::where('user_id_number', $row['user_id_number'])->first();
+
+            if (!$user) {
+                // If student doesn't exist, it's a hard error. 
+                // Admin must add them via User Management first.
+                $this->errors[] = [
+                    'line' => $line, 
+                    'message' => "Student ID {$row['user_id_number']} not found. Please register this student in User Management first."
+                ];
                 continue;
             }
 
+            // If they exist, they are valid for this operation
             $this->validRows[] = ['row' => $row, 'line' => $line];
         }
         return $this->report();
