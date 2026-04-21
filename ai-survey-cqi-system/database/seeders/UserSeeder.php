@@ -52,7 +52,7 @@ class UserSeeder extends Seeder
 
         $studentsample = User::create([
             'user_id_number' => '20230001',
-            'name' => 'Student Sample',
+            'name' => 'TestStudent1 User',
             'email' => 'student@example.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
@@ -62,7 +62,7 @@ class UserSeeder extends Seeder
         
         $teachersample = User::create([
             'user_id_number' => 'TEACHER001',
-            'name' => 'Teacher Sample',
+            'name' => 'TeacherTest1 User',
             'email' => 'teacher@example.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
@@ -70,6 +70,43 @@ class UserSeeder extends Seeder
         ]);
         $teachersample->roles()->attach($teacherRole);
 
+        $studentsample2 = User::create([
+            'user_id_number' => '20230002',
+            'name' => 'TestStudent2 User',
+            'email' => 'student2@example.com',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'must_change_password' => false,
+        ]);
+        $studentsample2->roles()->attach($studentRole);
+        
+        $teachersample2 = User::create([
+            'user_id_number' => 'TEACHER002',
+            'name' => 'TeacherTest1 User',
+            'email' => 'teacher2@example.com',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'must_change_password' => false,
+        ]);
+        $teachersample2->roles()->attach($teacherRole);
 
+        $unverified = User::create([
+            'user_id_number' => '12345678',
+            'name' => 'UnverifiedTest User',
+            'email' => 'unverified@example.com',
+            'password' => Hash::make('password'),
+            'must_change_password' => true,
+        ]);
+        $unverified->roles()->attach($studentRole);
+
+        $notenrolled = User::create([
+            'user_id_number' => '24681012',
+            'name' => 'NotEnrolledTest User',
+            'email' => 'notenrolled@example.com',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'must_change_password' => false,
+        ]);
+        $notenrolled->roles()->attach($studentRole);
     }
 }

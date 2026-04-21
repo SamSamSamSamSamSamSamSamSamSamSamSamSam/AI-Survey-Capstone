@@ -7,6 +7,7 @@ use App\Models\Scale;
 use App\Models\ScaleOption;
 use App\Models\SurveyTemplate;
 use App\Models\SurveyTemplateQuestion;
+use App\Models\QuestionCategory as Category;
 use Illuminate\Database\Seeder;
 
 class SurveyReferenceSeeder extends Seeder
@@ -39,21 +40,12 @@ class SurveyReferenceSeeder extends Seeder
         // ------------------------------------------------------------------
         // 2. Default question categories
         // ------------------------------------------------------------------
-        $categories = [
-            ['name' => 'Teaching Effectiveness',    'description' => 'Questions about instructional quality and delivery.'],
-            ['name' => 'Communication',              'description' => 'Clarity and responsiveness of the instructor.'],
-            ['name' => 'Assessment & Feedback',      'description' => 'Fairness and timeliness of grading and feedback.'],
-            ['name' => 'Course Content',             'description' => 'Relevance and organization of course material.'],
-            ['name' => 'Student Engagement',         'description' => 'Instructor\'s ability to motivate and involve students.'],
-            ['name' => 'Learning Environment',       'description' => 'Classroom atmosphere and inclusivity.'],
-            ['name' => 'Overall Satisfaction',       'description' => 'General satisfaction with the course or instructor.'],
+        $categoryMap = [
+            'classroom' => Category::where('name', 'Classroom Management')->first(),
+            'teaching'  => Category::where('name', 'Teaching and Learning')->first(),
+            'assessment'=> Category::where('name', 'Assessment')->first(),
+            'feedback'  => Category::where('name', 'General Feedback')->first(),
         ];
-
-        $categoryMap = [];
-        foreach ($categories as $cat) {
-            $record = QuestionCategory::firstOrCreate(['name' => $cat['name']], $cat);
-            $categoryMap[$cat['name']] = $record->id;
-        }
 
         // ------------------------------------------------------------------
         // 3. Official University Questionnaire template
@@ -71,34 +63,23 @@ class SurveyReferenceSeeder extends Seeder
         if ($template->questions()->count() === 0) {
             $questions = [
                 // Teaching Effectiveness
-                ['The instructor presents lessons in a clear and organized manner.',                    'Teaching Effectiveness',  'rating'],
-                ['The instructor uses varied teaching strategies to facilitate learning.',               'Teaching Effectiveness',  'rating'],
-                ['The instructor demonstrates mastery of the subject matter.',                          'Teaching Effectiveness',  'rating'],
+                ['The instructor presents lessons in a clear and organized manner.',                    'classroom',  'rating'],
+                ['The instructor uses varied teaching strategies to facilitate learning.',               'classroom',  'rating'],
+                ['The instructor demonstrates mastery of the subject matter.',                          'classroom',  'rating'],
 
                 // Communication
-                ['The instructor communicates course expectations clearly.',                            'Communication',           'rating'],
-                ['The instructor is approachable and responsive to student concerns.',                  'Communication',           'rating'],
+                ['The instructor communicates course expectations clearly.',                            'teaching',           'rating'],
+                ['The instructor is approachable and responsive to student concerns.',                  'teaching',           'rating'],
 
                 // Assessment & Feedback
-                ['The instructor provides timely and constructive feedback on assessments.',            'Assessment & Feedback',   'rating'],
-                ['Grading criteria are fair, clear, and consistently applied.',                        'Assessment & Feedback',   'rating'],
-
-                // Course Content
-                ['The course content is relevant to my field of study.',                               'Course Content',          'rating'],
-                ['The course materials and resources support my learning.',                             'Course Content',          'rating'],
-
-                // Student Engagement
-                ['The instructor encourages active participation and critical thinking.',               'Student Engagement',      'rating'],
-
-                // Learning Environment
-                ['The instructor fosters a respectful and inclusive learning environment.',             'Learning Environment',    'rating'],
-
+                ['The instructor provides timely and constructive feedback on assessments.',            'assessment',   'rating'],
+                ['Grading criteria are fair, clear, and consistently applied.',                        'assessment',   'rating'],
                 // Overall Satisfaction
-                ['Overall, I am satisfied with the quality of instruction in this course.',            'Overall Satisfaction',    'rating'],
+                ['Overall, I am satisfied with the quality of instruction in this course.',            'feedback',    'rating'],
 
                 // Open-ended
-                ['What aspects of this course or instructor do you find most effective?',              'Overall Satisfaction',    'text'],
-                ['What suggestions do you have for improving this course or teaching approach?',       'Overall Satisfaction',    'text'],
+                ['What aspects of this course or instructor do you find most effective?',              'feedback',    'text'],
+                ['What suggestions do you have for improving this course or teaching approach?',       'feedback',    'text'],
             ];
 
             foreach ($questions as $order => [$text, $catName, $type]) {
@@ -106,7 +87,7 @@ class SurveyReferenceSeeder extends Seeder
                     'survey_template_id' => $template->id,
                     'question_text'      => $text,
                     'question_type'      => $type,
-                    'category_id'        => $categoryMap[$catName],
+                    'category_id'        => $categoryMap[$catName]->id,
                     'scale_id'           => $type === 'rating' ? $scale->id : null,
                     'order_number'       => $order + 1,
                 ]);
