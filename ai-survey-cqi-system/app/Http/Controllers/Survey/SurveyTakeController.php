@@ -31,6 +31,10 @@ class SurveyTakeController extends Controller
                                      ->pluck('survey_id')
                                      ->toArray();
 
+        $completed = \App\Models\Survey::with(['offering.subject', 'offering.teacher', 'offering.semester'])
+                                   ->whereIn('id', $attemptedIds)
+                                   ->get();
+                                
         return view('survey.index', compact('surveys', 'attemptedIds', 'user'));
     }
 

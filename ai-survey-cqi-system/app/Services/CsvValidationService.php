@@ -118,15 +118,17 @@ class CsvValidationService
         $this->reset();
         foreach ($rows as $i => $row) {
             $line = $i + 2;
+            $groupNumber = $row['group_number'] ?? null;
             $student = User::where('user_id_number', $row['student_id_number'] ?? '')->first();
             $subject = Subject::where('course_code', strtoupper($row['subject_code'] ?? ''))->first();
 
-            if (!$student || !$subject) {
+            if (!$student || !$subject || !$groupNumber) {
                 $this->errors[] = ['line' => $line, 'message' => "Student or Subject reference missing."];
                 continue;
             }
 
-            $offering = CourseOffering::where(['subject_id' => $subject->id, 'semester_id' => $this->semester->id])->first();
+            $offering = CourseOffering::where(['subject_id' => $subject->id, 'semester_id' => $this->semester->id,
+                                                'group_number' => $groupNumber ])->first();
             if (!$offering) {
                 $this->errors[] = ['line' => $line, 'message' => "No offering found for {$row['subject_code']}."];
                 continue;

@@ -213,7 +213,7 @@ class SemesterSetupController extends Controller
                 $offering = CourseOffering::where([
                     'subject_id'   => $subject->id,
                     'semester_id'  => $activeSemester->id,
-                    'group_number' => $row['group_number'] ?? null,
+                    'group_number' => $row['group_number'],
                 ])->first();
 
                 Enrollment::create([

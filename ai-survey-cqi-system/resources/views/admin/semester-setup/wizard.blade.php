@@ -10,7 +10,7 @@
 
 @section('content')
 
-@php
+{{-- @php
     $uploadMax = ini_get('upload_max_filesize');
     $execTime  = ini_get('max_execution_time');
     $configOk  = (int) $uploadMax >= 10 && (int) $execTime >= 60;
@@ -26,7 +26,7 @@
             Large CSVs may fail. Increase these in <code>php.ini</code>.
         </div>
     </div>
-@endif
+@endif --}}
 
 <div class="wizard-layout">
 
@@ -140,6 +140,7 @@
                             @elseif ($step == 4)
                                 <tr><td><code>student_id_number</code></td><td>2021-00123</td><td>Must exist</td></tr>
                                 <tr><td><code>subject_code</code></td><td>IT4101</td><td>Offering must exist</td></tr>
+                                <tr><td><code>group_number</code></td><td>1</td><td>Valid group number of course offering</td></tr>
                             @endif
                         </tbody>
                     </table>
