@@ -33,22 +33,22 @@
                         @endif
                     </td>
 
-                    {{-- LOOP THROUGH MULTIPLE OFFERINGS --}}
+                    {{-- LOOP THROUGH OFFERING (Single Relationship) --}}
                     <td>
-                        @if($survey->offering->isEmpty())
-                            <span class="text-muted-sm italic">No offerings assigned</span>
+                        @if(!$survey->offering)
+                            <span class="text-muted-sm italic">No offering assigned</span>
                         @else
-                            @foreach ($survey->offering as $offering)
-                                <div class="mb-1 p-1 border-start border-primary border-3 bg-light-subtle rounded-end" style="font-size:.75rem;">
-                                    <div class="fw-semibold">
-                                        {{ $offering->subject->course_code }} — Group {{ $offering->group_number }}
-                                    </div>
-                                    <div class="text-muted d-flex justify-content-between">
-                                        <span>{{ $offering->teacher->name }}</span>
-                                        <span class="ms-2 opacity-75">{{ $offering->semester->semester_number }} — {{ $offering->semester->academic_start_year }}</span>
-                                    </div>
+                            <div class="mb-1 p-1 border-start border-primary border-3 bg-light-subtle rounded-end" style="font-size:.75rem;">
+                                <div class="fw-semibold">
+                                    {{ $survey->offering->subject->course_code }} — Group {{ $survey->offering->group_number }}
                                 </div>
-                            @endforeach
+                                <div class="text-muted d-flex justify-content-between">
+                                    <span>{{ $survey->offering->teacher->name }}</span>
+                                    <span class="ms-2 opacity-75">
+                                        {{ $survey->offering->semester->semester_number }} — {{ $survey->offering->semester->academic_start_year }}
+                                    </span>
+                                </div>
+                            </div>
                         @endif
                     </td>
 
