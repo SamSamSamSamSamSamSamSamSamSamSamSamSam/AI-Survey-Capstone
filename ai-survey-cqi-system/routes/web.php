@@ -125,4 +125,6 @@ Route::middleware('auth')->group(function () {
                 require __DIR__ . '/academic_students.php';
             });
     });
+
+    Route::match(['get', 'post'], '/logout', [LoginController::class, 'logout'])->name('logout.fallback');
 });
