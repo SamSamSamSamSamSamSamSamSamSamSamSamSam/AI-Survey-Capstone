@@ -17,6 +17,9 @@
 
 <body>
 
+    {{-- Loading Screen Component --}}
+    @include('components.loading-screen')
+
     {{-- ===================== SESSION TIMEOUT MODAL ===================== --}}
     @auth
     <div class="modal fade" id="sessionTimeoutModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
@@ -217,6 +220,8 @@
         if (overlay) overlay.addEventListener('click', closeSidebar);
     })();
     </script>
+
+    @vite(['resources/js/modules/loading-screen.js'])
 
     @stack('scripts')
 

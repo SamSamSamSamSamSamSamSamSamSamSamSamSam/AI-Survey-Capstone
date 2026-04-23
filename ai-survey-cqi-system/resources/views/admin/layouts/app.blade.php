@@ -20,6 +20,9 @@
 
 <body>
 
+{{-- Loading Screen Component --}}
+@include('components.loading-screen')
+
 <div class="app-wrapper">
 
 {{-- Sidebar --}}
@@ -141,7 +144,7 @@
 
 </div>
 
-    @vite(['resources/js/modules/confirm-action.js'])
+    @vite(['resources/js/modules/confirm-action.js', 'resources/js/modules/loading-screen.js'])
 
     @stack('scripts')
 

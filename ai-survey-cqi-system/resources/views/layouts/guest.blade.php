@@ -10,9 +10,15 @@
     @stack('styles')
 </head>
 <body class="bg-light">
+    {{-- Loading Screen Component --}}
+    @include('components.loading-screen')
+
     <div class="container">
         @yield('content')
     </div>
+    
+    @vite(['resources/js/modules/loading-screen.js'])
+
     @stack('scripts')
 </body>
 </html>
