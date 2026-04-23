@@ -125,22 +125,22 @@
                             <tr><th>Column</th><th>Example</th><th>Notes</th></tr>
                         </thead>
                         <tbody>
-                            @if ($step == 1)
+                            {{-- @if ($step == 1)
                                 <tr><td><code>user_id_number</code></td><td>2010XXXX</td><td>Must be unique</td></tr>
                                 <tr><td><code>name</code></td><td>Juan dela Cruz</td><td></td></tr>
-                                <tr><td><code>email</code></td><td>juan@school.edu</td><td>Must be unique</td></tr>
-                            @elseif ($step == 2)
+                                <tr><td><code>email</code></td><td>juan@school.edu</td><td>Must be unique</td></tr> --}}
+                            @if ($step == 1)
                                 <tr><td><code>block_name</code></td><td>BSIT-4A</td><td>Unique per semester</td></tr>
                                 <tr><td><code>program_code</code></td><td>BSIT</td><td>Must exist</td></tr>
                                 <tr><td><code>year_level</code></td><td>4</td><td>Integer 1–5</td></tr>
+                            @elseif ($step == 2)
+                                <tr><td><code>subject_code</code></td><td>IT 4101</td><td>Must exist</td></tr>
+                                <tr><td><code>teacher_id_number</code></td><td>2010XXXX</td><td>Faculty account</td></tr>
+                                <tr><td><code>group_number</code></td><td>1</td><td>Valid group number of offering<</span></td></tr>
                             @elseif ($step == 3)
-                                <tr><td><code>subject_code</code></td><td>IT4101</td><td>Must exist</td></tr>
-                                <tr><td><code>teacher_id_number</code></td><td>2010-00001</td><td>Faculty account</td></tr>
-                                <tr><td><code>group_number</code></td><td>1</td><td><span class="csv-spec__optional">optional</span></td></tr>
-                            @elseif ($step == 4)
                                 <tr><td><code>student_id_number</code></td><td>2010XXXX</td><td>Must exist</td></tr>
                                 <tr><td><code>subject_code</code></td><td>IT4101</td><td>Offering must exist</td></tr>
-                                <tr><td><code>group_number</code></td><td>1</td><td>Valid group number of course offering</td></tr>
+                                <tr><td><code>group_number</code></td><td>1</td><td>Valid group number of offering</td></tr>
                             @endif
                         </tbody>
                     </table>
@@ -204,10 +204,10 @@ window.WIZARD_CONFIG = {
     step:         {{ $step }},
     previewUrl:   "{{ route('admin.semester-setup.preview') }}",
     importRoutes: {
-        1: "{{ route('admin.semester-setup.import-students') }}",
-        2: "{{ route('admin.semester-setup.import-blocks') }}",
-        3: "{{ route('admin.semester-setup.import-offerings') }}",
-        4: "{{ route('admin.semester-setup.import-enrollments') }}"
+        // 1: "{{ route('admin.semester-setup.import-students') }}",
+        1: "{{ route('admin.semester-setup.import-blocks') }}",
+        2: "{{ route('admin.semester-setup.import-offerings') }}",
+        3: "{{ route('admin.semester-setup.import-enrollments') }}"
     }
 };
 </script>

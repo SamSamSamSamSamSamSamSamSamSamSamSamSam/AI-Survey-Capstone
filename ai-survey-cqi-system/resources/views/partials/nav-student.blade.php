@@ -1,13 +1,13 @@
-<p class="nav-section">Main</p>
+<p class="nav-section">Student Hub</p>
 
-<a href="{{ route('survey.index') }}"
+<a href="{{ route('survey.index') }}" 
    class="nav-link {{ request()->routeIs('survey.*') ? 'active' : '' }}">
-    <i class="bi bi-pencil-square"></i>
-    <span>My Surveys</span>
+    <i class="bi bi-pencil-square"></i> 
+    <span>Available Surveys</span>
 </a>
 
-<a href="{{ route('student.enrollments.index') }}"
+<a href="{{ route('student.enrollments.index') }}" 
    class="nav-link {{ request()->routeIs('student.enrollments.*') ? 'active' : '' }}">
-    <i class="bi bi-people"></i>
-    <span>My Enrollments</span>
+    <i class="bi bi-book"></i> 
+    <span>Enrolled Subjects</span>
 </a>

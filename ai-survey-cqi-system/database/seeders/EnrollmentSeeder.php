@@ -12,18 +12,23 @@ class EnrollmentSeeder extends Seeder
 {
     public function run(): void
     {
+        // Define the IDs you want to exclude
+        $excludedIds = [24681013]; 
+
         $students = User::whereHas('roles', function($query) {
-            $query->where('name', 'student');})->get();
+                $query->where('name', 'student');
+            })
+            ->whereNotIn('id', $excludedIds) // Exclude students here
+            ->get();
+
         $enrollmentTypes = EnrollmentType::all();
         $offerings = CourseOffering::all();
 
         foreach ($students as $student) {
-
             // Each student enrolled in 3–5 random offerings
             $assignedOfferings = $offerings->random(rand(3, 5));
 
             foreach ($assignedOfferings as $offering) {
-
                 Enrollment::updateOrCreate(
                     [
                         'student_id' => $student->id,

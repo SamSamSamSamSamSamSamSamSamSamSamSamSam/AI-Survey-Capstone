@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\GeminiTestController;
 use App\Http\Controllers\Faculty\AnalyticsViewController as FacultyAnalyticsView;
 use App\Http\Controllers\Api\AnalyticsDataController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\SessionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -55,10 +56,13 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-    Route::get('/session-keep-alive', function () {
-            return response()->json(['status' => 'session extended']);
-        })->name('session.keep-alive');
-
+    // Route::get('/session-keep-alive', function () {
+    //         return response()->json(['status' => 'session extended']);
+    //     })->name('session.keep-alive');
+    
+    Route::get('/session/check', [SessionController::class, 'check']);
+    Route::post('/session/refresh', [SessionController::class, 'refresh']);
+    
     /* NOTE: We are keeping the 'verified' middleware check for dashboards.
        Imported users will bypass the old VerifyEmailController because 
        NewPasswordController marks them as verified automatically.

@@ -103,7 +103,7 @@ class SettingsController extends Controller
 
         return redirect()
             ->route('admin.settings.index', ['tab' => $group])
-            ->with('success', ucfirst($group) . " settings saved. {$changed} value(s) updated.");
+            ->with('success', ucfirst($group) . " settings saved.");
     }
 
     // -------------------------------------------------------------------------

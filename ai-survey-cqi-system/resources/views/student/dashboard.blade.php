@@ -21,7 +21,7 @@
 <div class="dashboard-header d-flex align-items-start justify-content-between flex-wrap gap-3 mb-4">
     <div>
         <h2 class="dashboard-title">
-            Welcome back, {{ Str::words(auth()->user()->name, 1, '') }}
+            Welcome back, {{ auth()->user()->name }}
             <span class="role-badge">Student</span>
         </h2>
         <p class="dashboard-subtitle">

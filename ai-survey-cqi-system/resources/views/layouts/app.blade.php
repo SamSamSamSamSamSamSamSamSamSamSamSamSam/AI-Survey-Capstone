@@ -39,16 +39,25 @@
             </div>
         </div>
     </div>
-
-    {{-- Pass session data to the window object for the Vite module to read --}}
-    <script>
-        window.__cqiSession = {
-            lifetimeMinutes: {{ config('session.lifetime') }},
-            keepAliveUrl:    "{{ route('session.keep-alive') }}",
-            loginUrl:        "{{ route('login') }}"
-        };
-    </script>
     @endauth
+
+    <div class="modal fade" id="confirmActionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title" id="confirmTitle">Confirm Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirmMessage">
+                    Are you sure you want to proceed?
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="app-wrapper {{ !auth()->check() ? 'guest-mode' : '' }}">
 

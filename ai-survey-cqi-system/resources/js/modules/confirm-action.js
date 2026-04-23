@@ -1,50 +1,29 @@
-/**
- * confirm-action.js
- * A reusable utility for handling action confirmations.
- */
+export function initConfirmAction() {
+    const modalEl = document.getElementById('confirmActionModal');
+    const modal = new bootstrap.Modal(modalEl);
+    let formToSubmit = null;
 
-const ConfirmAction = {
-    /**
-     * Standard confirmation dialog
-     * @param {string} message - The warning text
-     * @returns {Promise<boolean>}
-     */
-    async ask(message = "Are you sure you want to proceed?") {
-        // You can replace window.confirm with SweetAlert2 or a custom modal
-        return window.confirm(message);
-    },
+    // Listen for form submissions
+    document.addEventListener('submit', (e) => {
+        const form = e.target;
+        // Only trigger if the form has a data-confirm attribute
+        if (!form.hasAttribute('data-confirm')) return;
 
-    /**
-     * Attaches confirmation to a form submission or button click
-     * @param {string} selector - CSS selector for the element
-     * @param {string} message - Custom message
-     */
-    init(selector = '.confirm-action', message) {
-        const elements = document.querySelectorAll(selector);
+        // If we haven't confirmed yet, stop the submission
+        if (formToSubmit !== form) {
+            e.preventDefault();
+            formToSubmit = form;
+            
+            // Set message
+            document.getElementById('confirmMessage').innerText = form.dataset.confirm;
+            modal.show();
+        }
+    });
 
-        elements.forEach(element => {
-            element.addEventListener('click', async (event) => {
-                event.preventDefault();
-
-                const customMessage = element.getAttribute('data-confirm') || message;
-                const confirmed = await this.ask(customMessage);
-
-                if (confirmed) {
-                    // If it's a link, navigate. If it's a button in a form, submit.
-                    if (element.tagName === 'A') {
-                        window.location.href = element.href;
-                    } else if (element.closest('form')) {
-                        element.closest('form').submit();
-                    }
-                }
-            });
-        });
-    }
-};
-
-// Auto-initialize on DOM load
-document.addEventListener('DOMContentLoaded', () => {
-    ConfirmAction.init();
-});
-
-export default ConfirmAction;
+    // When "Confirm" is clicked in the modal
+    document.getElementById('confirmBtn').addEventListener('click', () => {
+        if (formToSubmit) {
+            formToSubmit.submit(); // Now submit the actual form
+        }
+    });
+}

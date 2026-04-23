@@ -31,30 +31,30 @@
 
                 <div class="auth-left-brand">
                     <i class="bi bi-mortarboard-fill"></i>
-                    CQI System
+                    {{ setting('app.name') }}
                 </div>
 
                 <div class="auth-left-headline">
-                    <h2>Continuous Quality<br>Improvement</h2>
+                    <h2>AI-Driven Continuous<br>Quality Improvement</h2>
                     <p>
-                        A smart survey platform designed to
-                        help faculty, students, and administrators
-                        drive meaningful academic improvement.
+                        An intelligent survey and analytics platform that transforms 
+                        student feedback into actionable insights through sentiment analysis, 
+                        statistical evaluation, and AI-generated recommendations.
                     </p>
                 </div>
 
                 <div class="auth-left-pills">
                     <span class="auth-pill">
                         <span class="auth-pill-icon"><i class="bi bi-stars"></i></span>
-                        AI-Powered Analysis
+                        NLP Sentiment Analysis
                     </span>
                     <span class="auth-pill">
                         <span class="auth-pill-icon"><i class="bi bi-shield-check"></i></span>
-                        Role-Based Access
+                        Statistical Evaluation
                     </span>
                     <span class="auth-pill">
                         <span class="auth-pill-icon"><i class="bi bi-file-earmark-bar-graph"></i></span>
-                        CQI Report Generation
+                        AI CQI Recommendations
                     </span>
                 </div>
 
@@ -68,8 +68,8 @@
                                     <i class="bi bi-cpu"></i>
                                 </div>
                                 <div class="auth-feature-card-body">
-                                    <div class="auth-feature-card-title">AI Insights</div>
-                                    <div class="auth-feature-card-desc">Smart analytics surfaced from every survey response</div>
+                                    <div class="auth-feature-card-title">Sentiment Analysis</div>
+                                    <div class="auth-feature-card-desc">Classifies open-ended responses using NLP models for deeper insights</div>
                                 </div>
                             </div>
                         </div>
@@ -80,8 +80,8 @@
                                     <i class="bi bi-shield-check"></i>
                                 </div>
                                 <div class="auth-feature-card-body">
-                                    <div class="auth-feature-card-title">Secure Access</div>
-                                    <div class="auth-feature-card-desc">Role-based permissions for every user type</div>
+                                    <div class="auth-feature-card-title">Survey Analytics</div>
+                                    <div class="auth-feature-card-desc">Computes mean, frequency, and performance trends from structured responses</div>
                                 </div>
                             </div>
                         </div>
@@ -92,8 +92,8 @@
                                     <i class="bi bi-file-earmark-bar-graph"></i>
                                 </div>
                                 <div class="auth-feature-card-body">
-                                    <div class="auth-feature-card-title">CQI Reports</div>
-                                    <div class="auth-feature-card-desc">Generate comprehensive quality improvement reports</div>
+                                    <div class="auth-feature-card-title">AI Recommendations</div>
+                                    <div class="auth-feature-card-desc"> Generates CQI reports with actionable insights using generative AI</div>
                                 </div>
                             </div>
                         </div>
@@ -104,8 +104,8 @@
                                     <i class="bi bi-graph-up-arrow"></i>
                                 </div>
                                 <div class="auth-feature-card-body">
-                                    <div class="auth-feature-card-title">Real-time Feedback</div>
-                                    <div class="auth-feature-card-desc">Track survey completion and results instantly</div>
+                                    <div class="auth-feature-card-title">Performance Tracking</div>
+                                    <div class="auth-feature-card-desc">Monitor trends and changes in faculty performance across survey periods</div>
                                 </div>
                             </div>
                         </div>
@@ -157,7 +157,7 @@
                 {{-- Logo (mobile only) --}}
                 <div class="auth-mobile-brand d-lg-none">
                     <i class="bi bi-mortarboard-fill"></i>
-                    CQI System
+                    {{ setting('app.name') }}
                 </div>
 
                 <div class="auth-form-header">
@@ -196,7 +196,7 @@
                                 class="form-control auth-input @error('login') is-invalid @enderror"
                                 name="login"
                                 id="login"
-                                placeholder="you@example.com"
+                                placeholder="you@usc.edu.ph or 201XXXXX"
                                 value="{{ old('login') }}"
                                 autocomplete="username"
                                 autofocus

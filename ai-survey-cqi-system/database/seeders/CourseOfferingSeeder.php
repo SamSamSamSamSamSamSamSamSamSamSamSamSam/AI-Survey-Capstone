@@ -12,10 +12,21 @@ class CourseOfferingSeeder extends Seeder
     {
         $prospectuses = Prospectus::where('semester_id', 1)->get()->random(5);
         
-        // Get all faculty members once to avoid repeated queries
+        // Define the IDs of the faculty you want to exclude
+        $excludedFacultyIds = [2, 10, 15]; 
+
+        // Get all faculty members while excluding specific IDs
         $facultyMembers = \App\Models\User::whereHas('roles', function($query) {
-            $query->where('name', 'faculty');
-        })->get();
+                $query->where('name', 'faculty');
+            })
+            ->whereNotIn('id', $excludedFacultyIds)
+            ->get();
+
+        // Ensure we have faculty remaining to avoid errors
+        if ($facultyMembers->isEmpty()) {
+            $this->command->error('No faculty members found to assign.');
+            return;
+        }
 
         foreach ($prospectuses as $pros) {
             $numSections = rand(1, 3);
@@ -25,7 +36,7 @@ class CourseOfferingSeeder extends Seeder
                     ->where('semester_number', $pros->semester_number)
                     ->first()->id ?? 1;
 
-                \App\Models\CourseOffering::updateOrCreate(
+                    CourseOffering::updateOrCreate(
                     [
                         'subject_id'   => $pros->subject_id,
                         'semester_id'  => $semesterId,
@@ -33,6 +44,7 @@ class CourseOfferingSeeder extends Seeder
                     ],
                     [
                         'offering_type_id' => $pros->offered_type_id,
+                        // Now random() will only pick from the filtered collection
                         'teacher_id'       => $facultyMembers->random()->id,
                     ]
                 );
