@@ -31,7 +31,18 @@ class SurveyController extends Controller
         }
 
         if ($search = $request->input('search')) {
-            $query->where('title', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('surveys.title', 'like', "%{$search}%")
+                  ->orWhereHas('offering', function ($q) use ($search) {
+                      $q->where('group_number', 'like', "%{$search}%")
+                        ->orWhereHas('subject', function ($q) use ($search) {
+                            $q->where('course_code', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('teacher', function ($q) use ($search) {
+                            $q->where('name', 'like', "%{$search}%");
+                        });
+                  });
+            });
         }
 
         if ($request->input('status') === 'deleted') {
