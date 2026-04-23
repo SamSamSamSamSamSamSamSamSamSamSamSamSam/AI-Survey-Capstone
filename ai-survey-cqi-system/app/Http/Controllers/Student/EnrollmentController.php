@@ -63,44 +63,33 @@ class EnrollmentController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'offering_id' => ['required', 'exists:course_offerings,id'],
-        ]);
+        $offering = CourseOffering::findOrFail($request->offering_id);
+        $user = Auth::user();
 
-        $activeSemester = Semester::current();
+        // Check if the student is already enrolled in A DIFFERENT section of the SAME SUBJECT
+        $existingEnrollment = Enrollment::where('student_id', $user->id)
+            ->whereHas('offering', function($query) use ($offering) {
+                $query->where('subject_id', $offering->subject_id)
+                    ->where('semester_id', $offering->semester_id);
+            })->first();
 
-        if (! $activeSemester) {
-            return back()->with('error', 'Enrollment is not available. No active semester is set.');
+        if ($existingEnrollment) {
+            // Option A: Automatically swap them
+            $existingEnrollment->delete();
         }
 
-        $offering = CourseOffering::where('id', $request->offering_id)
-            ->where('semester_id', $activeSemester->id)
-            ->whereNull('deleted_at')
-            ->firstOrFail();
-
-        $alreadyEnrolled = DB::table('enrollments')
-            ->join('course_offerings', 'enrollments.offering_id', '=', 'course_offerings.id')
-            ->where('enrollments.student_id', Auth::id())
-            ->where('course_offerings.subject_id', $offering->subject_id)
-            ->where('course_offerings.semester_id', $offering->semester_id)
-            ->exists();
-
-        if ($alreadyEnrolled) {
-            return back()->with('error', 'You are already enrolled in this course for this semester.');
-        }
-
-        // Default enrollment type
-        $defaultEnrollmentType = EnrollmentType::whereName('block-enrolled')->first()
-            ?? EnrollmentType::first();
-
+        // Create the new enrollment
         Enrollment::create([
             'offering_id'        => $offering->id,
-            'student_id'         => Auth::id(),
-            'enrollment_type_id' => $defaultEnrollmentType?->id,
+            'student_id'         => $user->id,
+            'enrollment_type_id' => EnrollmentType::whereName('block-enrolled')->first()?->id ?? 1,
         ]);
 
-        return redirect()->route('student.enrollments.index')
-            ->with('success', "Enrolled in {$offering->subject->name} successfully.");
+        // IMPORTANT: Clear any cached surveys for this user if you are using caching
+        // artisan call('optimize:clear'); // Not recommended in code, but ensure cache is fresh
+
+        return redirect()->route('student.dashboard')
+            ->with('success', "Course changed to {$offering->subject->name} successfully.");
     }
 
     /**

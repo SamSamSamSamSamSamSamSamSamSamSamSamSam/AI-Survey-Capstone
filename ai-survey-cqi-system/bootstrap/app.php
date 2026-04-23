@@ -14,15 +14,14 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
 
-        // Register alias so routes can use ->middleware('role:admin') etc.
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'redirect.authenticated' => RedirectIfAuthenticated::class,
         ]);
-        // ->append(\App\Http\Middleware\MaintenanceMiddleware::class);
 
         $middleware->web(append: [
             \App\Http\Middleware\MaintenanceMiddleware::class,
+            \App\Http\Middleware\SetSessionLifetime::class, // <--- ADD THIS LINE
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

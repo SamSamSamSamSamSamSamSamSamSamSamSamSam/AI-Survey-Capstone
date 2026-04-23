@@ -30,17 +30,17 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFive();
 
         // Only run database-dependent logic if NOT running in the console (Terminal)
-        if (!app()->runningInConsole()) {
-            try {
-                // Fetch the lifetime from the database
-                $lifetime = setting('security.session_lifetime', 120);
+        // if (!app()->runningInConsole()) {
+        //     try {
+        //         // Fetch the lifetime from the database
+        //         $lifetime = setting('security.session_lifetime', 120);
                 
-                // Set the configuration dynamically
-                Config::set('session.lifetime', $lifetime);
-            } catch (\Exception $e) {
-                // Fallback to default if the table isn't ready or error occurs
-                Config::set('session.lifetime', 120);
-            }
-        }
+        //         // Set the configuration dynamically
+        //         Config::set('session.lifetime', $lifetime);
+        //     } catch (\Exception $e) {
+        //         // Fallback to default if the table isn't ready or error occurs
+        //         Config::set('session.lifetime', 120);
+        //     }
+        // }
     }
 }
