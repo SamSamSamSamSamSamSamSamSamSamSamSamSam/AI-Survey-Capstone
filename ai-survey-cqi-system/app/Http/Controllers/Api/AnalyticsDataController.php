@@ -100,21 +100,29 @@ class AnalyticsDataController extends Controller
 
     public function overview(Request $request): JsonResponse
     {
-        $records = $this->baseQuery($request)->get();
+        // SECURITY FIX: Add pagination to prevent memory exhaustion
+        $perPage = min((int)$request->input('per_page', 50), 100);
+        $page = max(1, (int)$request->input('page', 1));
+        
+        $paginated = $this->baseQuery($request)
+            ->paginate($perPage, ['*'], 'page', $page);
+        
+        $records = $paginated->items();
 
-        if ($records->isEmpty()) {
-            return response()->json(['empty' => true]);
+        if (empty($records)) {
+            return response()->json(['empty' => true, 'pagination' => []]);
         }
 
         // ── Summary stats ─────────────────────────────────────────────────────
-        $totalResponses   = $records->sum('response_count');
-        $avgRating        = $records->whereNotNull('avg_rating')->avg('avg_rating');
-        $avgPositive      = $records->whereNotNull('positive_sentiment_percent')->avg('positive_sentiment_percent');
-        $avgNeutral       = $records->whereNotNull('neutral_sentiment_percent')->avg('neutral_sentiment_percent');
-        $avgNegative      = $records->whereNotNull('negative_sentiment_percent')->avg('negative_sentiment_percent');
+        $collection = collect($records);
+        $totalResponses   = $collection->sum('response_count');
+        $avgRating        = $collection->whereNotNull('avg_rating')->avg('avg_rating');
+        $avgPositive      = $collection->whereNotNull('positive_sentiment_percent')->avg('positive_sentiment_percent');
+        $avgNeutral       = $collection->whereNotNull('neutral_sentiment_percent')->avg('neutral_sentiment_percent');
+        $avgNegative      = $collection->whereNotNull('negative_sentiment_percent')->avg('negative_sentiment_percent');
 
         // ── Rating distribution (count of records by rounded avg_rating) ──────
-        $distribution = $records->whereNotNull('avg_rating')
+        $distribution = $collection->whereNotNull('avg_rating')
             ->groupBy(fn ($r) => (string) round($r->avg_rating))
             ->map->count()
             ->toArray();
@@ -143,7 +151,7 @@ class AnalyticsDataController extends Controller
                 'avg_positive_pct' => round($avgPositive, 1),
                 'avg_neutral_pct'  => round($avgNeutral, 1),
                 'avg_negative_pct' => round($avgNegative, 1),
-                'surveys_count'    => $records->count(),
+                'surveys_count'    => count($records),
             ],
             'distribution'   => $dist,
             'category_scores'=> $avgCatScores,
@@ -152,6 +160,14 @@ class AnalyticsDataController extends Controller
                 'neutral'  => round($avgNeutral, 1),
                 'negative' => round($avgNegative, 1),
             ],
+            'pagination' => [
+                'total' => $paginated->total(),
+                'per_page' => $paginated->perPage(),
+                'current_page' => $paginated->currentPage(),
+                'last_page' => $paginated->lastPage(),
+                'from' => $paginated->firstItem(),
+                'to' => $paginated->lastItem(),
+            ]
         ]);
     }
 

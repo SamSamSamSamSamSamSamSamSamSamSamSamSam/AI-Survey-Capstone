@@ -48,6 +48,7 @@ class UserImportController extends Controller
         }
 
         // 2. PROCESSING: If we reach here, the whole file is "clean"
+        // SECURITY FIX: Queue emails asynchronously to prevent timeouts and memory issues
         \Illuminate\Support\Facades\DB::transaction(function () use ($rows) {
             foreach ($rows as $data) {
                 $user = \App\Models\User::create([
@@ -64,8 +65,9 @@ class UserImportController extends Controller
                     $user->roles()->attach($role->id);
                 }
 
+                // SECURITY FIX: Queue email instead of sending synchronously
                 $token = \Illuminate\Support\Facades\Password::broker()->createToken($user);
-                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\WelcomeUserMail($user, $token));
+                \Illuminate\Support\Facades\Mail::to($user->email)->queue(new \App\Mail\WelcomeUserMail($user, $token));
             }
         });
 

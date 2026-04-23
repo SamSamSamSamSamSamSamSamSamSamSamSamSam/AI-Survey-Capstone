@@ -76,7 +76,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/{survey}/submit', [SurveyTakeController::class, 'submit'])->name('submit');
         });
 
-        Route::prefix('api/analytics')->name('api.analytics.')->group(function () {
+        Route::prefix('api/analytics')->name('api.analytics.')->middleware('throttle:60,1')->group(function () {
             Route::get('meta',       [AnalyticsDataController::class, 'meta'])      ->name('meta');
             Route::get('overview',   [AnalyticsDataController::class, 'overview'])  ->name('overview');
             Route::get('trends',     [AnalyticsDataController::class, 'trends'])    ->name('trends');

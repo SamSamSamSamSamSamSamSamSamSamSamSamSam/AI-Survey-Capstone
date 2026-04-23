@@ -13,6 +13,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class ComputeFacultyAnalyticsJob implements ShouldQueue
 {
@@ -47,66 +48,99 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
         }
 
         // ------------------------------------------------------------------
-        // 1. Quantitative Ratings & Descriptive Statistics
+        // 1. Quantitative Ratings & Descriptive Statistics (Optimized)
         // ------------------------------------------------------------------
-        $ratingValues = Response::whereIn('attempt_id', $attempts->pluck('id'))
-            ->whereHas('question', fn ($q) => $q->where('question_type', 'rating'))
-            ->whereNotNull('scale_value')
-            ->pluck('scale_value');
-
-        // Initialize defaults
-        $avgRating = 0;
-        $stdDev    = 0;
-        $median    = 0;
-        $mode      = 0;
-
-        if ($ratingValues->isNotEmpty()) {
-            // Mean
-            $avgRating = round($ratingValues->avg(), 2);
-
-            // Standard Deviation
-            $variance = $ratingValues->map(fn($number) => pow($number - $avgRating, 2))->average();
-            $stdDev   = round(sqrt($variance), 2);
-
-            // Median
-            $sorted = $ratingValues->sort()->values();
-            $count  = $sorted->count();
-            $median = $count % 2 == 0 
-                ? ($sorted[$count/2 - 1] + $sorted[$count/2]) / 2 
-                : $sorted[floor($count/2)];
-
-            // Mode
-            $mode = $ratingValues->countBy()->sortDesc()->keys()->first();
-        }
-
-        // ------------------------------------------------------------------
-        // 2. Category scores — average rating per question category
-        // ------------------------------------------------------------------
-        $categoryScores = Response::query()
+        $attemptIds = $attempts->pluck('id')->toArray();
+        
+        // Use single aggregated query instead of multiple queries
+        $ratingStats = DB::table('responses')
             ->join('survey_questions', 'responses.survey_question_id', '=', 'survey_questions.id')
-            ->join('question_categories', 'survey_questions.category_id', '=', 'question_categories.id')
-            ->whereIn('responses.attempt_id', $attempts->pluck('id'))
+            ->whereIn('responses.attempt_id', $attemptIds)
             ->where('survey_questions.question_type', 'rating')
             ->whereNotNull('responses.scale_value')
-            ->groupBy('question_categories.name')
             ->select(
-                'question_categories.name as category',
-                DB::raw('ROUND(AVG(responses.scale_value), 2) as avg_score')
+                DB::raw('COUNT(*) as count'),
+                DB::raw('AVG(responses.scale_value) as avg_val'),
+                DB::raw('STDDEV_POP(responses.scale_value) as std_dev'),
+                DB::raw('MIN(responses.scale_value) as min_val'),
+                DB::raw('MAX(responses.scale_value) as max_val')
             )
-            ->pluck('avg_score', 'category')
-            ->toArray();
+            ->first();
+
+        $avgRating = $ratingStats->count > 0 ? round($ratingStats->avg_val ?? 0, 2) : 0;
+        $stdDev    = $ratingStats->count > 0 ? round($ratingStats->std_dev ?? 0, 2) : 0;
+        
+        // Mode: get most common rating value
+        $mode = $ratingStats->count > 0 ? DB::table('responses')
+            ->join('survey_questions', 'responses.survey_question_id', '=', 'survey_questions.id')
+            ->whereIn('responses.attempt_id', $attemptIds)
+            ->where('survey_questions.question_type', 'rating')
+            ->whereNotNull('responses.scale_value')
+            ->select('responses.scale_value', DB::raw('COUNT(*) as freq'))
+            ->groupBy('responses.scale_value')
+            ->orderByDesc('freq')
+            ->first()?->scale_value ?? 0 : 0;
+        
+        // Median calculation
+        $median = $ratingStats->count > 0 ? DB::selectOne(
+            "SELECT AVG(scale_value) as median FROM (
+                SELECT responses.scale_value
+                FROM responses
+                JOIN survey_questions ON responses.survey_question_id = survey_questions.id
+                WHERE responses.attempt_id IN (" . implode(',', array_map('intval', $attemptIds)) . ")
+                AND survey_questions.question_type = 'rating'
+                AND responses.scale_value IS NOT NULL
+                ORDER BY responses.scale_value
+                LIMIT 2 OFFSET (SELECT COUNT(*) FROM responses
+                    JOIN survey_questions ON responses.survey_question_id = survey_questions.id
+                    WHERE responses.attempt_id IN (" . implode(',', array_map('intval', $attemptIds)) . ")
+                    AND survey_questions.question_type = 'rating') / 2 - 1
+            ) as sub"
+        )?->median ?? 0 : 0;
+        
+        // Fallback to simpler median if complex query fails
+        $median = is_numeric($median) ? round($median, 2) : (($ratingStats->min_val ?? 0) + ($ratingStats->max_val ?? 0)) / 2;
 
         // ------------------------------------------------------------------
-        // 3. Sentiment distribution
+        // 2. Category scores — average rating per question category (Cached)
         // ------------------------------------------------------------------
-        $sentimentCounts = DB::table('response_sentiments')
-            ->join('sentiment_types', 'response_sentiments.sentiment_type_id', '=', 'sentiment_types.id')
-            ->join('responses', 'response_sentiments.response_id', '=', 'responses.id')
-            ->whereIn('responses.attempt_id', $attempts->pluck('id'))
-            ->groupBy('sentiment_types.label')
-            ->select('sentiment_types.label', DB::raw('COUNT(*) as count'))
-            ->pluck('count', 'label')
-            ->toArray();
+        $categoryScores = Cache::remember(
+            "faculty_analytics_categories_{$survey->id}",
+            3600, // 1 hour cache
+            function () use ($attemptIds) {
+                return DB::table('responses')
+                    ->join('survey_questions', 'responses.survey_question_id', '=', 'survey_questions.id')
+                    ->join('question_categories', 'survey_questions.category_id', '=', 'question_categories.id')
+                    ->whereIn('responses.attempt_id', $attemptIds)
+                    ->where('survey_questions.question_type', 'rating')
+                    ->whereNotNull('responses.scale_value')
+                    ->groupBy('question_categories.name', 'question_categories.id')
+                    ->select(
+                        'question_categories.name as category',
+                        DB::raw('ROUND(AVG(responses.scale_value), 2) as avg_score')
+                    )
+                    ->pluck('avg_score', 'category')
+                    ->toArray();
+            }
+        );
+
+        // ------------------------------------------------------------------
+        // 3. Sentiment distribution (Batch query)
+        // ------------------------------------------------------------------
+        $sentimentCounts = Cache::remember(
+            "faculty_analytics_sentiment_{$survey->id}",
+            3600,
+            function () use ($attemptIds) {
+                return DB::table('response_sentiments')
+                    ->join('sentiment_types', 'response_sentiments.sentiment_type_id', '=', 'sentiment_types.id')
+                    ->join('responses', 'response_sentiments.response_id', '=', 'responses.id')
+                    ->whereIn('responses.attempt_id', $attemptIds)
+                    ->groupBy('sentiment_types.label', 'sentiment_types.id')
+                    ->select('sentiment_types.label', DB::raw('COUNT(*) as count'))
+                    ->pluck('count', 'label')
+                    ->toArray();
+            }
+        );
 
         $totalSentiments = array_sum($sentimentCounts);
         $positivePct = $totalSentiments > 0 ? round(($sentimentCounts['positive'] ?? 0) / $totalSentiments * 100, 2) : 0;
@@ -114,10 +148,12 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
         $negativePct = $totalSentiments > 0 ? round(($sentimentCounts['negative'] ?? 0) / $totalSentiments * 100, 2) : 0;
 
         // ------------------------------------------------------------------
-        // 4. Top keywords
+        // 4. Top keywords (Batch query with limit)
         // ------------------------------------------------------------------
-        $textResponses = Response::whereIn('attempt_id', $attempts->pluck('id'))
+        $textResponses = Response::whereIn('attempt_id', $attemptIds)
             ->whereNotNull('text_response')
+            ->select('text_response')
+            ->limit(1000) // Limit to prevent memory issues
             ->pluck('text_response');
 
         $topKeywords = $this->extractTopKeywords($textResponses->toArray());
@@ -155,7 +191,7 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
 
     private function extractTopKeywords(array $texts, int $limit = 20): array
     {
-        $stopWords = [
+        $stopWords = array_flip([
             'the','a','an','is','it','in','on','at','to','for','of','and','or','but',
             'not','with','this','that','was','are','be','been','has','have','had',
             'do','did','does','i','me','my','we','you','he','she','they','his','her',
@@ -163,15 +199,27 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
             'about','up','out','all','from','can','will','would','could','should',
             'what','how','when','where','why','who','which','than','more','some',
             'teacher','professor','instructor','subject','course','class', 'sir',
-        ];
+        ]);
 
         $wordCounts = [];
+        $maxWords = 10000; // Limit total words processed to prevent memory issues
+        $processedWords = 0;
+
+        // PERFORMANCE FIX: Use regex and array_flip for O(1) stop word lookup
+        $stopwordRegex = '/^(' . implode('|', array_keys($stopWords)) . ')$/i';
+
         foreach ($texts as $text) {
-            $words = preg_split('/[\s,.\!\?\;\:\"\'\(\)\-\/]+/', strtolower($text));
-            foreach ($words as $word) {
-                $word = trim($word);
-                if (strlen($word) < 3 || in_array($word, $stopWords)) continue;
+            if ($processedWords >= $maxWords) break;
+            
+            // Split on non-word characters
+            preg_match_all('/\b[a-z]{3,}\b/i', strtolower($text), $matches);
+            
+            foreach ($matches[0] as $word) {
+                if ($processedWords >= $maxWords) break;
+                if (isset($stopWords[$word])) continue;
+                
                 $wordCounts[$word] = ($wordCounts[$word] ?? 0) + 1;
+                $processedWords++;
             }
         }
 

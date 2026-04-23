@@ -9,7 +9,8 @@ use App\Models\CqiReport;
 use App\Models\Enrollment;
 use App\Models\FacultyAnalytics;
 use App\Models\Semester;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -46,7 +47,7 @@ class DashboardController extends Controller
         $activeSurveys   = $taughtSurveys->where('is_active', true);
         $inactiveSurveys = $taughtSurveys->where('is_active', false);
 
-        // ── Analytics summary ────────────────────────────────────────────────
+        // ── Analytics summary (Optimized with database aggregation) ────────
         $analyticsRecords = FacultyAnalytics::with(['survey.offering.subject'])
             ->where('faculty_id', $user->id)
             ->when($activeSemester, fn ($q) =>
@@ -56,22 +57,48 @@ class DashboardController extends Controller
             )
             ->get();
 
-        $overallAvgRating = $analyticsRecords->whereNotNull('avg_rating')->avg('avg_rating');
-        $totalResponses   = $analyticsRecords->sum('response_count');
-        $avgPositivePct   = $analyticsRecords->whereNotNull('positive_sentiment_percent')->avg('positive_sentiment_percent');
-        $avgNegativePct   = $analyticsRecords->whereNotNull('negative_sentiment_percent')->avg('negative_sentiment_percent');
-        $avgNeutralPct    = $analyticsRecords->whereNotNull('neutral_sentiment_percent')->avg('neutral_sentiment_percent');
+        // Use database aggregation instead of PHP loops
+        $stats = DB::table('faculty_analytics')
+            ->where('faculty_id', $user->id)
+            ->when($activeSemester, fn ($q) =>
+                $q->whereHas('survey.offering', fn ($q2) =>
+                    $q2->where('semester_id', $activeSemester->id)
+                )
+            )
+            ->select(
+                DB::raw('ROUND(AVG(avg_rating), 2) as overall_avg_rating'),
+                DB::raw('SUM(response_count) as total_responses'),
+                DB::raw('ROUND(AVG(positive_sentiment_percent), 2) as avg_positive'),
+                DB::raw('ROUND(AVG(negative_sentiment_percent), 2) as avg_negative'),
+                DB::raw('ROUND(AVG(neutral_sentiment_percent), 2) as avg_neutral')
+            )
+            ->first();
+        
+        $overallAvgRating = $stats->overall_avg_rating ?? 0;
+        $totalResponses   = $stats->total_responses ?? 0;
+        $avgPositivePct   = $stats->avg_positive ?? 0;
+        $avgNegativePct   = $stats->avg_negative ?? 0;
+        $avgNeutralPct    = $stats->avg_neutral ?? 0;
 
-        $allCategoryScores = [];
-        foreach ($analyticsRecords as $rec) {
-            foreach ($rec->category_scores ?? [] as $cat => $score) {
-                $allCategoryScores[$cat][] = $score;
+        // Cache category scores computation
+        $avgCategoryScores = Cache::remember(
+            "faculty_category_scores_{$user->id}_" . ($activeSemester?->id ?? 'all'),
+            3600, // 1 hour
+            function () use ($analyticsRecords) {
+                $allCategoryScores = [];
+                foreach ($analyticsRecords as $rec) {
+                    foreach ($rec->category_scores ?? [] as $cat => $score) {
+                        // Skip metadata fields
+                        if (is_array($score) || strpos($cat, '_') === 0) continue;
+                        $allCategoryScores[$cat][] = $score;
+                    }
+                }
+                return collect($allCategoryScores)
+                    ->map(fn ($scores) => round(collect($scores)->avg(), 2))
+                    ->sortByDesc(fn ($v) => $v)
+                    ->toArray();
             }
-        }
-        $avgCategoryScores = collect($allCategoryScores)
-            ->map(fn ($scores) => round(array_sum($scores) / count($scores), 2))
-            ->sortByDesc(fn ($v) => $v)
-            ->toArray();
+        );
 
         // ── CQI Reports ──────────────────────────────────────────────────────
         $cqiReports = CqiReport::with(['survey.offering.subject', 'survey.offering.semester'])
