@@ -130,14 +130,22 @@ return new class extends Migration
                 $table->dropIndexIfExists(['offering_id', 'student_id']);
             });
         }
-    }
+            }
 
-    /**
-     * Check if an index exists on a table
-     */
-    private function hasIndex(string $table, string $indexName): bool
-    {
-        $indexes = Schema::getConnection()->getDoctrineSchemaManager()->listTableIndexes($table);
-        return isset($indexes[strtolower($indexName)]);
-    }
+        /**
+         * Check if an index exists on a table
+         */
+        private function hasIndex(string $table, string $indexName): bool
+        {
+            // Laravel 11 native way to get indexes
+            $indexes = Schema::getIndexes($table);
+            
+            foreach ($indexes as $index) {
+                if ($index['name'] === $indexName) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
 };
