@@ -26,4 +26,7 @@ export function initConfirmAction() {
             formToSubmit.submit(); // Now submit the actual form
         }
     });
+    modalEl.addEventListener('hidden.bs.modal', () => {
+        formToSubmit = null;
+    });
 }

@@ -2,7 +2,7 @@
 
 ## Todays Agenda
 - [ ] CQI error messages
-- [ ] Faculty Survey Not Available to every faculty yet
+- [X] Faculty Survey Not Available to every faculty yet
 - [X] analytics charts
 
 
