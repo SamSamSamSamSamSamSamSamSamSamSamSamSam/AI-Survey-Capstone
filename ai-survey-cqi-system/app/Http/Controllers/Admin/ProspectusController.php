@@ -96,15 +96,21 @@ class ProspectusController extends Controller
 
     public function destroy(Prospectus $prospectus): RedirectResponse
     {
-        $programId    = $prospectus->curriculum->program_id;
+        // Ensure curriculum is loaded even if route model binding was partial
+        if (!$prospectus->relationLoaded('curriculum')) {
+            $prospectus->load('curriculum');
+        }
+
+        // Safety check to prevent the "property on null" error
+        $programId    = $prospectus->curriculum ? $prospectus->curriculum->program_id : null;
         $curriculumId = $prospectus->curriculum_id;
 
         $prospectus->delete();
 
         return redirect()->route('admin.prospectus.index', [
-                             'program_id'    => $programId,
-                             'curriculum_id' => $curriculumId,
-                         ])
-                         ->with('success', 'Prospectus entry removed.');
+                            'program_id'    => $programId,
+                            'curriculum_id' => $curriculumId,
+                        ])
+                        ->with('success', 'Prospectus entry removed.');
     }
 }
