@@ -52,7 +52,6 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
         // ------------------------------------------------------------------
         $attemptIds = $attempts->pluck('id')->toArray();
         
-        // Use single aggregated query instead of multiple queries
         $ratingStats = DB::table('responses')
             ->join('survey_questions', 'responses.survey_question_id', '=', 'survey_questions.id')
             ->whereIn('responses.attempt_id', $attemptIds)
@@ -81,24 +80,32 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
             ->orderByDesc('freq')
             ->first()?->scale_value ?? 0 : 0;
         
-        // Median calculation
-        $median = $ratingStats->count > 0 ? DB::selectOne(
-            "SELECT AVG(scale_value) as median FROM (
-                SELECT responses.scale_value
-                FROM responses
-                JOIN survey_questions ON responses.survey_question_id = survey_questions.id
-                WHERE responses.attempt_id IN (" . implode(',', array_map('intval', $attemptIds)) . ")
-                AND survey_questions.question_type = 'rating'
-                AND responses.scale_value IS NOT NULL
-                ORDER BY responses.scale_value
-                LIMIT 2 OFFSET (SELECT COUNT(*) FROM responses
+        // Median calculation - FIXED: Calculate offset in PHP to prevent MySQL Syntax Error
+        $median = 0;
+        if ($ratingStats && $ratingStats->count > 0) {
+            $totalCount = $ratingStats->count;
+            $isEven = ($totalCount % 2 == 0);
+            
+            // For median: if odd, take middle 1; if even, take middle 2 and average them
+            $limit = $isEven ? 2 : 1;
+            $offset = $isEven ? ($totalCount / 2) - 1 : floor($totalCount / 2);
+
+            $medianResult = DB::selectOne(
+                "SELECT AVG(scale_value) as median FROM (
+                    SELECT responses.scale_value
+                    FROM responses
                     JOIN survey_questions ON responses.survey_question_id = survey_questions.id
                     WHERE responses.attempt_id IN (" . implode(',', array_map('intval', $attemptIds)) . ")
-                    AND survey_questions.question_type = 'rating') / 2 - 1
-            ) as sub"
-        )?->median ?? 0 : 0;
+                    AND survey_questions.question_type = 'rating'
+                    AND responses.scale_value IS NOT NULL
+                    ORDER BY responses.scale_value
+                    LIMIT ? OFFSET ?
+                ) as sub", [(int)$limit, (int)$offset]
+            );
+
+            $median = $medianResult?->median ?? 0;
+        }
         
-        // Fallback to simpler median if complex query fails
         $median = is_numeric($median) ? round($median, 2) : (($ratingStats->min_val ?? 0) + ($ratingStats->max_val ?? 0)) / 2;
 
         // ------------------------------------------------------------------
@@ -106,7 +113,7 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
         // ------------------------------------------------------------------
         $categoryScores = Cache::remember(
             "faculty_analytics_categories_{$survey->id}",
-            3600, // 1 hour cache
+            3600, 
             function () use ($attemptIds) {
                 return DB::table('responses')
                     ->join('survey_questions', 'responses.survey_question_id', '=', 'survey_questions.id')
@@ -153,13 +160,13 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
         $textResponses = Response::whereIn('attempt_id', $attemptIds)
             ->whereNotNull('text_response')
             ->select('text_response')
-            ->limit(1000) // Limit to prevent memory issues
+            ->limit(1000) 
             ->pluck('text_response');
 
         $topKeywords = $this->extractTopKeywords($textResponses->toArray());
 
         // ------------------------------------------------------------------
-        // 5. Upsert faculty_analytics (Saving stats inside category_scores)
+        // 5. Upsert faculty_analytics
         // ------------------------------------------------------------------
         FacultyAnalytics::updateOrCreate(
             ['survey_id' => $survey->id],
@@ -172,7 +179,6 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
                 'neutral_sentiment_percent'  => $neutralPct,
                 'negative_sentiment_percent' => $negativePct,
                 
-                // Nesting the new stats here so they are available to Python/AI
                 'category_scores'            => array_merge($categoryScores, [
                     '_overall_stats' => [
                         'median'  => $median,
@@ -202,16 +208,12 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
         ]);
 
         $wordCounts = [];
-        $maxWords = 10000; // Limit total words processed to prevent memory issues
+        $maxWords = 10000;
         $processedWords = 0;
-
-        // PERFORMANCE FIX: Use regex and array_flip for O(1) stop word lookup
-        $stopwordRegex = '/^(' . implode('|', array_keys($stopWords)) . ')$/i';
 
         foreach ($texts as $text) {
             if ($processedWords >= $maxWords) break;
             
-            // Split on non-word characters
             preg_match_all('/\b[a-z]{3,}\b/i', strtolower($text), $matches);
             
             foreach ($matches[0] as $word) {
