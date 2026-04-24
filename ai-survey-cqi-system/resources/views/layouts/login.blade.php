@@ -17,6 +17,9 @@
 
 <body>
 
+{{-- Loading Screen Component --}}
+@include('components.loading-screen')
+
 <div class="app-wrapper">
 
     {{-- ===================== MAIN ===================== --}}
@@ -57,6 +60,8 @@
     </main>
 
 </div>
+
+@vite(['resources/js/modules/loading-screen.js'])
 
 @stack('scripts')
 

@@ -36,7 +36,9 @@ Route::resource('semesters', SemesterController::class)->except(['show']);
 Route::patch('semesters/{semester}/activate',   [SemesterController::class, 'activate'])  ->name('semesters.activate');
 Route::patch('semesters/{semester}/deactivate', [SemesterController::class, 'deactivate'])->name('semesters.deactivate');
 
-Route::resource('prospectus', ProspectusController::class)->only(['index', 'create', 'store', 'destroy']);
+Route::resource('prospectus', ProspectusController::class)
+     ->only(['index', 'create', 'store', 'destroy'])
+     ->parameters(['prospectus' => 'prospectus']);
 
 Route::resource('offerings', CourseOfferingController::class);
 Route::patch('offerings/{id}/restore', [CourseOfferingController::class, 'restore'])

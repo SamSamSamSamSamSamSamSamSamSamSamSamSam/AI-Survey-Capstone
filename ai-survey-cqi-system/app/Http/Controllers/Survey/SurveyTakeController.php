@@ -110,13 +110,19 @@ class SurveyTakeController extends Controller
                 $max = $question->scale?->max_value ?? 5;
                 $rules[$key] = ['required', 'integer', "min:{$min}", "max:{$max}"];
             } else {
-                $rules[$key] = ['nullable', 'string', 'max:2000'];
+                // SECURITY FIX: Add XSS protection for text responses
+                $rules[$key] = ['nullable', 'string', 'max:2000', 'no_html_tags'];
             }
         }
 
         // Notification preference toggles — both optional booleans
         $rules['notify_email']     = ['boolean'];
         $rules['notify_dashboard'] = ['boolean'];
+        
+        // Create custom validation rule for no HTML tags
+        \Illuminate\Support\Facades\Validator::extend('no_html_tags', function ($attribute, $value, $parameters, $validator) {
+            return strip_tags($value) === $value;
+        }, 'The :attribute field contains HTML tags which are not allowed.');
 
         $request->validate($rules);
 
@@ -139,7 +145,7 @@ class SurveyTakeController extends Controller
                 $attempt->responses()->create([
                     'survey_question_id' => $question->id,
                     'scale_value'        => $question->isRating() ? (int) $value : null,
-                    'text_response'      => $question->isText()   ? $value        : null,
+                    'text_response'      => $question->isText()   ? strip_tags($value) : null, // SECURITY FIX: Sanitize HTML
                 ]);
             }
 
@@ -206,6 +212,7 @@ class SurveyTakeController extends Controller
     /**
      * Faculty: must have faculty role AND must NOT be the teacher of this offering.
      * A faculty member can evaluate any offering they do not teach.
+     * SECURITY: Also prevent duplicate submissions
      */
     private function checkFaculty(\App\Models\User $user, Survey $survey): bool
     {
@@ -217,6 +224,11 @@ class SurveyTakeController extends Controller
 
         // Exclude the teacher of this specific offering only
         if ($survey->offering && $survey->offering->teacher_id === $user->id) {
+            return false;
+        }
+        
+        // SECURITY FIX: Prevent faculty from submitting the same survey twice
+        if ($survey->hasBeenAttemptedBy($user->id)) {
             return false;
         }
 

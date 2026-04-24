@@ -40,7 +40,7 @@
                     <div class="input-icon-wrap">
                         <i class="bi bi-search input-icon"></i>
                         <input type="text" name="search" id="survey-search" class="form-control auth-input"
-                               placeholder="Search title…" value="{{ request('search') }}" autocomplete="off">
+                               placeholder="Title, course code, group, or teacher…" value="{{ request('search') }}" autocomplete="off">
                     </div>
                 </div>
 
