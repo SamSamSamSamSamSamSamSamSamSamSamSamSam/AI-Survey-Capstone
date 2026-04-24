@@ -12,6 +12,7 @@ use App\Models\Semester;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -58,20 +59,21 @@ class DashboardController extends Controller
             ->get();
 
         // Use database aggregation instead of PHP loops
-        $stats = DB::table('faculty_analytics')
+        // ── Analytics summary (Optimized with Eloquent) ────────
+        $stats = FacultyAnalytics::query()
             ->where('faculty_id', $user->id)
             ->when($activeSemester, fn ($q) =>
                 $q->whereHas('survey.offering', fn ($q2) =>
                     $q2->where('semester_id', $activeSemester->id)
                 )
             )
-            ->select(
-                DB::raw('ROUND(AVG(avg_rating), 2) as overall_avg_rating'),
-                DB::raw('SUM(response_count) as total_responses'),
-                DB::raw('ROUND(AVG(positive_sentiment_percent), 2) as avg_positive'),
-                DB::raw('ROUND(AVG(negative_sentiment_percent), 2) as avg_negative'),
-                DB::raw('ROUND(AVG(neutral_sentiment_percent), 2) as avg_neutral')
-            )
+            ->selectRaw('
+                ROUND(AVG(avg_rating), 2) as overall_avg_rating,
+                SUM(response_count) as total_responses,
+                ROUND(AVG(positive_sentiment_percent), 2) as avg_positive,
+                ROUND(AVG(negative_sentiment_percent), 2) as avg_negative,
+                ROUND(AVG(neutral_sentiment_percent), 2) as avg_neutral
+            ')
             ->first();
         
         $overallAvgRating = $stats->overall_avg_rating ?? 0;
