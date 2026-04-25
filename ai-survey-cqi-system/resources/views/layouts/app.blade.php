@@ -95,9 +95,16 @@
             </nav>
 
             <div class="sidebar-footer">
-                <span class="sidebar-user">
-                    <i class="bi bi-person-circle me-1"></i>{{ auth()->user()->name }}
-                </span>
+                @if(auth()->user()->hasRole('admin'))
+                    <a href="{{ route('admin.settings.index') }}" 
+                    class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }} sidebar-setting">
+                        <i class="bi bi-gear"></i> <span >Settings</span>
+                    </a>
+                @else
+                    {{-- Optional: Add a placeholder or copyright text here if you don't want it empty --}}
+                    <span class="sidebar-info">&copy; {{ date('Y') }} {{ setting('app.name') }}</span> 
+                @endif
+
                 <div class="theme-switch" title="Toggle dark mode">
                     <label class="switch">
                         <input type="checkbox" id="themeToggle">
@@ -144,16 +151,16 @@
                                 <div class="topbar-user-name">{{ auth()->user()->name }}</div>
                                 <div class="topbar-user-id">{{ auth()->user()->user_id_number }}</div>
                             </div>
-                            <i class="bi bi-chevron-down" style="font-size:.65rem; color: var(--bs-secondary-color)"></i>
+                            {{-- <i class="bi bi-chevron-down" style="font-size:.65rem; color: var(--bs-secondary-color)"></i> --}}
                         </button>
 
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                            <li>
+                            {{-- <li>
                                 <span class="dropdown-item-text small text-muted">
                                     {{ auth()->user()->user_id_number }}
                                 </span>
                             </li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li><hr class="dropdown-divider"></li> --}}
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf

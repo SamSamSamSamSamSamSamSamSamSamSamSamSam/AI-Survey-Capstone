@@ -107,6 +107,21 @@
   gap: 8px;
 }
 
+.sidebar-info {
+    font-size: 0.65rem;
+    color: #ffffff !important;
+    white-space: nowrap;
+    font-weight: 300;  // Optional: makes it look cleaner/thinner
+    letter-spacing: 0.5px;
+    // This ensures the text doesn't break the layout if it's long
+}
+
+.sidebar-setting {
+  font-size: 0.90rem;
+  color: #ffffff !important;
+  white-space: nowrap;
+} 
+
 .sidebar-user {
   font-size: .8rem;
   font-weight: 500;

@@ -66,8 +66,8 @@
     <i class="bi bi-file-earmark-text"></i> <span>Prospectus</span>
 </a>
 
-<p class="nav-section">System</p>
+{{-- <p class="nav-section">System</p>
 
 <a href="{{ route('admin.settings.index') }}" class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
    <i class="bi bi-gear"></i> <span>Settings</span>
-</a>
+</a> --}}
