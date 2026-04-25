@@ -13,7 +13,7 @@
             <i class="bi bi-plus-lg me-1"></i> New Survey
         </a>
         <a href="{{ route('admin.surveys.global-assign') }}" class="btn btn-outline-primary">
-            <i class="bi bi-share me-1"></i> Survey Deployment
+            <i class="bi bi-share me-1"></i> Deploy Survey
         </a>
     </div>
 

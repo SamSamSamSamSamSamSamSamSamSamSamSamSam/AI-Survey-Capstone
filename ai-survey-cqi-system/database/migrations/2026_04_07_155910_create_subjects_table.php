@@ -15,13 +15,18 @@ return new class extends Migration
 
             $table->id(); // Auto-increment PK
 
-            $table->string('course_code')->unique();
+            $table->string('course_code');
             $table->string('name');
             $table->text('description')->nullable();
             $table->integer('units');
 
             $table->timestamps();
             $table->softDeletes(); // deleted_at
+
+            $table->unique(
+                ['course_code', 'deleted_at'], 
+                'subjects_course_code_unique'
+            );
         });
     }
 

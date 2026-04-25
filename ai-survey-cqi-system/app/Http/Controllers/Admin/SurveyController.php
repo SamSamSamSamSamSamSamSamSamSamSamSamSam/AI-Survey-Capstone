@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreSurveyRequest;
 use App\Models\CourseOffering;
 use App\Models\Role;
 use App\Models\Semester;
@@ -64,59 +65,48 @@ class SurveyController extends Controller
     public function create(): View
     {
         $activeSemester = Semester::current();
-
+        $assignedOfferingIds = Survey::when($survey ?? null, fn ($q) => $q->where('id', '!=', $survey->id))
+                                 ->pluck('offering_id')
+                                 ->flatten()
+                                 ->unique();
         $offerings = CourseOffering::with(['subject', 'teacher', 'semester'])
             ->when($activeSemester, fn ($q) => $q->where('semester_id', $activeSemester->id))
+            ->whereNotIn('id', $assignedOfferingIds)
             ->whereNull('deleted_at')->get();
 
         $roles     = Role::orderBy('name')->get();
+        $studentRoleId = Role::where('name', 'student')->value('id');
         $templates = SurveyTemplate::active()->orderByDesc('is_official')->orderBy('name')->get();
 
-        return view('admin.surveys.create', compact('offerings', 'roles', 'templates', 'activeSemester'));
+        return view('admin.surveys.create', compact('offerings', 'roles', 'templates', 'activeSemester', 'studentRoleId'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreSurveyRequest $request): RedirectResponse
     {
-        $request->validate([
-            // Changed to expect an array of IDs
-            'offering_id'    => ['required', 'array'], 
-            'offering_id.*'  => ['exists:course_offerings,id'],
-            'target_role_id' => ['required', 'exists:roles,id'],
-            'template_id'    => ['nullable', 'exists:survey_templates,id'],
-            'title'          => ['required', 'string', 'max:255'],
-            'description'    => ['nullable', 'string'],
-            'start_date'     => ['nullable', 'date'],
-            'end_date'       => ['nullable', 'date', 'after_or_equal:start_date'],
-        ]);
+        $validated = $request->validated();
 
-        DB::transaction(function () use ($request) {
-            // Loop through each selected course offering
-            foreach ($request->offering_id as $id) {
+        DB::transaction(function () use ($validated) {
+            foreach ($validated['offering_id'] as $id) {
                 $survey = Survey::create([
                     'offering_id'    => $id,
                     'created_by'     => Auth::id(),
-                    'target_role_id' => $request->target_role_id,
-                    'template_id'    => $request->template_id,
-                    'title'          => $request->title,
-                    'description'    => $request->description,
-                    'start_date'     => $request->start_date,
-                    'end_date'       => $request->end_date,
+                    'target_role_id' => $validated['target_role_id'],
+                    'template_id'    => $validated['template_id'] ?? null,
+                    'title'          => $validated['title'],
+                    'description'    => $validated['description'] ?? null,
+                    'start_date'     => $validated['start_date'] ?? null,
+                    'end_date'       => $validated['end_date'] ?? null,
                     'is_active'      => false,
                 ]);
 
-                // Auto-copy template questions if a template was selected
-                if ($request->template_id) {
-                    $template = SurveyTemplate::with('questions')->find($request->template_id);
+                if ($validated['template_id'] ?? null) {
+                    $template = \App\Models\SurveyTemplate::with('questions')->find($validated['template_id']);
                     $template?->copyQuestionsTo($survey);
                 }
             }
         });
 
-        $count = count($request->offering_id);
-        $msg = "Successfully created {$count} surveys.";
-
-        // Redirect to the index since we created multiple surveys
-        return redirect()->route('admin.surveys.index')->with('success', $msg);
+        return redirect()->route('admin.surveys.index')->with('success', 'Surveys created successfully.');
     }
 
     public function show(Survey $survey): View

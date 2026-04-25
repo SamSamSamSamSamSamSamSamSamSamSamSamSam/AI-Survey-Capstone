@@ -14,7 +14,7 @@
                     <th>Survey Details</th>
                     <th>Target Offerings</th>
                     <th>Audience</th>
-                    <th class="text-center">Questions</th>
+                    <th class="text-center">Active Period</th>
                     <th class="text-center">Responses</th>
                     <th>Status</th>
                     <th class="text-end">Actions</th>
@@ -61,9 +61,15 @@
 
                     {{-- QUESTIONS COUNT --}}
                     <td class="text-center">
-                        <span class="count-badge">
-                            {{ $survey->questions_count }}
-                        </span>
+                        @if($survey->end_date && !$survey->is_active)
+                            <span class="text-danger">Deactivated</span>
+                        @elseif($survey->end_date?->isPast())
+                            <span class="text-muted">Expired</span>
+                        @elseif($survey->end_date)
+                            <span class="text-primary">Due {{ $survey->end_date->format('M d') }}</span>
+                        @else
+                            <span>No dealine</span>
+                        @endif
                     </td>
 
                     {{-- RESPONSES COUNT --}}
@@ -107,7 +113,10 @@
 
                                 <form method="POST" action="{{ route('admin.surveys.destroy', $survey->id) }}" class="d-inline" data-confirm="Archive this survey?">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-icon btn-icon--danger" title="Archive"><i class="bi bi-archive"></i></button>
+                                    <button type="submit" class="btn btn-sm btn-icon btn-icon--danger {{ $survey->is_active ? 'disabled' : '' }}" 
+                                            style="{{ $survey->is_active ? 'pointer-events: auto; cursor: not-allowed;' : '' }}"
+                                            title="{{ $survey->is_active ? 'Cannot edit while active' : 'Archive' }}">
+                                            <i class="bi {{ $survey->is_active ? 'bi-lock-fill text-muted' : 'bi-trash' }}"></i></button>
                                 </form>
                             @else
                                 <form method="POST" action="{{ route('admin.surveys.restore', $survey->id) }}" class="d-inline">

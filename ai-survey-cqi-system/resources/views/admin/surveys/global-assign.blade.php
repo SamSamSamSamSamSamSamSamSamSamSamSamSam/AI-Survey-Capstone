@@ -37,7 +37,7 @@
     {{-- ===== LEFT: Configure & Launch ===== --}}
     <div class="card">
         <div class="template-card-header">
-            <i class="bi bi-rocket-takeoff me-2 text-muted"></i>
+            {{-- <i class="bi bi-rocket-takeoff me-2 text-muted"></i> --}}
             Configure &amp; Launch
         </div>
         <div class="card-body">
@@ -78,8 +78,8 @@
             <option value="" selected disabled>Select an official survey...</option>
             
             @forelse ($officialTemplate as $template)
-                <option value="{{ $template->id }}" {{ old('template_id', $currentTemplateId ?? '') == $template->id ? 'selected' : '' }}>
-                    {{ $template->name }} ({{ $template->questions_count ?? 0 }} questions)
+                <option value="{{ $template->id }}" {{ old('template_id', $currentTemplateId ?? ($loop->first ? $template->id : '')) == $template->id ? 'selected' : '' }}>
+                    {{ $template->name }}
                 </option>
             @empty
                 <option value="" disabled>No official templates available</option>
@@ -163,7 +163,7 @@
                 <button type="submit"
                         class="btn btn-primary w-100"
                         @disabled(! $officialTemplate)>
-                    <i class="bi bi-rocket-takeoff me-2"></i>
+                    {{-- <i class="bi bi-rocket-takeoff me-2"></i> --}}
                     Assign Surveys to All Offerings
                 </button>
 

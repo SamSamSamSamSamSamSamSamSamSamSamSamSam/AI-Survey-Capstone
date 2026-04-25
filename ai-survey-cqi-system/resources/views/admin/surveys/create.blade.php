@@ -21,6 +21,17 @@
     </a>
 </div>
 
+@if ($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <ul style="list-style-type: none;">
+            @foreach ($errors->all() as $error)
+                <li><i class="bi bi-exclamation-triangle-fill me-2"></i>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
 <div class="form-page-layout">
     <div class="form-card">
 
@@ -31,6 +42,10 @@
                 <div>No active semester is set — showing all available offerings.</div>
             </div>
         @endif
+        <div id="semester-info" 
+            data-name="{{ $activeSemester->full_label ?? 'No Active Semester' }}" 
+            class="d-none">
+        </div>
 
         <form method="POST" action="{{ route('admin.surveys.store') }}" novalidate>
             @csrf
@@ -80,12 +95,20 @@
 (function () {
     const templateSelect = document.getElementById('template_id');
     const titleInput     = document.getElementById('survey_title');
+    
+    // Grab the value from the data-attribute we placed in the Blade file
+    const semesterLabel  = document.getElementById('semester-info')?.dataset.name || '';
 
     if (templateSelect && titleInput) {
         templateSelect.addEventListener('change', function () {
             const selected = this.options[this.selectedIndex];
+            
+            // Only update if a template is selected AND the input is empty
             if (selected.value && !titleInput.value.trim()) {
-                titleInput.value = selected.dataset.name || '';
+                const templateName = selected.dataset.name || '';
+                
+                // Concatenate the name and semester
+                titleInput.value = `End of Semester Evaluation (${semesterLabel})`;
             }
         });
     }

@@ -59,13 +59,14 @@ class CourseOfferingController extends Controller
     {
         $subjects      = Subject::orderBy('course_code')->get();
         $semesters     = Semester::orderByDesc('academic_start_year')->orderByDesc('semester_number')->get();
+        $activeSemesterId = Semester::where('is_active', true)->value('id');
         $offeringTypes = OfferingType::orderBy('name')->get();
         $facultyRole   = Role::whereName('faculty')->first();
         $teachers      = $facultyRole
             ? User::whereHas('roles', fn ($q) => $q->where('name', 'faculty'))->orderBy('name')->get()
             : collect();
 
-        return view('admin.offerings.create', compact('subjects', 'semesters', 'offeringTypes', 'teachers'));
+        return view('admin.offerings.create', compact('subjects', 'semesters', 'offeringTypes', 'teachers', 'activeSemesterId'));
     }
 
     public function store(StoreCourseOfferingRequest $request): RedirectResponse
@@ -111,9 +112,20 @@ class CourseOfferingController extends Controller
     public function restore(string $id): RedirectResponse
     {
         $offering = CourseOffering::withTrashed()->findOrFail($id);
+
+        // Guard: Check if an active offering with the same attributes already exists
+        $exists = CourseOffering::where('subject_id', $offering->subject_id)
+                                ->where('semester_id', $offering->semester_id)
+                                ->where('group_number', $offering->group_number)
+                                ->exists();
+
+        if ($exists) {
+            return redirect()->route('admin.offerings.index')
+                            ->with('error', "Cannot restore: An active offering for this subject, semester, and group already exists.");
+        }
+
         $offering->restore();
 
-        return redirect()->route('admin.offerings.index')
-                         ->with('success', 'Course offering restored.');
+        return redirect()->route('admin.offerings.index')->with('success', 'Course offering restored.');
     }
 }

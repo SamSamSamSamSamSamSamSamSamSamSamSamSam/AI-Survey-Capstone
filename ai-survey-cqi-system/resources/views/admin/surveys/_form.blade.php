@@ -54,7 +54,7 @@
         <option value="">Who will take this survey?</option>
         @foreach ($roles as $role)
             <option value="{{ $role->id }}"
-                @selected(old('target_role_id', $survey->target_role_id ?? '') == $role->id)>
+                @selected(old('target_role_id', $survey->target_role_id ?? $studentRoleId) == $role->id)>
                 {{ ucfirst($role->name) }}
             </option>
         @endforeach

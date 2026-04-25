@@ -150,14 +150,14 @@
                         <tr>
                             <td>
                                 <span class="program-code-badge program-code-badge--subject">
-                                    {{ $entry->subject->course_code }}
+                                    {{ $entry->subject?->course_code }}
                                 </span>
                             </td>
                             <td class="fw-500" style="font-size:.875rem;">
-                                {{ $entry->subject->name }}
+                                {{ $entry->subject?->name }}
                             </td>
                             <td class="text-center">
-                                <span class="count-badge">{{ $entry->subject->units }}</span>
+                                <span class="count-badge">{{ $entry->subject?->units }}</span>
                             </td>
                             {{-- <td class="text-muted-sm">
                                 {{ $entry->semester?->full_label ?? '—' }}
@@ -166,7 +166,7 @@
                                 <form method="POST"
                                       action="{{ route('admin.prospectus.destroy', $entry->id) }}"
                                       class="d-inline"
-                                      data-confirm="Remove {{ $entry->subject->course_code }} from this curriculum?">
+                                      data-confirm="Remove {{ $entry->subject?->course_code }} from this curriculum?">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-icon btn-icon--danger"
                                             title="Remove">

@@ -13,14 +13,17 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->ulid('id')->primary(); // Use ULID for better performance and scalability
-            $table->string('user_id_number')->unique();
+            $table->string('user_id_number');
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('email');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes(); // deleted_at
+            // Compound unique indexes
+            $table->unique(['user_id_number', 'deleted_at'], 'users_user_id_number_unique');
+            $table->unique(['email', 'deleted_at'], 'users_email_unique');
         });
         
         Schema::create('password_resets', function (Blueprint $table) {

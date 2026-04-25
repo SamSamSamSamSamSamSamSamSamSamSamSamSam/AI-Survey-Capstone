@@ -50,7 +50,7 @@ return new class extends Migration
                   ->references('id')->on('blocks')
                   ->cascadeOnDelete();
 
-            $table->unique(['group_number', 'semester_id', 'subject_id'], 'uniq_offering');
+            $table->unique(['group_number', 'semester_id', 'subject_id', 'deleted_at'], 'uniq_offering');
         });
     }
 

@@ -77,12 +77,20 @@ class SubjectController extends Controller
                          ->with('success', 'Subject archived.');
     }
 
-    public function restore(string $id): RedirectResponse
+        public function restore(string $id): RedirectResponse
     {
-        $subject = Subject::withTrashed()->findOrFail($id);
-        $subject->restore();
+        $subjectToRestore = Subject::withTrashed()->findOrFail($id);
+        $exists = Subject::where('course_code', $subjectToRestore->course_code)
+                        ->exists(); 
+
+        if ($exists) {
+            return redirect()->route('admin.subjects.index')
+                            ->with('error', "Cannot restore: A subject with code '{$subjectToRestore->course_code}' is already active.");
+        }
+
+        $subjectToRestore->restore();
 
         return redirect()->route('admin.subjects.index')
-                         ->with('success', 'Subject restored.');
+                        ->with('success', 'Subject restored successfully.');
     }
 }

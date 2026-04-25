@@ -33,7 +33,10 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();// Add soft deletes
 
-            $table->unique(['survey_id']); // one analytics record per survey
+            $table->unique(
+                ['survey_id', 'deleted_at'], 
+                'uniq_faculty_analytics_survey'
+            );
 
             // Foreign key constraints
             $table->foreign('offering_id')

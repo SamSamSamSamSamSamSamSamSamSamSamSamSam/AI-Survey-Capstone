@@ -21,6 +21,17 @@
     </a>
 </div>
 
+@if ($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <ul style="list-style-type: none;">
+            @foreach ($errors->all() as $error)
+                <li><i class="bi bi-exclamation-triangle-fill me-2"></i>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
 <div class="form-page-layout">
     <div class="form-card">
         <form method="POST" action="{{ route('admin.programs.store') }}" novalidate>

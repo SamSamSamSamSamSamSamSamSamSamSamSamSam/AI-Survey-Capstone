@@ -33,7 +33,7 @@
         <option value="">Select semester…</option>
         @foreach ($semesters as $sem)
             <option value="{{ $sem->id }}"
-                @selected(old('semester_id', $offering->semester_id ?? '') == $sem->id)>
+                @selected(old('semester_id', $activeSemesterId) == $sem->id)>
                 {{ $sem->full_label }}{{ $sem->is_active ? ' · Active' : '' }}
             </option>
         @endforeach
@@ -79,12 +79,11 @@
     </div>
 
     <div class="col-6">
-        <label class="form-label" for="group_number">Group Number</label>
+        <label class="form-label" for="group_number">Group Number <span class="text-danger">*</span></label>
         <input type="number" name="group_number" id="group_number" min="1"
                class="form-control @error('group_number') is-invalid @enderror"
                value="{{ old('group_number', $offering->group_number ?? '') }}"
                placeholder="e.g. 1">
-        <div class="form-text">Optional — for multiple sections of the same subject.</div>
         @error('group_number')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror

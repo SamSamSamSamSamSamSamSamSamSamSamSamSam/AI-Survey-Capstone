@@ -40,7 +40,7 @@ return new class extends Migration
                   ->cascadeOnDelete();
 
             // Unique constraint for subject/year_level/semester combination
-            $table->unique(['curriculum_id', 'subject_id', 'year_level', 'semester_id'], 
+            $table->unique(['curriculum_id', 'subject_id', 'year_level', 'semester_id', 'deleted_at'], 
                     'prospectus_curriculum_subj_year_sem_unique');
         });
     }

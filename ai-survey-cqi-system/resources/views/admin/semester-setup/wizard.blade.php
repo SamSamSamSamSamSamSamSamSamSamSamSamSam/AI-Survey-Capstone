@@ -34,10 +34,10 @@
     <div class="wizard-rail">
 
         <div class="wizard-rail__header">
-            <div class="wizard-rail__title">Semester Rollover</div>
-            <div class="wizard-rail__semester">
-                {{ $activeSemester->semester_name }} {{ $activeSemester->academic_year }}
-            </div>
+            <div class="wizard-rail__title">Semester Setup</div>
+            {{-- <div class="wizard-rail__semester">
+                {{ $activeSemester->name }} {{ $activeSemester->academic_start_year }}
+            </div> --}}
         </div>
 
         @foreach ($steps as $num => $s)
@@ -71,7 +71,33 @@
             $totalSteps     = count($steps);
             $progressPct    = $totalSteps > 0 ? round(($completedCount / $totalSteps) * 100) : 0;
         @endphp
-
+        {{-- Active Semester Setup Section --}}
+<div class="wizard-rail__footer mt-4 pt-3 border-top">
+    <div class="mb-3">
+        <label class="form-label small fw-bold text-uppercase text-secondary d-block">Active Semester</label>
+        <span class="badge bg-primary fs-6">
+            {{ $activeSemester->name }} {{ $activeSemester->academic_start_year }}-{{ $activeSemester->academic_start_year +1}}
+        </span>
+    </div>
+    <label class="form-label small fw-bold text-uppercase text-secondary">Select New Semester</label>
+    
+    <form action="" method="GET" data-confirm="Are you sure you want to switch the active semester?">
+        <select class="form-select form-select-sm" 
+                name="semester_url" 
+                onchange="this.form.action = this.value; this.form.dispatchEvent(new Event('submit', {cancelable: true, bubbles: true}));">
+                <option value="">Select new semester</option>
+            @foreach ($allSemesters->groupBy('academic_start_year') as $year => $semesters)
+                <optgroup label="Academic Year {{ $year }}-{{ $year + 1 }}">
+                    @foreach ($semesters as $sem)
+                        <option value="{{ route('admin.semester-setup.switch', $sem->id) }}" >
+                            {{ $sem->name }} ({{ $year }}-{{ $year + 1 }})
+                        </option>
+                    @endforeach
+                </optgroup>
+            @endforeach
+        </select>
+    </form>
+</div>
     </div>
 
     {{-- ===== RIGHT: Step Card ===== --}}
@@ -129,15 +155,15 @@
                                 <tr><td><code>user_id_number</code></td><td>2010XXXX</td><td>Must be unique</td></tr>
                                 <tr><td><code>name</code></td><td>Juan dela Cruz</td><td></td></tr>
                                 <tr><td><code>email</code></td><td>juan@school.edu</td><td>Must be unique</td></tr> --}}
-                            @if ($step == 1)
+                            {{-- @if ($step == 1)
                                 <tr><td><code>block_name</code></td><td>BSIT-4A</td><td>Unique per semester</td></tr>
                                 <tr><td><code>program_code</code></td><td>BSIT</td><td>Must exist</td></tr>
-                                <tr><td><code>year_level</code></td><td>4</td><td>Integer 1–5</td></tr>
-                            @elseif ($step == 2)
+                                <tr><td><code>year_level</code></td><td>4</td><td>Integer 1–5</td></tr> --}}
+                            @if ($step == 1)
                                 <tr><td><code>subject_code</code></td><td>IT 4101</td><td>Must exist</td></tr>
                                 <tr><td><code>teacher_id_number</code></td><td>2010XXXX</td><td>Faculty account</td></tr>
-                                <tr><td><code>group_number</code></td><td>1</td><td>Valid group number of offering<</span></td></tr>
-                            @elseif ($step == 3)
+                                <tr><td><code>group_number</code></td><td>1</td><td>Valid group number of offering</span></td></tr>
+                            @elseif ($step == 2)
                                 <tr><td><code>student_id_number</code></td><td>2010XXXX</td><td>Must exist</td></tr>
                                 <tr><td><code>subject_code</code></td><td>IT4101</td><td>Offering must exist</td></tr>
                                 <tr><td><code>group_number</code></td><td>1</td><td>Valid group number of offering</td></tr>
@@ -205,9 +231,9 @@ window.WIZARD_CONFIG = {
     previewUrl:   "{{ route('admin.semester-setup.preview') }}",
     importRoutes: {
         // 1: "{{ route('admin.semester-setup.import-students') }}",
-        1: "{{ route('admin.semester-setup.import-blocks') }}",
-        2: "{{ route('admin.semester-setup.import-offerings') }}",
-        3: "{{ route('admin.semester-setup.import-enrollments') }}"
+        // 2: "{{ route('admin.semester-setup.import-blocks') }}",
+        1: "{{ route('admin.semester-setup.import-offerings') }}",
+        2: "{{ route('admin.semester-setup.import-enrollments') }}"
     }
 };
 </script>

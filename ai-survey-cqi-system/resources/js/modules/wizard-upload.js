@@ -209,4 +209,9 @@
         form.submit();
     });
 
+    btnRetry?.addEventListener('click', function () {
+        window.resetWizardUpload();
+        // fileInput.click();
+    });
+
 })();

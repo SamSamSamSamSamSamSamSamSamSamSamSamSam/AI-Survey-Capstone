@@ -67,6 +67,16 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request): RedirectResponse
     {
+       
+        $trashedUser = User::onlyTrashed()
+            ->where('email', $request->email)
+            ->orWhere('user_id_number', $request->user_id_number)
+            ->first();
+
+        if ($trashedUser) {
+            return redirect()->route('admin.users.index')
+                ->with('error', "User '{$trashedUser->name}' is already archived. Please restore them instead of creating a duplicate.");
+        }
         // 1. Create the user with a temporary random password
         $user = User::create([
             'user_id_number' => $request->user_id_number,
@@ -157,11 +167,22 @@ class UserController extends Controller
 
     public function restore(string $id): RedirectResponse
     {
-        $user = User::withTrashed()->findOrFail($id);
-        $user->restore();
+        $userToRestore = User::withTrashed()->findOrFail($id);
 
-        return redirect()->route('admin.users.index')
-                         ->with('success', "{$user->name} has been restored.");
+        // Check for active conflicts
+        $exists = User::where(function ($query) use ($userToRestore) {
+                            $query->where('email', $userToRestore->email)
+                                ->orWhere('user_id_number', $userToRestore->user_id_number);
+                    })->exists();
+
+        if ($exists) {
+            return redirect()->route('admin.users.index')
+                            ->with('error', 'Cannot restore: A user with this ID or Email is already active.');
+        }
+
+        $userToRestore->restore();
+
+        return redirect()->route('admin.users.index')->with('success', 'User account restored.');
     }
 
     public function forceDelete(string $id): RedirectResponse

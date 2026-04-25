@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreSubjectRequest extends FormRequest
 {
@@ -14,9 +15,16 @@ class StoreSubjectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'course_code' => ['required', 'string', 'max:50', 'unique:subjects,course_code'],
+            'course_code' => [
+                'required', 
+                'string', 
+                'max:50',
+                // Allow creation if the same code exists but is soft-deleted
+                Rule::unique('subjects', 'course_code')->where(function ($query) {
+                    return $query->whereNull('deleted_at');
+                }),
+            ],
             'name'        => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
             'units'       => ['required', 'integer', 'min:1', 'max:10'],
         ];
     }

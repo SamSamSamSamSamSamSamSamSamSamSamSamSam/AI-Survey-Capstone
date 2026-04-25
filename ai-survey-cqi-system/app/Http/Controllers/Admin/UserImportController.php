@@ -7,9 +7,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Mail\WelcomeUserMail;
-use Illuminate\Support\Facades\Mail;
 
 class UserImportController extends Controller
 {
@@ -21,42 +22,42 @@ class UserImportController extends Controller
 
         $file = $request->file('csv_file');
         $handle = fopen($file->getRealPath(), 'r');
-        fgetcsv($handle); // Skip header
+        $header = fgetcsv($handle);
+        $requiredHeaders = ['id', 'name', 'email', 'role']; // Define your expected headers
 
-        $rows = [];
+        if (!$header || count(array_intersect($requiredHeaders, array_map('strtolower', $header))) < 4) {
+            fclose($handle);
+            return back()->withErrors("Invalid CSV format. Please ensure your file has headers: " . implode(', ', $requiredHeaders));
+        }
+
+        $results = ['imported' => 0, 'skipped' => 0, 'errors' => []];
+
         while (($data = fgetcsv($handle)) !== FALSE) {
-            $rows[] = $data;
-        }
-        fclose($handle);
-
-        // 1. PRE-VALIDATION: Check for duplicates or empty fields before touching the DB
-        foreach ($rows as $index => $row) {
-            $lineNumber = $index + 2; // +2 because of header and 0-index
-            
-            // Check for empty columns
-            if (empty($row[0]) || empty($row[2])) {
-                return back()->withErrors("Line $lineNumber: ID Number and Email are required.");
+            // Basic validation
+            if (empty($data[0]) || empty($data[2])) {
+                $results['errors'][] = "Skipped row: Missing required fields.";
+                $results['skipped']++;
+                continue;
             }
 
-            // Check if ID or Email already exists in DB
-            if (\App\Models\User::where('user_id_number', $row[0])->exists()) {
-                return back()->withErrors("Line $lineNumber: ID Number {$row[0]} is already taken.");
-            }
-            if (\App\Models\User::where('email', $row[2])->exists()) {
-                return back()->withErrors("Line $lineNumber: Email {$row[2]} is already registered.");
-            }
-        }
+            // Check if exists
+            $exists = User::where('user_id_number', trim($data[0]))
+                ->orWhere('email', trim($data[2]))
+                ->exists();
 
-        // 2. PROCESSING: If we reach here, the whole file is "clean"
-        // SECURITY FIX: Queue emails asynchronously to prevent timeouts and memory issues
-        \Illuminate\Support\Facades\DB::transaction(function () use ($rows) {
-            foreach ($rows as $data) {
-                $user = \App\Models\User::create([
+            if ($exists) {
+                $results['skipped']++;
+                continue;
+            }
+
+            // Process only if new
+            DB::transaction(function () use ($data, &$results) {
+                $user = User::create([
                     'user_id_number' => trim($data[0]),
                     'name'           => trim($data[1]),
                     'email'          => trim($data[2]),
-                    'password'       => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(16)),
-                    'must_change_password' => true, 
+                    'password'       => Hash::make(Str::random(16)),
+                    'must_change_password' => true,
                 ]);
 
                 $roleName = strtolower(trim($data[3]));
@@ -65,14 +66,17 @@ class UserImportController extends Controller
                     $user->roles()->attach($role->id);
                 }
 
-                // SECURITY FIX: Queue email instead of sending synchronously
-                $token = \Illuminate\Support\Facades\Password::broker()->createToken($user);
-                \Illuminate\Support\Facades\Mail::to($user->email)->queue(new \App\Mail\WelcomeUserMail($user, $token));
-            }
-        });
+                $token = Password::broker()->createToken($user);
+                Mail::to($user->email)->queue(new WelcomeUserMail($user, $token));
+                
+                $results['imported']++;
+            });
+        }
+        fclose($handle);
 
-        // 3. SUCCESS BANNER: Flash a message to the session
-        return redirect()->route('admin.users.index')->with('success', count($rows) . ' users have been successfully imported and notified!');
+        return redirect()->route('admin.users.index')
+            ->with('success', "Import complete! Imported: {$results['imported']}, Skipped: {$results['skipped']}.")
+            ->withErrors($results['errors']);
     }
 
     public function showImportForm()

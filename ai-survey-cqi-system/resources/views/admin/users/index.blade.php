@@ -10,11 +10,11 @@
 
 @section('content')
 
-@if(session('success'))
+{{-- @if(session('success'))
     <div style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
         <strong>Success!</strong> {{ session('success') }}
     </div>
-@endif
+@endif --}}
 
 @if($errors->any())
     <div style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #f5c6cb;">

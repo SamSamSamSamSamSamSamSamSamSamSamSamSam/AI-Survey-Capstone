@@ -27,9 +27,9 @@ class SemesterSetupController extends Controller
 {
     public const STEPS = [
         // 1 => ['key' => 'students',   'label' => 'Register Students',  'icon' => 'bi-person-fill-add'],
-        1 => ['key' => 'blocks',     'label' => 'Create Blocks',      'icon' => 'bi-grid-3x3-gap-fill'],
-        2 => ['key' => 'offerings',  'label' => 'Import Offerings',   'icon' => 'bi-card-list'],
-        3 => ['key' => 'enrollments','label' => 'Import Enrollments', 'icon' => 'bi-journal-plus'],
+        // 2 => ['key' => 'blocks',     'label' => 'Create Blocks',      'icon' => 'bi-grid-3x3-gap-fill'],
+        1 => ['key' => 'offerings',  'label' => 'Import Offerings',   'icon' => 'bi-card-list'],
+        2 => ['key' => 'enrollments','label' => 'Import Enrollments', 'icon' => 'bi-journal-plus'],
     ];
 
     public function index(Request $request): View|RedirectResponse
@@ -41,10 +41,13 @@ class SemesterSetupController extends Controller
                              ->with('error', 'Please set an active semester before running the setup wizard.');
         }
 
-        $step = max(1, min(3, (int) $request->input('step', 1)));
+        $step = max(1, min(2, (int) $request->input('step', 1)));
+
+        $allSemesters = Semester::all();
 
         return view('admin.semester-setup.wizard', [
             'activeSemester' => $activeSemester,
+            'allSemesters'   => $allSemesters,
             'steps'          => self::STEPS,
             'step'           => $step, // current active step
             'stats'          => $this->getStepStats($activeSemester),
@@ -67,9 +70,9 @@ class SemesterSetupController extends Controller
 
         $result = match ($step) {
             // 1 => $validator->validateStudents($rows),
-            1 => $validator->validateBlocks($rows),
-            2 => $validator->validateOfferings($rows),
-            3 => $validator->validateEnrollments($rows),
+            // 2 => $validator->validateBlocks($rows),
+            1 => $validator->validateOfferings($rows),
+            2 => $validator->validateEnrollments($rows),
             default => ['can_proceed' => false, 'errors' => [['line' => 0, 'message' => 'Invalid step.']]],
         };
 
@@ -110,50 +113,50 @@ class SemesterSetupController extends Controller
     //     return $this->wizardRedirect(1, $created, $validation['skipped_count'], []);
     // }
 
-    public function importBlocks(Request $request): RedirectResponse
-    {
-        $this->validateCsvUpload($request);
-        $rows = $this->parseCsv($request);
-        $activeSemester = Semester::current();
+    // public function importBlocks(Request $request): RedirectResponse
+    // {
+    //     $this->validateCsvUpload($request);
+    //     $rows = $this->parseCsv($request);
+    //     $activeSemester = Semester::current();
 
-        $validator = new CsvValidationService($activeSemester);
-        $validation = $validator->validateBlocks($rows);
+    //     $validator = new CsvValidationService($activeSemester);
+    //     $validation = $validator->validateBlocks($rows);
 
-        if (!$validation['can_proceed']) {
-            return redirect()->back()->withErrors($validation['errors']);
-        }
+    //     if (!$validation['can_proceed']) {
+    //         return redirect()->back()->withErrors($validation['errors']);
+    //     }
 
-        $created = 0;
-        $updated = 0; // Define this
-        $duplicates = []; // Define this
-        DB::transaction(function () use ($validation, $activeSemester, &$created) {
-            foreach ($validation['valid_rows'] as $item) {
-                $row = $item['row'];
-                $program = Program::where('program_code', strtoupper(trim($row['program_code'])))->first();
+    //     $created = 0;
+    //     $updated = 0; // Define this
+    //     $duplicates = []; // Define this
+    //     DB::transaction(function () use ($validation, $activeSemester, &$created) {
+    //         foreach ($validation['valid_rows'] as $item) {
+    //             $row = $item['row'];
+    //             $program = Program::where('program_code', strtoupper(trim($row['program_code'])))->first();
                 
-                if ($program) {
-                    // Perform the updateOrCreate
-                    $block = Block::updateOrCreate(
-                        [
-                            'program_id'  => $program->id,
-                            'semester_id' => $activeSemester->id,
-                            'name'        => strtoupper(trim($row['block_name'])),
-                        ],
-                        [
-                            'year_level'  => (int) $row['year_level'],
-                        ]
-                    );
+    //             if ($program) {
+    //                 // Perform the updateOrCreate
+    //                 $block = Block::updateOrCreate(
+    //                     [
+    //                         'program_id'  => $program->id,
+    //                         'semester_id' => $activeSemester->id,
+    //                         'name'        => strtoupper(trim($row['block_name'])),
+    //                     ],
+    //                     [
+    //                         'year_level'  => (int) $row['year_level'],
+    //                     ]
+    //                 );
 
-                    // Determine if it was created or updated
-                    if ($block->wasRecentlyCreated) {
-                        $created++;
-                    }
-                }
-            }
-        });
+    //                 // Determine if it was created or updated
+    //                 if ($block->wasRecentlyCreated) {
+    //                     $created++;
+    //                 }
+    //             }
+    //         }
+    //     });
 
-        return $this->wizardRedirect(1, $created, $validation['skipped_count'], []);
-    }
+    //     return $this->wizardRedirect(1, $created, $validation['skipped_count'], []);
+    // }
 
     public function importOfferings(Request $request): RedirectResponse
     {
@@ -199,7 +202,7 @@ class SemesterSetupController extends Controller
             }
         });
 
-        return $this->wizardRedirect(2, $created, $validation['skipped_count'], []);
+        return $this->wizardRedirect(1, $created, $validation['skipped_count'], []);
     }
 
     public function importEnrollments(Request $request): RedirectResponse
@@ -243,7 +246,7 @@ class SemesterSetupController extends Controller
             }
         });
 
-        return $this->wizardRedirect(3, $created, $validation['skipped_count'], []);
+        return $this->wizardRedirect(2, $created, $validation['skipped_count'], []);
     }
 
     private function validateCsvUpload(Request $request): void
@@ -285,9 +288,19 @@ class SemesterSetupController extends Controller
     {
         return [
             // 1 => User::whereHas('roles', fn ($q) => $q->where('name', 'student'))->count(),
-            1 => Block::where('semester_id', $semester->id)->count(),
-            2 => CourseOffering::where('semester_id', $semester->id)->count(),
-            3 => Enrollment::whereHas('offering', fn ($q) => $q->where('semester_id', $semester->id))->count(),
+            // 2 => Block::where('semester_id', $semester->id)->count(),
+            1 => CourseOffering::where('semester_id', $semester->id)->count(),
+            2 => Enrollment::whereHas('offering', fn ($q) => $q->where('semester_id', $semester->id))->count(),
         ];
+    }
+
+    public function switch(Semester $semester): RedirectResponse
+    {
+        // Reuse your existing activation logic
+        $semester->activate();
+
+        // Redirect back to the setup wizard index
+        return redirect()->route('admin.semester-setup.index')
+                        ->with('success', "Active semester switched to {$semester->full_label}.");
     }
 }

@@ -15,11 +15,13 @@ return new class extends Migration
 
             $table->id(); // Auto-increment PK
 
-            $table->string('program_code')->unique();
+            $table->string('program_code');
             $table->string('name');
 
             $table->timestamps();
             $table->softDeletes(); // deleted_at
+
+            $table->unique(['program_code', 'deleted_at'], 'programs_program_code_unique');
         });
 
         Schema::create('curricula', function (Blueprint $table) {
@@ -41,7 +43,10 @@ return new class extends Migration
                 ->on('programs')
                 ->cascadeOnDelete();
 
-            $table->unique(['program_id', 'curriculum_code']);
+            $table->unique(
+                ['program_id', 'curriculum_code', 'deleted_at'], 
+                'curricula_program_code_unique'
+            );
         });
     }
 

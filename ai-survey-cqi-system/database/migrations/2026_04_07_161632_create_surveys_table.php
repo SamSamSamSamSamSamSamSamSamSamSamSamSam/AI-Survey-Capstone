@@ -110,6 +110,10 @@ return new class extends Migration
                   ->references('id')
                   ->on('roles')
                   ->cascadeOnDelete();
+            $table->unique(
+                ['offering_id', 'target_role_id', 'deleted_at'], 
+                'uniq_offering_target_survey'
+            );
         });
     }
 

@@ -30,7 +30,10 @@ return new class extends Migration
             $table->foreign('program_id')->references('id')->on('programs')->cascadeOnDelete();
             $table->foreign('semester_id')->references('id')->on('semesters')->cascadeOnDelete();
 
-            $table->unique(['program_id', 'semester_id', 'name'], 'uniq_block');
+            $table->unique(
+                ['program_id', 'semester_id', 'name', 'deleted_at'], 
+                'uniq_block'
+            );
             $table->index('program_id',  'idx_block_program');
             $table->index('semester_id', 'idx_block_semester');
         });

@@ -36,6 +36,7 @@ class ProgramController extends Controller
 
     public function create(): View
     {
+        
         return view('admin.programs.create');
     }
 
@@ -44,7 +45,7 @@ class ProgramController extends Controller
         Program::create($request->validated());
 
         return redirect()->route('admin.programs.index')
-                         ->with('success', 'Program created successfully.');
+                        ->with('success', 'Program created successfully.');
     }
 
     public function show(Program $program): View
@@ -78,9 +79,15 @@ class ProgramController extends Controller
     public function restore(string $id): RedirectResponse
     {
         $program = Program::withTrashed()->findOrFail($id);
+
+        // Guard: Prevent restore if an active record with the same code already exists
+        if (Program::where('program_code', $program->program_code)->exists()) {
+            return redirect()->route('admin.programs.index')
+                            ->with('error', "Cannot restore: A program with code '{$program->program_code}' is already active.");
+        }
+
         $program->restore();
 
-        return redirect()->route('admin.programs.index')
-                         ->with('success', 'Program restored.');
+        return redirect()->route('admin.programs.index')->with('success', 'Program restored.');
     }
 }

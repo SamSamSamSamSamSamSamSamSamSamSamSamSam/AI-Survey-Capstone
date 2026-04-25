@@ -17,9 +17,9 @@ return new class extends Migration
 
             $table->enum('scope_type', ['survey', 'offering', 'faculty']);
 
-            $table->ulid('survey_id')->nullable()->index();
-            $table->ulid('faculty_id')->nullable()->index();
-            $table->ulid('offering_id')->nullable()->index();
+            $table->ulid('survey_id')->nullable();
+            $table->ulid('faculty_id')->nullable();
+            $table->ulid('offering_id')->nullable();
             $table->ulid('generated_by')->index(); // user who generated the report
 
             $table->string('title');
@@ -50,6 +50,10 @@ return new class extends Migration
                   ->references('id')
                   ->on('users')
                   ->cascadeOnDelete();
+
+            $table->index(['survey_id', 'deleted_at'], 'idx_reports_survey_active');
+            $table->index(['faculty_id', 'deleted_at'], 'idx_reports_faculty_active');
+            $table->index(['offering_id', 'deleted_at'], 'idx_reports_offering_active');
         });
 
         Schema::create('cqi_report_logs', function (Blueprint $table) {

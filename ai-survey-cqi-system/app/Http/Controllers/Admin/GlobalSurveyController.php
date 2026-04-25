@@ -59,6 +59,7 @@ class GlobalSurveyController extends Controller
         ]);
 
         $activeSemester = Semester::current();
+        $targetRole = Role::findOrFail($request->target_role_id);
 
         if (! $activeSemester) {
             return back()->with('error', 'No active semester found.');

@@ -20,7 +20,6 @@ return new class extends Migration
             $table->unsignedBigInteger('scale_id')->nullable();
             $table->text('question_text');
             $table->enum('question_type', ['rating', 'text']);
-            $table->string('category')->nullable();
             $table->tinyInteger('order_number')->default(1);
 
             $table->timestamps();

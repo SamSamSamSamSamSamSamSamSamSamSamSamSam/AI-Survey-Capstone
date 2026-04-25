@@ -21,6 +21,7 @@ Route::post('semester-setup/students',   [SemesterSetupController::class, 'impor
 Route::post('semester-setup/blocks',     [SemesterSetupController::class, 'importBlocks'])    ->name('semester-setup.import-blocks');
 Route::post('semester-setup/offerings',  [SemesterSetupController::class, 'importOfferings']) ->name('semester-setup.import-offerings');
 Route::post('semester-setup/enrollments',[SemesterSetupController::class, 'importEnrollments'])->name('semester-setup.import-enrollments');
+Route::get('semester-setup/switch/{semester}', [SemesterSetupController::class, 'switch'])->name('semester-setup.switch');
 
 Route::resource('programs', ProgramController::class)->except(['show']);
 Route::get('programs/{program}', [ProgramController::class, 'show'])->name('programs.show');
