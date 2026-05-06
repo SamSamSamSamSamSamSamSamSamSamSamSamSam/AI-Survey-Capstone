@@ -710,7 +710,7 @@
 
     <div class="st-notify" id="notifyToggles" aria-label="Notification preferences">
         {{-- Email toggle --}}
-        <div class="d-flex align-items-center gap-2">
+        {{-- <div class="d-flex align-items-center gap-2">
             <input type="hidden" name="notify_email" value="0" form="surveyForm">
             <label class="nt-switch" for="notify_email">
                 <input type="checkbox" id="notify_email" name="notify_email" value="1"
@@ -721,7 +721,7 @@
             <label for="notify_email" class="nt-label">
                 <i class="bi bi-envelope me-1"></i>Email confirmation
             </label>
-        </div>
+        </div> --}}
         {{-- Dashboard toggle --}}
         <div class="d-flex align-items-center gap-2">
             <input type="hidden" name="notify_dashboard" value="0" form="surveyForm">

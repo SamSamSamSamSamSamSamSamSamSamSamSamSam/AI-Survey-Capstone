@@ -65,20 +65,32 @@ class SurveyController extends Controller
     public function create(): View
     {
         $activeSemester = Semester::current();
-        $assignedOfferingIds = Survey::when($survey ?? null, fn ($q) => $q->where('id', '!=', $survey->id))
-                                 ->pluck('offering_id')
-                                 ->flatten()
-                                 ->unique();
+        
+        // Get all offerings for the current semester
         $offerings = CourseOffering::with(['subject', 'teacher', 'semester'])
             ->when($activeSemester, fn ($q) => $q->where('semester_id', $activeSemester->id))
-            ->whereNotIn('id', $assignedOfferingIds)
-            ->whereNull('deleted_at')->get();
+            ->whereNull('deleted_at')
+            ->get();
 
-        $roles     = Role::orderBy('name')->get();
-        $studentRoleId = Role::where('name', 'student')->value('id');
+        // Get existing assignments: offering_id => [role_id, role_id]
+        $existingAssignments = Survey::whereNull('deleted_at')
+            ->select('offering_id', 'target_role_id')
+            ->get()
+            ->groupBy('offering_id')
+            ->map(fn($group) => $group->pluck('target_role_id'));
+
+        $roles = Role::orderBy('name')->get();
         $templates = SurveyTemplate::active()->orderByDesc('is_official')->orderBy('name')->get();
+        $studentRoleId = Role::where('name', 'student')->value('id');
 
-        return view('admin.surveys.create', compact('offerings', 'roles', 'templates', 'activeSemester', 'studentRoleId'));
+        return view('admin.surveys.create', compact(
+            'offerings', 
+            'roles', 
+            'templates', 
+            'activeSemester', 
+            'studentRoleId', 
+            'existingAssignments'
+        ));
     }
 
     public function store(StoreSurveyRequest $request): RedirectResponse
@@ -210,7 +222,7 @@ class SurveyController extends Controller
         $survey->load(['offering.subject', 'offering.semester', 'targetRole']);
 
         $attempts = $survey->attempts()
-            ->with(['respondent', 'responses.question.scale.options', 'responses.question.category'])
+            ->with(['responses.question.scale.options', 'responses.question.category'])
             ->whereNotNull('submitted_at')
             ->latest('submitted_at')
             ->paginate(20);

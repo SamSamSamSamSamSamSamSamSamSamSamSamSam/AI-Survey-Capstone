@@ -72,6 +72,19 @@ class DashboardController extends Controller
             ->whereYear('created_at', now()->year)
             ->count();
 
+        $dbConnected = true;
+            try {
+                \DB::connection()->getPdo();
+            } catch (\Exception $e) {
+                $dbConnected = false;
+            }
+        $isProcessing = DB::table('jobs')
+            ->where(function($q) {
+                $q->where('payload', 'like', '%AnalyzeSentimentJob%')
+                ->orWhere('payload', 'like', '%GenerateCqiReportJob%');
+            })
+            ->exists();
+
         return view('admin.dashboard', compact(
             'totalSurveys',
             'totalResponses',
@@ -82,6 +95,8 @@ class DashboardController extends Controller
             'surveysChartFilled',
             'liveSurveys',
             'reportsThisMonth',
+            'dbConnected',
+            'isProcessing',
         ));
     }
 

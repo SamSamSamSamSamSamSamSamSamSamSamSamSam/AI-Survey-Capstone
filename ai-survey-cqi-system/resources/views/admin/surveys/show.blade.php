@@ -194,7 +194,7 @@
 
                         <td>
                             @if ($question->category)
-                                <span class="category-tag">{{ $question->category }}</span>
+                                <span class="category-tag">{{ $question->category->name }}</span>
                             @else
                                 <span class="text-muted-sm">—</span>
                             @endif

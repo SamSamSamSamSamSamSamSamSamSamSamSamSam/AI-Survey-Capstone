@@ -199,15 +199,17 @@
                             <span class="ms-auto small text-muted">{{ $liveSurveys > 0 ? $liveSurveys . ' live' : 'No live surveys' }}</span>
                         </li>
                         <li>
-                            <span class="status-dot pending"></span>
+                            <span class="status-dot {{ $isProcessing ? 'warning' : 'pending' }}"></span>
                             AI Processing
-                            <span class="ms-auto small text-muted">Idle</span>
+                            <span class="ms-auto small text-muted">{{ $isProcessing ? 'Processing' : 'Idle' }}</span>
                         </li>
-                        <li>
-                            <span class="status-dot success"></span>
+                        {{-- <li>
+                            <span class="status-dot {{ $dbConnected ? 'success' : 'danger' }}"></span>
                             Database
-                            <span class="ms-auto small text-muted">Connected</span>
-                        </li>
+                            <span class="ms-auto small text-muted">
+                                {{ $dbConnected ? 'Connected' : 'Disconnected' }}
+                            </span>
+                        </li> --}}
                     </ul>
 
                     <hr class="my-3" style="opacity:.08">

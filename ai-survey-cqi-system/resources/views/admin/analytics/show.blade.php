@@ -303,11 +303,10 @@
 
                 <div class="mb-3" style="max-width: 320px;">
                     <label class="form-label">Report Scope</label>
-                    <select name="scope_type" class="form-select">
-                        <option value="survey">Survey — this survey only</option>
-                        <option value="offering">Offering — all surveys in this offering</option>
-                        <option value="faculty">Faculty — all surveys for this faculty</option>
-                    </select>
+                    
+                    <input type="text" class="form-control" value="Survey — this survey only" readonly disabled>
+                    
+                    <input type="hidden" name="scope_type" value="survey">
                 </div>
 
                 <button type="submit" class="btn btn-primary" id="generateBtn">

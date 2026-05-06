@@ -369,8 +369,16 @@ tr.drag-over td {
     transition: background .15s;
 
     &--filled {
-        background: $brand-action;
+        background: rgba($brand-action, 0.2);
         color: #fff;
+    }
+
+    &--active {
+        background: $brand-action !important;
+        color: #fff !important;
+        transform: scale(1.25); // Makes the answer physically larger
+        box-shadow: 0 0 10px rgba($brand-action, 0.4);
+        z-index: 1;
     }
 
     [data-bs-theme="dark"] & {

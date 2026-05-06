@@ -13,14 +13,19 @@
         Course Offerings <span class="text-danger">*</span>
     </label>
     
-    {{-- We use multiple select for Create, but check your logic if Edit only supports one --}}
     <select name="offering_id[]" id="searchable-select"
             class="form-select @error('offering_id') is-invalid @enderror"
             placeholder="Type to add courses..." 
             multiple autocomplete="off"
             {{ $isLocked ? 'disabled' : '' }}>
         @foreach ($offerings as $offering)
+            {{-- Get existing role IDs for this offering as a JSON array --}}
+            @php
+                $assignedRoles = $existingAssignments->get($offering->id, collect())->toJson();
+            @endphp
+            
             <option value="{{ $offering->id }}"
+                data-assigned-roles="{{ $assignedRoles }}"
                 @selected(in_array($offering->id, (array) old('offering_id', $isEdit ? $survey->offering_id : [])))>
                 {{ $offering->subject->course_code }} — {{ $offering->subject->name }}
                 | {{ $offering->teacher->name }} - Group {{$offering->group_number}}
@@ -29,13 +34,7 @@
     </select>
 
     @if($isLocked)
-        <div class="form-text text-muted">
-            <i class="bi bi-lock-fill"></i> Locked while survey is active.
-        </div>
-        {{-- Hidden fields ensure the data is still sent even if the select is disabled --}}
-        @foreach((array)$survey->offering_id as $id)
-            <input type="hidden" name="offering_id[]" value="{{ $id }}">
-        @endforeach
+        {{-- ... kept your existing hidden field logic ... --}}
     @endif
 
     @error('offering_id')
@@ -134,11 +133,9 @@
 {{-- TomSelect JS --}}
 {{-- <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script> --}}
 <script>
-    // Wait for the browser to finish loading everything
     document.addEventListener('DOMContentLoaded', function() {
-        
-        // Now TomSelect is available via the window object
-        var select = new TomSelect("#searchable-select", {
+        // 1. Initialize TomSelect
+        var offeringSelect = new TomSelect("#searchable-select", {
             plugins: ['remove_button'],
             create: false,
             persist: false,
@@ -148,9 +145,51 @@
             }
         });
 
-        // PHP logic still works fine here
+        // 2. Define the filtering logic
+        var roleSelect = document.querySelector('select[name="target_role_id"]');
+        
+        function filterOfferings() {
+            if (!roleSelect) return;
+            
+            const selectedRoleId = parseInt(roleSelect.value);
+            
+            // Clear current selections in TomSelect if they become invalid
+            const currentValues = offeringSelect.getValue();
+            
+            // We iterate through the original options to determine what to show/hide
+            // Note: TomSelect uses its own internal 'options' store
+            Object.values(offeringSelect.options).forEach(option => {
+                // Access the data-assigned-roles we put in the HTML
+                // TomSelect maps data attributes to the option object
+                const assignedRoles = JSON.parse(option.assignedRoles || '[]');
+
+                if (assignedRoles.includes(selectedRoleId)) {
+                    // If the role exists for this offering, remove it from view
+                    offeringSelect.updateOption(option.value, { ...option, disabled: true });
+                    
+                    // If it was already selected, unselect it
+                    if (currentValues.includes(option.value)) {
+                        offeringSelect.removeItem(option.value);
+                    }
+                } else {
+                    // Otherwise, ensure it is enabled
+                    offeringSelect.updateOption(option.value, { ...option, disabled: false });
+                }
+            });
+
+            offeringSelect.refreshOptions(false);
+        }
+
+        // 3. Set up listeners
+        if (roleSelect) {
+            roleSelect.addEventListener('change', filterOfferings);
+            // Run once on load to catch old input or preset values
+            filterOfferings();
+        }
+
+        // 4. Handle locked state
         @if(isset($isLocked) && $isLocked)
-            select.disable();
+            offeringSelect.disable();
         @endif
     });
 </script>

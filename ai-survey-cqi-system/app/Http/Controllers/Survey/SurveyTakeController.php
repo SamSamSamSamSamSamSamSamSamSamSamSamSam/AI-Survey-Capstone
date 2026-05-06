@@ -246,10 +246,10 @@ class SurveyTakeController extends Controller
     {
         return Survey::with(['offering.subject', 'offering.teacher', 'offering.semester', 'targetRole', 'template'])
             ->withCount('questions')
-            ->active()
-            ->whereNull('deleted_at')
-            ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', now()))
-            ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()));
+            // ->active()
+            ->whereNull('deleted_at');
+            // ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', now()))
+            // ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()));
     }
 
     public function getCompletedSurveys(User $user): Collection
@@ -287,6 +287,8 @@ class SurveyTakeController extends Controller
         
         // Now uses the shared base query + the specific 'pending' constraint
         $base = $this->getBaseSurveyQuery($user)
+            ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', now()))
+            ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()))
             ->whereDoesntHave('attempts', fn ($q) => 
                 $q->where('student_id', $user->id)->whereNotNull('submitted_at')
             );

@@ -59,15 +59,12 @@
         {{-- Attempt header --}}
         <div class="attempt-card__header">
             <div class="d-flex align-items-center gap-3">
-                <div class="user-avatar-sm">
-                    {{ strtoupper(substr($attempt->respondent->name, 0, 2)) }}
-                </div>
                 <div>
                     <div class="fw-500" style="font-size: .9rem;">
-                        {{ $attempt->respondent->name }}
+                        Anonymous Respondent
                     </div>
                     <div class="text-muted-sm text-mono">
-                        {{ $attempt->respondent->user_id_number }}
+                        ID: {{ substr($attempt->id, -8) }}
                     </div>
                 </div>
             </div>
@@ -83,12 +80,12 @@
             <div class="response-row">
 
                 {{-- Question meta --}}
-                <div class="response-row__meta">
+                {{-- <div class="response-row__meta">
                     <span class="response-row__num">Q{{ $response->question->order }}</span>
                     @if ($response->question->category)
                         <span class="category-tag">{{ $response->question->category }}</span>
                     @endif
-                </div>
+                </div> --}}
 
                 {{-- Question text --}}
                 <p class="response-row__question">{{ $response->question->question_text }}</p>
@@ -97,10 +94,16 @@
                 @if ($response->question->isRating())
                     <div class="rating-display">
                         @for ($i = 1; $i <= 5; $i++)
-                            <div class="rating-dot {{ $i <= $response->rating_value ? 'rating-dot--filled' : '' }}">
+                            @php
+                                $currentVal = (int)$response->scale_value;
+                            @endphp
+                            <div class="rating-dot 
+                                {{ $i <= $currentVal ? 'rating-dot--filled' : '' }} 
+                                {{ $i == $currentVal ? 'rating-dot--active' : '' }}">
                                 {{ $i }}
                             </div>
                         @endfor
+
                         <span class="rating-label">
                             {{ match((int)$response->rating_value) {
                                 1 => 'Strongly Disagree',
