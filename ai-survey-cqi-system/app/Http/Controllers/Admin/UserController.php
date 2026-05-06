@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password; 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -130,6 +131,7 @@ class UserController extends Controller
 
         // Sync roles (replaces existing assignments)
         $user->roles()->sync($request->input('roles', []));
+        Cache::forget("user_roles_{$user->id}");
 
         return redirect()->route('admin.users.index')
                          ->with('success', "User {$user->name} updated successfully.");

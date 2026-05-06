@@ -89,7 +89,7 @@
             @endphp
             <label class="role-checkbox">
                 <input
-                    type="checkbox"
+                    type="radio"
                     name="roles[]"
                     value="{{ $role->id }}"
                     class="role-checkbox__input"
