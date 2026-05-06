@@ -23,7 +23,7 @@ class UserImportController extends Controller
         $file = $request->file('csv_file');
         $handle = fopen($file->getRealPath(), 'r');
         $header = fgetcsv($handle);
-        $requiredHeaders = ['id', 'name', 'email', 'role']; // Define your expected headers
+        $requiredHeaders = ['user_id_number', 'name', 'email', 'role']; // Define your expected headers
 
         if (!$header || count(array_intersect($requiredHeaders, array_map('strtolower', $header))) < 4) {
             fclose($handle);

@@ -11,6 +11,18 @@
 
 @section('content')
 
+@if ($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"> Error Warning:</i>
+        <ul class="mb-0 list-unstyled">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+@endif
+
 <div class="page-header d-flex align-items-center justify-content-between">
     <div>
         <h2 class="page-heading">Import Users</h2>

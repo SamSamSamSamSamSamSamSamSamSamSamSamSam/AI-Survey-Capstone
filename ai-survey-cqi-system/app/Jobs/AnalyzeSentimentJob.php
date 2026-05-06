@@ -19,7 +19,7 @@ class AnalyzeSentimentJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries   = 3;
-    public int $timeout = 180; // seconds
+    public int $timeout = 120; // seconds
 
     public function __construct(
         public readonly string $attemptId
