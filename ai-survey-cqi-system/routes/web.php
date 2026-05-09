@@ -49,6 +49,11 @@ Route::middleware('redirect.authenticated')->group(function () {
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
 });
 
+
+Route::get('/session/check', [SessionController::class, 'check']);
+Route::post('/session/refresh', [SessionController::class, 'refresh']);
+
+
 // ---------------------------------------------------------------------------
 // Authenticated routes
 // ---------------------------------------------------------------------------
@@ -60,8 +65,7 @@ Route::middleware('auth')->group(function () {
     //         return response()->json(['status' => 'session extended']);
     //     })->name('session.keep-alive');
     
-    Route::get('/session/check', [SessionController::class, 'check']);
-    Route::post('/session/refresh', [SessionController::class, 'refresh']);
+
     
     /* NOTE: We are keeping the 'verified' middleware check for dashboards.
        Imported users will bypass the old VerifyEmailController because 
