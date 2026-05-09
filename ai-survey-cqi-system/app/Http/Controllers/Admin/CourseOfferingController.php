@@ -17,12 +17,14 @@ use Illuminate\View\View;
 
 class CourseOfferingController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request)
     {
         $semesters      = Semester::orderByDesc('academic_start_year')->orderByDesc('semester_number')->get();
         $activeSemester = Semester::current();
 
-        // Default to active semester; allow switching to any semester for historical view
+        $subjects       = Subject::orderBy('course_code')->get();
+        $teachers       = User::whereHas('roles', fn ($q) => $q->where('name', 'faculty'))->orderBy('name')->get();
+
         $selectedSemesterId = $request->input('semester_id', $activeSemester?->id);
 
         $query = CourseOffering::with(['subject', 'semester', 'teacher', 'offeringType'])
@@ -32,11 +34,23 @@ class CourseOfferingController extends Controller
             $query->where('semester_id', $selectedSemesterId);
         }
 
+        if ($subjectId = $request->input('subject_id')) {
+            $query->where('subject_id', $subjectId);
+        }
+
+        if ($teacherId = $request->input('teacher_id')) {
+            $query->where('teacher_id', $teacherId);
+        }
+
         if ($search = $request->input('search')) {
-            $query->whereHas('subject', fn ($q) =>
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('course_code', 'like', "%{$search}%")
-            );
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('subject', fn ($sub) =>
+                    $sub->where('name', 'like', "%{$search}%")
+                        ->orWhere('course_code', 'like', "%{$search}%")
+                )->orWhereHas('teacher', fn ($teach) =>
+                    $teach->where('name', 'like', "%{$search}%")
+                );
+            });
         }
 
         if ($request->input('status') === 'deleted') {
@@ -47,11 +61,19 @@ class CourseOfferingController extends Controller
 
         $offerings = $query->latest()->paginate(15)->withQueryString();
 
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('admin.offerings.index', compact('offerings', 'semesters', 'activeSemester', 'selectedSemesterId', 'subjects', 'teachers'))->fragment('offerings-table')
+            ]);
+        }
+
         return view('admin.offerings.index', compact(
             'offerings',
             'semesters',
             'activeSemester',
             'selectedSemesterId',
+            'subjects',
+            'teachers'
         ));
     }
 
@@ -114,7 +136,6 @@ class CourseOfferingController extends Controller
     {
         $offering = CourseOffering::withTrashed()->findOrFail($id);
 
-        // Guard: Check if an active offering with the same attributes already exists
         $exists = CourseOffering::where('subject_id', $offering->subject_id)
                                 ->where('semester_id', $offering->semester_id)
                                 ->where('group_number', $offering->group_number)
