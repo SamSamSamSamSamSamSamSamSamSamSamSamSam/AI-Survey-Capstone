@@ -48,10 +48,10 @@
 
                 <div class="col-md-6 d-flex gap-2">
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-funnel me-1"></i> Filter
+                        <i class="bi bi-sliders me-1"></i> Filter
                     </button>
                     <a href="{{ route('admin.programs.index') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-lg me-1"></i> Reset
+                        <i class="bi bi-arrow-counterclockwise"></i>
                     </a>
                 </div>
 

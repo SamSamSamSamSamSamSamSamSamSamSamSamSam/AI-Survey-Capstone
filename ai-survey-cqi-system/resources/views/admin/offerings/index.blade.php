@@ -12,7 +12,7 @@
 
 <div class="page-header">
     <div>
-        <h2 class="page-heading">Course Offerings</h2>
+        <h2 class="page-heading">Academic Offerings</h2>
         <p class="page-subheading">Manage course-faculty assignments per semester.</p>
     </div>
     <a href="{{ route('admin.offerings.create') }}" class="btn btn-primary">
@@ -72,10 +72,10 @@
 
                 <div class="col-md-4 d-flex gap-2">
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-funnel me-1"></i> Filter
+                        <i class="bi bi-sliders me-1"></i> Filter
                     </button>
                     <a href="{{ route('admin.offerings.index') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-lg me-1"></i> Reset
+                        <i class="bi bi-arrow-counterclockwise "></i> 
                     </a>
                 </div>
 
@@ -102,7 +102,7 @@
                         <th>Subject</th>
                         <th>Faculty</th>
                         <th>Semester</th>
-                        <th>Type</th>
+                        {{-- <th>Type</th> --}}
                         <th class="text-center">Group</th>
                         <th class="text-center">Enrolled</th>
                         <th>Status</th>
@@ -125,9 +125,9 @@
 
                         <td>
                             <div class="user-cell">
-                                <div class="user-avatar-sm">
+                                {{-- <div class="user-avatar-sm">
                                     {{ strtoupper(substr($offering->teacher->name, 0, 2)) }}
-                                </div>
+                                </div> --}}
                                 <span class="fw-500" style="font-size:.845rem;">
                                     {{ $offering->teacher->name }}
                                 </span>
@@ -136,13 +136,13 @@
 
                         <td class="text-muted-sm">{{ $offering->semester->full_label }}</td>
 
-                        <td>
+                        {{-- <td>
                             @if ($offering->offeringType)
                                 <span class="category-tag">{{ $offering->offeringType->name }}</span>
                             @else
                                 <span class="text-muted-sm">—</span>
                             @endif
-                        </td>
+                        </td> --}}
 
                         <td class="text-center">
                             @if ($offering->group_number)

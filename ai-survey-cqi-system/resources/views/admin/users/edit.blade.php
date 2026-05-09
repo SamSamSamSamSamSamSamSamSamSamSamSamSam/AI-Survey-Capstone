@@ -14,8 +14,8 @@
 
 <div class="page-header">
     <div>
-        <h2 class="page-heading">Edit User</h2>
-        <p class="page-subheading">Editing <strong>{{ $user->name }}</strong> · {{ $user->user_id_number }}</p>
+        <h2 class="page-heading">Update Account</h2>
+        <p class="page-subheading">Modify details for {{ $user->name }} (ID: {{ $user->user_id_number }})
     </div>
     <a href="{{ route('admin.users.show', $user->id) }}" class="btn btn-outline-secondary btn-sm">
         <i class="bi bi-arrow-left me-1"></i> Back to User

@@ -29,8 +29,8 @@
 
 <div class="page-header d-flex align-items-center justify-content-between">
     <div>
-        <h2 class="page-heading">User Management</h2>
-        <p class="page-subheading text-muted">Manage system users, roles, and access control.</p>
+        <h2 class="page-heading">Account Directory</h2>
+        <p class="page-subheading text-muted">Monitor account status, update profiles, and manage authentication or access permissions.</p>
     </div>
     <div class="d-flex gap-2">
         <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
@@ -74,21 +74,23 @@
                     </select>
                 </div>
 
-                <div class="col-md-2">
+                <div class="col-md-2"> {{-- Increased to col-md-3 to fit longer text --}}
                     <label class="form-label">Status</label>
                     <select name="status" class="form-select filter-select">
-                        <option value="">Active</option>
+                        <option value="">Active (All)</option>
+                        <option value="verified" @selected(request('status') === 'verified')>Verified Only</option>
+                        <option value="unverified" @selected(request('status') === 'unverified')>Unverified Only</option>
                         <option value="deleted" @selected(request('status') === 'deleted')>Deactivated</option>
-                        <option value="all" @selected(request('status') === 'all')>All</option>
+                        <option value="all" @selected(request('status') === 'all')>All Records</option>
                     </select>
                 </div>
 
                 <div class="col-md-4 d-flex gap-2">
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-funnel me-1"></i> Filter
+                        <i class="bi bi-sliders me-1"></i> Filter
                     </button>
                     <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-lg me-1"></i> Reset
+                        <i class="bi bi-arrow-counterclockwise"></i>
                     </a>
                 </div>
 

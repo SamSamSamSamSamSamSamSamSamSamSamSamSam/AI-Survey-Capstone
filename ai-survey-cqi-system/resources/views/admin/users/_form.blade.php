@@ -9,9 +9,8 @@
 <div class="info-notice mb-4">
     <i class="bi bi-info-circle-fill info-notice__icon"></i>
     <div>
-        A secure temporary password will be auto-generated and
-        emailed to the user upon creation. The account will be
-        marked as verified automatically.
+        A verirification link will be send to the user's email address after creating the account. 
+        The user must click the link to set their password and activate their account.
     </div>
 </div>
 @endisset
@@ -21,7 +20,7 @@
     <label class="form-label" for="user_id_number">
         ID Number <span class="text-danger">*</span>
     </label>
-    <p class="form-text mt-0 mb-1">Format: 2010XXXX</p>
+    {{-- <p class="form-text mt-0 mb-1">e.g., 20101234</p> --}}
     <input
         type="text"
         id="user_id_number"
@@ -66,7 +65,7 @@
         name="email"
         class="form-control @error('email') is-invalid @enderror"
         value="{{ old('email', $user->email ?? '') }}"
-        placeholder="juan@example.com"
+        placeholder="juan@usc.edu.ph"
         required
     >
     @error('email')
@@ -110,7 +109,7 @@
 <div class="form-actions">
     <button type="submit" class="btn btn-primary">
         @isset($isCreate)
-            <i class="bi bi-person-plus me-1"></i> Create User &amp; Send Credentials
+            <i class="bi bi-person-plus me-1"></i> Create User
         @else
             <i class="bi bi-check-lg me-1"></i> Save Changes
         @endisset

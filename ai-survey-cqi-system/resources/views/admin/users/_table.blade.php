@@ -23,7 +23,7 @@
                     <td class="text-mono">{{ $user->user_id_number }}</td>
                     <td>
                         <div class="user-cell">
-                            <div class="user-avatar-sm">{{ strtoupper(substr($user->name, 0, 2)) }}</div>
+                            {{-- <div class="user-avatar-sm">{{ strtoupper(substr($user->name, 0, 2)) }}</div> --}}
                             <span class="fw-500">{{ $user->name }}</span>
                         </div>
                     </td>

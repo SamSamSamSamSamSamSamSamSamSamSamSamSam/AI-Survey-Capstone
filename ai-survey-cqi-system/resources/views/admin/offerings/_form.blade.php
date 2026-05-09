@@ -33,7 +33,7 @@
         <option value="">Select semester…</option>
         @foreach ($semesters as $sem)
             <option value="{{ $sem->id }}"
-                @selected(old('semester_id', $activeSemesterId) == $sem->id)>
+                @selected(old('semester_id', $offering->semester_id) == $sem->id)>
                 {{ $sem->full_label }}{{ $sem->is_active ? ' · Active' : '' }}
             </option>
         @endforeach
@@ -53,7 +53,7 @@
         <option value="">Select faculty…</option>
         @foreach ($teachers as $teacher)
             <option value="{{ $teacher->id }}"
-                @selected(old('teacher_id', $offering->teacher_id ?? '') == $teacher->id)>
+                @selected(old('teacher_id', $offering->teacher_id ?? $activeSemesterId) == $teacher->id)>
                 {{ $teacher->name }} ({{ $teacher->user_id_number }})
             </option>
         @endforeach

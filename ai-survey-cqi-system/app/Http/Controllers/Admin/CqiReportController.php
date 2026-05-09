@@ -29,6 +29,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
             'survey.offering.teacher',
             'survey.offering.semester',
             'generatedBy',
+            'logs',
         ])->withTrashed();
 
         if ($selectedSemesterId) {

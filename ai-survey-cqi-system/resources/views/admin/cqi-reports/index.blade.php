@@ -4,7 +4,7 @@
 @section('content')
 <div class="page-header">
     <div>
-        <h2 class="page-heading">CQI Reports</h2>
+        <h2 class="page-heading">Continues Quality Improvement Reports</h2>
         <p class="page-subheading">AI-generated Continuous Quality Improvement reports.</p>
     </div>
 </div>
@@ -87,8 +87,8 @@
                 </div>
 
                 <div class="col-md-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filter</button>
-                    <a href="{{ route('admin.cqi-reports.index') }}" class="btn btn-outline-secondary">Reset</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-sliders"></i> Filter</button>
+                    <a href="{{ route('admin.cqi-reports.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i></a>
                 </div>
             </div>
         </form>

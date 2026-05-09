@@ -1,0 +1,181 @@
+// ============================================================
+// _dashboard.scss  — Admin dashboard specific styles
+// Shared tokens (kpi-card, status-list, etc.) live in _admin.scss
+// ============================================================
+
+// ============================================================
+// Compact KPI card variant
+// ============================================================
+
+.kpi-card--compact {
+    border-top-width: 3px;
+
+    .card-body { padding: 16px; }
+
+    .kpi-label {
+        font-size: .68rem;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: $light-text-muted;
+        margin-bottom: 4px;
+
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+
+    .kpi-value {
+        font-size: 1.6rem;
+        margin-bottom: 2px;
+    }
+
+    .kpi-meta {
+        font-size: .7rem;
+        color: $light-text-muted;
+        margin: 0;
+
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+}
+
+// ============================================================
+// Activity chart legend
+// ============================================================
+
+.dash-chart-legend {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.dash-chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: .75rem;
+    color: $light-text-muted;
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+.dash-chart-legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+// ============================================================
+// Status list — right side value
+// ============================================================
+
+.status-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .ms-auto { margin-left: auto !important; }
+}
+
+// ============================================================
+// Sentiment stat tiles (below doughnut)
+// ============================================================
+
+.dash-sent-stat {
+    padding: 8px 4px;
+    border-radius: $radius-md;
+    background: $light-bg;
+
+    [data-bs-theme="dark"] & { background: rgba(255,255,255,.04); }
+
+    &--pos {
+        background: rgba(#22c55e, .08);
+        [data-bs-theme="dark"] & { background: rgba(#22c55e, .12); }
+    }
+    &--neg {
+        background: rgba(#ef4444, .08);
+        [data-bs-theme="dark"] & { background: rgba(#ef4444, .12); }
+    }
+
+    &__val {
+        font-family: $font-heading;
+        font-size: 1.1rem;
+        font-weight: 700;
+        line-height: 1;
+        color: $light-text-primary;
+
+        [data-bs-theme="dark"] & { color: $dark-text-primary; }
+    }
+
+    &__lbl {
+        font-size: .65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: $light-text-muted;
+        margin-top: 3px;
+
+        [data-bs-theme="dark"] & { color: $dark-text-muted; }
+    }
+}
+
+// ============================================================
+// Faculty rank avatar color rings (#1 gold, #2 silver, #3 bronze)
+// ============================================================
+
+.dash-rank-1 { background: linear-gradient(135deg, #b45309, #fbbf24) !important; }
+.dash-rank-2 { background: linear-gradient(135deg, #475569, #94a3b8) !important; }
+.dash-rank-3 { background: linear-gradient(135deg, #92400e, #d97706) !important; }
+
+// ============================================================
+// Trend indicator
+// ============================================================
+
+.dash-trend-up {
+    color: #16a34a;
+    font-size: .7rem;
+    font-weight: 600;
+
+    [data-bs-theme="dark"] & { color: #4ade80; }
+}
+
+.dash-trend-dn {
+    color: #dc2626;
+    font-size: .7rem;
+    font-weight: 600;
+
+    [data-bs-theme="dark"] & { color: #f87171; }
+}
+
+// ============================================================
+// Recent surveys row
+// ============================================================
+
+.dash-survey-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid $light-border;
+
+    &:last-child { border-bottom: none; }
+
+    [data-bs-theme="dark"] & { border-color: $dark-border; }
+
+    &__dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+}
+
+// ============================================================
+// Progress bar tweak
+// ============================================================
+
+.progress {
+    background: $light-border;
+    border-radius: 99px;
+
+    [data-bs-theme="dark"] & { background: $dark-border; }
+}
+
+.fw-600 { font-weight: 600; }

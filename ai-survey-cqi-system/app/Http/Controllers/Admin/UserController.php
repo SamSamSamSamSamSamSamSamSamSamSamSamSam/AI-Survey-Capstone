@@ -39,9 +39,17 @@ class UserController extends Controller
             $query->whereHas('roles', fn ($q) => $q->where('name', $role));
         }
 
-        if ($request->input('status') === 'deleted') {
-            $query->onlyTrashed();
-        } elseif ($request->input('status') !== 'all') {
+        if ($request->filled('status')) {
+            match ($request->input('status')) {
+                'verified' => $query->whereNull('deleted_at')
+                                    ->whereNotNull('email_verified_at'),
+                'unverified' => $query->whereNull('deleted_at')
+                                    ->whereNull('email_verified_at'),
+                'deleted' => $query->onlyTrashed(),
+                'all' => $query->withTrashed(),
+                default => $query->whereNull('deleted_at'),
+            };
+        } else {
             $query->whereNull('deleted_at');
         }
 

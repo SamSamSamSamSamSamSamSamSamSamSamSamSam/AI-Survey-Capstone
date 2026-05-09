@@ -81,7 +81,7 @@
                                 </div>
                                 <div class="auth-feature-card-body">
                                     <div class="auth-feature-card-title">Survey Analytics</div>
-                                    <div class="auth-feature-card-desc">Computes mean, frequency, and performance trends from structured responses</div>
+                                    <div class="auth-feature-card-desc">Computes mean, frequency, and performance trends from responses</div>
                                 </div>
                             </div>
                         </div>
@@ -196,7 +196,7 @@
                                 class="form-control auth-input @error('login') is-invalid @enderror"
                                 name="login"
                                 id="login"
-                                placeholder="you@usc.edu.ph or 201XXXXX"
+                                placeholder="example@usc.edu.ph"
                                 value="{{ old('login') }}"
                                 autocomplete="username"
                                 autofocus

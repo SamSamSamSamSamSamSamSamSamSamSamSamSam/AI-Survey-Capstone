@@ -78,7 +78,7 @@
                 {{-- Status selection (applied to all selected students) --}}
                 <div class="mb-4">
                     <label class="form-label" for="enrollment_type_id">
-                        Enrollment Type<span class="text-muted"> optional</span>
+                        Enrollment Type <span class="text-danger">*</span>
                     </label>
                     <select name="enrollment_type_id"
                             id="enrollment_type_id"
@@ -91,7 +91,7 @@
                             </option>
                         @endforeach
                     </select>
-                    @error('student_status_id')
+                    @error('enrollment_type_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>

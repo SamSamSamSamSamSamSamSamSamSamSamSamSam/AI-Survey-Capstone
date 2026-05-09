@@ -21,6 +21,7 @@ class MyReportsController extends Controller
         ])
         ->where('faculty_id', Auth::id())
         ->whereNull('deleted_at')
+        ->whereHas('logs', function ($query) { $query->where('action', 'sent_to_faculty'); })
         ->latest()
         ->paginate(15);
 
@@ -29,8 +30,9 @@ class MyReportsController extends Controller
 
     public function show(CqiReport $cqiReport): View
     {
+        $wasSent = $cqiReport->logs()->where('action', 'sent_to_faculty')->exists();
         // Faculty can only view their own reports
-        if ($cqiReport->faculty_id !== Auth::id()) {
+        if ($cqiReport->faculty_id !== Auth::id() || !$wasSent) {
             abort(403);
         }
 
@@ -43,6 +45,11 @@ class MyReportsController extends Controller
     {
         if ($cqiReport->faculty_id !== Auth::id()) {
             abort(403);
+        }
+
+        $wasSent = $cqiReport->logs()->where('action', 'sent_to_faculty')->exists();
+        if (!$wasSent) {
+            abort(403, 'This report has not been released by the administrator yet.');
         }
 
         if (! Storage::disk('public')->exists($cqiReport->pdf_path)) {

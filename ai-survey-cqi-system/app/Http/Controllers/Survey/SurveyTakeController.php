@@ -287,6 +287,7 @@ class SurveyTakeController extends Controller
         
         // Now uses the shared base query + the specific 'pending' constraint
         $base = $this->getBaseSurveyQuery($user)
+            ->active()
             ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', now()))
             ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()))
             ->whereDoesntHave('attempts', fn ($q) => 

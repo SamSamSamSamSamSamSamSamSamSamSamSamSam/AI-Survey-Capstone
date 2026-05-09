@@ -57,7 +57,7 @@
                         <i class="bi bi-eye me-1"></i> View
                     </button>
                     <a href="{{ route('admin.prospectus.index') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-lg me-1"></i> Reset
+                        <i class="bi bi-arrow-counterclockwise"></i>
                     </a>
                 @else
                 <div class="col-md-4 d-flex align-items-end">

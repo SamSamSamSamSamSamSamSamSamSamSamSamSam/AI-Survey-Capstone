@@ -58,6 +58,7 @@ class CourseOfferingController extends Controller
     public function create(): View
     {
         $subjects      = Subject::orderBy('course_code')->get();
+        $offering = new CourseOffering();
         $semesters     = Semester::orderByDesc('academic_start_year')->orderByDesc('semester_number')->get();
         $activeSemesterId = Semester::where('is_active', true)->value('id');
         $offeringTypes = OfferingType::orderBy('name')->get();
@@ -66,7 +67,7 @@ class CourseOfferingController extends Controller
             ? User::whereHas('roles', fn ($q) => $q->where('name', 'faculty'))->orderBy('name')->get()
             : collect();
 
-        return view('admin.offerings.create', compact('subjects', 'semesters', 'offeringTypes', 'teachers', 'activeSemesterId'));
+        return view('admin.offerings.create', compact('subjects', 'semesters', 'offeringTypes', 'teachers', 'activeSemesterId', 'offering'));
     }
 
     public function store(StoreCourseOfferingRequest $request): RedirectResponse

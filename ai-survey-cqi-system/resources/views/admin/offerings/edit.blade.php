@@ -20,7 +20,7 @@
             · {{ $offering->teacher->name }}
         </p>
     </div>
-    <a href="{{ route('admin.offerings.show', $offering->id) }}" class="btn btn-outline-secondary btn-sm">
+    <a href="{{ route('admin.offerings.index', $offering->id) }}" class="btn btn-outline-secondary btn-sm">
         <i class="bi bi-arrow-left me-1"></i> Back to Offering
     </a>
 </div>

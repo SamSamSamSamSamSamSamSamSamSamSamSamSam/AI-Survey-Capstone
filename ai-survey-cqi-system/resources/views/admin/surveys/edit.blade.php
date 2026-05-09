@@ -41,7 +41,7 @@
                         <option value="{{ $template->id }}"
                                 data-name="{{ $template->name }}"
                                 @selected(old('template_id', $survey->template_id ?? '') == $template->id)>
-                            @if ($template->is_official) ⭐ @endif{{ $template->name }}
+                            @if ($template->is_official) ★ @else ☆ @endif{{ $template->name }}
                         </option>
                     @endforeach
                 </select>

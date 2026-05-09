@@ -13,8 +13,8 @@
 
 <div class="page-header">
     <div>
-        <h2 class="page-heading">Create New User</h2>
-        <p class="page-subheading">Add a new user and send their credentials via email.</p>
+        <h2 class="page-heading">User Registration</h2>
+        <p class="page-subheading">Fill in the details to onboard a new member. Verification link will be sent automatically.</p>
     </div>
     <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary btn-sm">
         <i class="bi bi-arrow-left me-1"></i> Back to Users

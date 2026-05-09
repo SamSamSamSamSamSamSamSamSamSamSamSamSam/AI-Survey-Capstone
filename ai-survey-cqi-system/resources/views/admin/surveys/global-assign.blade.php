@@ -13,7 +13,7 @@
 
 <div class="page-header">
     <div>
-        <h2 class="page-heading">Global Survey Assignment</h2>
+        <h2 class="page-heading">Survey Deployment Center</h2>
         <p class="page-subheading">Deploy evaluation surveys to all course offerings at once.</p>
     </div>
     <a href="{{ route('admin.surveys.index') }}" class="btn btn-outline-secondary btn-sm">
@@ -38,7 +38,7 @@
     <div class="card">
         <div class="template-card-header">
             {{-- <i class="bi bi-rocket-takeoff me-2 text-muted"></i> --}}
-            Configure &amp; Launch
+            <h5>Configure &amp; Launch</h5>
         </div>
         <div class="card-body">
 
@@ -62,56 +62,60 @@
                   data-confirm="Create surveys for all {{ $offeringsWithoutSurvey }} offering(s)? They will be activated immediately.">
                 @csrf
 
-{{-- Template Selection (Official Surveys Only) --}}
-<div class="mb-4">
-    <label for="template_id" class="form-label">Template</label>
-    
-    <div class="input-group">
-        <span class="input-group-text bg-light">
-            <i class="bi bi-star-fill text-warning"></i>
-        </span>
-        <select 
-            name="template_id" 
-            id="template_id" 
-            class="form-select @error('template_id') is-invalid @enderror"
-        >
-            <option value="" selected disabled>Select an official survey...</option>
-            
-            @forelse ($officialTemplate as $template)
-                <option value="{{ $template->id }}" {{ old('template_id', $currentTemplateId ?? ($loop->first ? $template->id : '')) == $template->id ? 'selected' : '' }}>
-                    {{ $template->name }}
-                </option>
-            @empty
-                <option value="" disabled>No official templates available</option>
-            @endforelse
-        </select>
-    </div>
+            {{-- Template Selection (Official Surveys Only) --}}
+            <div class="mb-4">
+                <label for="template_id" class="form-label">Template</label>
+                
+                <div class="input-group">
+                    {{-- <span class="input-group-text bg-light">
+                        <i class="bi bi-star-fill text-warning"></i>
+                    </span> --}}
+                    <div class="col-md-6">
+                        <select 
+                            name="template_id" 
+                            id="template_id" 
+                            class="form-select @error('template_id') is-invalid @enderror"
+                        >
+                            <option value="" selected disabled>Select an official survey...</option>
+                            
+                            @forelse ($officialTemplate as $template)
+                                <option value="{{ $template->id }}" {{ old('template_id', $currentTemplateId ?? ($loop->first ? $template->id : '')) == $template->id ? 'selected' : '' }}>
+                                    @if ($template->is_official) ★ @else ☆ @endif{{ $template->name }}
+                                </option>
+                            @empty
+                                <option value="" disabled>No official templates available</option>
+                            @endforelse
+                        </select>
+                    </div>
+                </div>
 
-    @error('template_id')
-        <div class="invalid-feedback d-block">{{ $message }}</div>
-    @enderror
+                @error('template_id')
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
 
-    <div class="form-text">Choose from the authorized university questionnaires.</div>
-</div>
+                <div class="form-text">Choose from the authorized university questionnaires.</div>
+            </div>
 
                 {{-- Target role --}}
                 <div class="mb-4">
                     <label class="form-label" for="target_role_id">
                         Target Role <span class="text-danger">*</span>
                     </label>
-                    <select name="target_role_id" id="target_role_id"
-                            class="form-select @error('target_role_id') is-invalid @enderror">
-                        <option value="">Who will take these surveys?</option>
-                        @foreach ($roles as $role)
-                            <option value="{{ $role->id }}"
-                                @selected(old('target_role_id') == $role->id || $role->name === 'student')>
-                                {{ ucfirst($role->name) }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('target_role_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                    <div class="col-md-6">
+                        <select name="target_role_id" id="target_role_id"
+                                class="form-select @error('target_role_id') is-invalid @enderror">
+                            <option value="">Who will take these surveys?</option>
+                            @foreach ($roles as $role)
+                                <option value="{{ $role->id }}"
+                                    @selected(old('target_role_id') == $role->id || $role->name === 'student')>
+                                    {{ ucfirst($role->name) }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('target_role_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
                 </div>
 
                 {{-- Survey period --}}
@@ -121,8 +125,9 @@
                             Start Date &amp; Time <span class="text-danger">*</span>
                         </label>
                         <input type="datetime-local" name="start_date" id="start_date"
-                               class="form-control @error('start_date') is-invalid @enderror"
-                               value="{{ old('start_date') }}">
+                            class="form-control @error('start_date') is-invalid @enderror"
+                            value="{{ old('start_date', now()->format('Y-m-d\TH:i')) }}"
+                            min="{{ now()->format('Y-m-d\TH:i') }}">
                         @error('start_date')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -132,8 +137,9 @@
                             End Date &amp; Time <span class="text-danger">*</span>
                         </label>
                         <input type="datetime-local" name="end_date" id="end_date"
-                               class="form-control @error('end_date') is-invalid @enderror"
-                               value="{{ old('end_date') }}">
+                            class="form-control @error('end_date') is-invalid @enderror"
+                            value="{{ old('end_date') }}"
+                            min="{{ now()->addDay()->format('Y-m-d\TH:i') }}">
                         @error('end_date')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -141,31 +147,29 @@
                 </div>
 
                 {{-- Skip existing toggle --}}
-                <div class="mb-4">
-                    <label class="toggle-option">
-                        <input type="hidden" name="skip_existing" value="0">
-                        <input type="checkbox" name="skip_existing" value="1"
-                               class="toggle-option__input" checked>
-                        <div class="toggle-option__body">
-                            <span class="toggle-option__icon toggle-option__icon--active">
-                                <i class="bi bi-skip-forward-fill"></i>
-                            </span>
-                            <div>
-                                <p class="toggle-option__title">Skip existing surveys</p>
-                                <p class="toggle-option__hint">
-                                    Offerings that already have a survey won't be affected.
-                                </p>
-                            </div>
+                <div class="card border shadow-sm mb-4 col-md-6">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div class="me-3">
+                            <h6 class="mb-1 fw-bold">Skip existing surveys</h6>
+                            <p class="text-muted small mb-0">Offerings that already have a survey won't be affected.</p>
                         </div>
-                    </label>
+                        <div class="form-check form-switch">
+                            <input type="hidden" name="skip_existing" value="0">
+                            <input class="form-check-input h4 mb-0" type="checkbox" name="skip_existing" 
+                                value="1" id="skipExistingSwitch" checked style="cursor: pointer;">
+                        </div>
+                    </div>
                 </div>
 
-                <button type="submit"
-                        class="btn btn-primary w-100"
-                        @disabled(! $officialTemplate)>
-                    {{-- <i class="bi bi-rocket-takeoff me-2"></i> --}}
-                    Assign Surveys to All Offerings
-                </button>
+                <div class="col-md-6">
+                    <button type="submit"
+                            class="btn btn-primary w-100"
+                            @disabled(! $officialTemplate)>
+                        {{-- <i class="bi bi-rocket-takeoff me-2"></i> --}}
+                        <i class="bi bi-send-check-fill"></i>
+                        Assign Surveys to All Offerings
+                    </button>
+                </div>
 
             </form>
         </div>
@@ -203,6 +207,20 @@
                             </span>
                         @endif
                     </span>
+                </div>
+            </div>
+        </div>
+
+        {{-- Add a "Deployment Preview" Alert --}}
+        <div id="deployment-preview" class="alert alert-info border-0 shadow-sm mb-1 d-none">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+                <div>
+                    <h6 class="mb-0 fw-600">Deployment Summary</h6>
+                    <p class="mb-0 small text-muted">
+                        You are about to deploy <span id="preview-count" class="fw-bold">{{ $offeringsWithoutSurvey }}</span> 
+                        surveys to <span id="preview-role" class="fw-bold">Students</span>.
+                    </p>
                 </div>
             </div>
         </div>
@@ -248,5 +266,35 @@
 @endsection
 
 @push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+    const roleSelect = document.getElementById('target_role_id');
+    const previewDiv = document.getElementById('deployment-preview');
+    const previewRole = document.getElementById('preview-role');
+
+    // 1. Logic: Ensure end date is always after start date
+    startDateInput.addEventListener('change', function() {
+        endDateInput.min = this.value;
+        if (endDateInput.value && endDateInput.value < this.value) {
+            endDateInput.value = this.value;
+        }
+    });
+
+    // 2. UX: Show/Update Deployment Preview
+    const updatePreview = () => {
+        if(roleSelect.value) {
+            previewDiv.classList.remove('d-none');
+            previewRole.innerText = roleSelect.options[roleSelect.selectedIndex].text;
+        } else {
+            previewDiv.classList.add('d-none');
+        }
+    };
+
+    roleSelect.addEventListener('change', updatePreview);
+    updatePreview(); // Run on load
+});
+</script>
 <script src="{{ asset('js/modules/confirm-action.js') }}"></script>
 @endpush

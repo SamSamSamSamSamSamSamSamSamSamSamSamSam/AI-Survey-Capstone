@@ -26,9 +26,9 @@
                         <tr id="row-{{ $analytic->id }}">
                             <td>
                                 <div class="user-cell">
-                                    <div class="user-avatar-sm">
+                                    {{-- <div class="user-avatar-sm">
                                         {{ strtoupper(substr($analytic->faculty->name, 0, 2)) }}
-                                    </div>
+                                    </div> --}}
                                     <span class="fw-500">{{ $analytic->faculty->name }}</span>
                                 </div>
                             </td>
@@ -81,6 +81,13 @@
                                     <a href="{{ route('admin.analytics.show', $analytic->id) }}" class="btn btn-sm btn-icon" title="View Analytics">
                                         <i class="bi bi-graph-up"></i>
                                     </a>
+
+                                    <form method="POST" action="{{ route('admin.analytics.recompute', $analytic->survey_id) }}">
+                                        @csrf
+                                        <button class="btn btn-sm btn-icon btn-warning" title="Recompute Analytics">
+                                            <i class="bi bi-arrow-repeat"></i>
+                                        </button>
+                                    </form>
 
                                     {{-- Archive Form with AJAX class --}}
                                     <form method="POST" 

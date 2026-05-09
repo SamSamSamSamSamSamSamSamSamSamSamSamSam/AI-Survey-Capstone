@@ -11,44 +11,30 @@
         <table class="table data-table align-middle mb-0">
             <thead>
                 <tr>
-                    <th>Survey Details</th>
-                    <th>Target Offerings</th>
-                    <th>Audience</th>
-                    <th class="text-center">Active Period</th>
+                    <th class="ps-3">Survey & Offering</th>
+                    <th>Target</th>
+                    <th class="text-center">Timeline</th>
                     <th class="text-center">Responses</th>
                     <th>Status</th>
-                    <th class="text-end">Actions</th>
+                    <th class="text-end pe-3">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($surveys as $survey)
                 <tr class="{{ $survey->trashed() ? 'row-muted' : '' }}">
-                    {{-- SURVEY TITLE & DESCRIPTION --}}
-                    <td>
+                    {{-- GROUPED TITLE & OFFERING --}}
+                    <td class="ps-3">
                         <div class="fw-500 text-dark">{{ $survey->title }}</div>
-                        @if($survey->description)
-                            <div class="text-muted-sm text-truncate" style="max-width: 200px;" title="{{ $survey->description }}">
-                                {{ $survey->description }}
+                        @if($survey->offering)
+                            <div class="text-muted-sm d-flex align-items-center mt-1">
+                                <span class="text-primary fw-600 me-2">{{ $survey->offering->subject->course_code }}</span>
+                                <span class="badge bg-light text-dark border fw-normal me-2" style="font-size: 0.65rem;">
+                                    G{{ $survey->offering->group_number }}
+                                </span>
+                                <span class="opacity-75">| {{ $survey->offering->teacher->name }}</span>
                             </div>
-                        @endif
-                    </td>
-
-                    {{-- LOOP THROUGH OFFERING (Single Relationship) --}}
-                    <td>
-                        @if(!$survey->offering)
-                            <span class="text-muted-sm italic">No offering assigned</span>
                         @else
-                            <div class="mb-1 p-1 border-start border-primary border-3 bg-light-subtle rounded-end" style="font-size:.75rem;">
-                                <div class="fw-semibold">
-                                    {{ $survey->offering->subject->course_code }} — Group {{ $survey->offering->group_number }}
-                                </div>
-                                <div class="text-muted d-flex justify-content-between">
-                                    <span>{{ $survey->offering->teacher->name }}</span>
-                                    <span class="ms-2 opacity-75">
-                                        {{ $survey->offering->semester->semester_number }} — {{ $survey->offering->semester->academic_start_year }}
-                                    </span>
-                                </div>
-                            </div>
+                            <div class="text-muted-sm italic">General Survey</div>
                         @endif
                     </td>
 
@@ -59,16 +45,19 @@
                         </span>
                     </td>
 
-                    {{-- QUESTIONS COUNT --}}
+                    {{-- ACTIVE PERIOD / TIMELINE --}}
                     <td class="text-center">
-                        @if($survey->end_date && !$survey->is_active)
-                            <span class="text-danger">Deactivated</span>
-                        @elseif($survey->end_date?->isPast())
-                            <span class="text-muted">Expired</span>
-                        @elseif($survey->end_date)
-                            <span class="text-primary">Due {{ $survey->end_date->format('M d') }}</span>
+                        @if($survey->end_date)
+                            <div class="small {{ $survey->end_date->isPast() ? 'text-muted' : 'text-dark' }}">
+                                {{ $survey->end_date->format('M d, Y') }}
+                            </div>
+                            @if(!$survey->end_date->isPast() && $survey->is_active)
+                                <div class="text-primary" style="font-size: .7rem;">
+                                    Ends {{ $survey->end_date->diffForHumans() }}
+                                </div>
+                            @endif
                         @else
-                            <span>No dealine</span>
+                            <span class="text-muted-sm">No deadline</span>
                         @endif
                     </td>
 
@@ -91,37 +80,47 @@
                     </td>
 
                     {{-- ACTIONS --}}
-                    <td class="text-end">
+                    <td class="text-end pe-3">
                         <div class="table-actions">
-                            <a href="{{ route('admin.surveys.show', $survey->id) }}" class="btn btn-sm btn-icon" title="View"><i class="bi bi-eye"></i></a>
+                            <a href="{{ route('admin.surveys.show', $survey->id) }}" class="btn btn-sm btn-icon" title="View">
+                                <i class="bi bi-eye"></i>
+                            </a>
                             
                             @if (! $survey->trashed())
-                                <a href="{{ $survey->is_active ? '#' : route('admin.surveys.edit', $survey->id) }}" 
-                                    class="btn btn-sm btn-icon {{ $survey->is_active ? 'disabled' : '' }}" 
-                                    title="{{ $survey->is_active ? 'Cannot edit while active' : 'Edit' }}"
-                                    style="{{ $survey->is_active ? 'pointer-events: auto; cursor: not-allowed;' : '' }}">
-                                    <i class="bi {{ $survey->is_active ? 'bi-lock-fill text-muted' : 'bi-pencil' }}"></i>
-                                </a>
+                                {{-- Edit: Only show if NOT active --}}
+                                @if (!$survey->is_active)
+                                    <a href="{{ route('admin.surveys.edit', $survey->id) }}" 
+                                        class="btn btn-sm btn-icon" 
+                                        title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                @endif
 
+                                {{-- Toggle Active/Inactive (Always visible) --}}
                                 <form method="POST" action="{{ route('admin.surveys.toggle-active', $survey->id) }}" class="d-inline">
                                     @csrf @method('PATCH')
                                     <button type="submit" class="btn btn-sm btn-icon {{ $survey->is_active ? 'btn-icon--warning' : 'btn-icon--success' }}"
                                             title="{{ $survey->is_active ? 'Deactivate' : 'Activate' }}">
-                                        <i class="bi bi-{{ $survey->is_active ? 'pause-circle' : 'play-circle' }}"></i>
+                                        <i class="bi bi-{{ $survey->is_active ? 'pause-fill' : 'play-fill' }}"></i>
                                     </button>
                                 </form>
 
-                                <form method="POST" action="{{ route('admin.surveys.destroy', $survey->id) }}" class="d-inline" data-confirm="Archive this survey?">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-icon btn-icon--danger {{ $survey->is_active ? 'disabled' : '' }}" 
-                                            style="{{ $survey->is_active ? 'pointer-events: auto; cursor: not-allowed;' : '' }}"
-                                            title="{{ $survey->is_active ? 'Cannot edit while active' : 'Archive' }}">
-                                            <i class="bi {{ $survey->is_active ? 'bi-lock-fill text-muted' : 'bi-trash' }}"></i></button>
-                                </form>
+                                {{-- Archive: Only show if NOT active --}}
+                                @if (!$survey->is_active)
+                                    <form method="POST" action="{{ route('admin.surveys.destroy', $survey->id) }}" class="d-inline" data-confirm="Archive this survey?">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-icon btn-icon--danger" title="Archive">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                @endif
                             @else
+                                {{-- Restore for Trashed items --}}
                                 <form method="POST" action="{{ route('admin.surveys.restore', $survey->id) }}" class="d-inline">
                                     @csrf @method('PATCH')
-                                    <button type="submit" class="btn btn-sm btn-icon btn-icon--success" title="Restore"><i class="bi bi-arrow-counterclockwise"></i></button>
+                                    <button type="submit" class="btn btn-sm btn-icon btn-icon--success" title="Restore">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
                                 </form>
                             @endif
                         </div>

@@ -4,12 +4,13 @@
     <i class="bi bi-people"></i> <span>Users</span>
 </a>
 
-<a href="{{ route('admin.surveys.index') }}" class="nav-link {{ request()->routeIs('admin.surveys.*') ? 'active' : '' }}">
+<a href="{{ route('admin.surveys.index') }}" 
+   class="nav-link {{ (request()->routeIs('admin.surveys.*') && !request()->routeIs('admin.surveys.global-assign*')) ? 'active' : '' }}">
     <i class="bi bi-ui-checks-grid"></i> <span>Survey Manager</span>
 </a>
 
 <a href="{{ route('admin.semester-setup.index') }}" class="nav-link {{ request()->routeIs('admin.semester-setup.*') ? 'active' : '' }}">
-   <i class="bi bi-arrow-clockwise"></i> <span>Semester Setup</span>
+   <i class="bi bi-calendar2-plus"></i> <span>Semester Setup</span>
 </a>
 
 <a href="{{ route('admin.offerings.index') }}" class="nav-link {{ request()->routeIs('admin.offerings.*') ? 'active' : '' }}">
@@ -29,7 +30,7 @@
 <p class="nav-section">Survey Management</p>
 
 <a href="{{ route('admin.surveys.global-assign') }}" class="nav-link {{ request()->routeIs('admin.surveys.global-assign*') ? 'active' : '' }}">
-   <i class="bi bi-share"></i> <span>Deploy Surveys</span>
+   <i class="bi bi-send-check"></i> <span>Deploy Surveys</span>
 </a>
 
 <a href="{{ route('admin.survey-templates.index') }}" class="nav-link {{ request()->routeIs('admin.survey-templates.*') ? 'active' : '' }}">

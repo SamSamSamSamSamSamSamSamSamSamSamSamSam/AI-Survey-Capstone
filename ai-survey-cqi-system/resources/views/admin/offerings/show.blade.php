@@ -69,9 +69,9 @@
                 </span>
                 <span class="detail-value">
                     <div class="user-cell">
-                        <div class="user-avatar-sm">
+                        {{-- <div class="user-avatar-sm">
                             {{ strtoupper(substr($offering->teacher->name, 0, 2)) }}
-                        </div>
+                        </div> --}}
                         {{ $offering->teacher->name }}
                     </div>
                 </span>
@@ -109,10 +109,10 @@
                 {{ $offering->enrollments->count() }}
             </div>
             <div class="survey-stat__label">Total Students Enrolled</div>
-            <a href="{{ route('admin.offerings.enrollments.create', $offering->id) }}"
+            {{-- <a href="{{ route('admin.offerings.enrollments.create', $offering->id) }}"
                class="btn btn-primary btn-sm mt-2">
                 <i class="bi bi-person-plus me-1"></i> Enroll Student
-            </a>
+            </a> --}}
         </div>
     </div>
 
@@ -126,10 +126,10 @@
             {{ $offering->enrollments->count() }}
         </span>
     </p>
-    <a href="{{ route('admin.offerings.enrollments.create', $offering->id) }}"
+    {{-- <a href="{{ route('admin.offerings.enrollments.create', $offering->id) }}"
        class="btn btn-sm btn-primary">
         <i class="bi bi-person-plus me-1"></i> Enroll Student
-    </a>
+    </a> --}}
 </div>
 
 <div class="card">
@@ -160,9 +160,9 @@
                         <td class="text-mono">{{ $enrollment->student->user_id_number }}</td>
                         <td>
                             <div class="user-cell">
-                                <div class="user-avatar-sm">
+                                {{-- <div class="user-avatar-sm">
                                     {{ strtoupper(substr($enrollment->student->name, 0, 2)) }}
-                                </div>
+                                </div> --}}
                                 <span class="fw-500">{{ $enrollment->student->name }}</span>
                             </div>
                         </td>

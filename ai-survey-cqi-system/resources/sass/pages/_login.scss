@@ -340,6 +340,12 @@
     border-bottom: 1px solid $light-border;
 
     @include dark { border-color: $dark-border; }
+
+    @include media-breakpoint-down(md) {
+        text-align: center;
+        padding-bottom: 12px;
+        margin-bottom: 15px;
+    }
 }
 
 .auth-dept-logo-row {
@@ -347,6 +353,10 @@
     align-items: center;
     gap: 10px;
     margin-bottom: 5px;
+
+    @include media-breakpoint-down(md) {
+        justify-content: center; // Center the logo and name row on mobile
+    }
 }
 
 .auth-dept-name {
@@ -358,6 +368,11 @@
     line-height: 1;
 
     @include dark { color: $brand-accent; }
+
+    // --- RESPONSIVE FONT SIZE ---
+    @include media-breakpoint-down(lg) { font-size: 4rem; }
+    // @include media-breakpoint-down(md) { font-size: 3rem; }
+    // @include media-breakpoint-down(sm) { font-size: 2.2rem; }
 }
 
 .auth-dept-logo-img {
@@ -369,6 +384,14 @@
     @include dark {
         mix-blend-mode: normal;
         filter: brightness(1.5) invert(0.1);
+    }
+
+    // --- RESPONSIVE LOGO SIZE ---
+    @include media-breakpoint-down(md) {
+        height: 60px;
+    }
+    @include media-breakpoint-down(sm) {
+        height: 45px;
     }
 }
 
@@ -382,6 +405,11 @@
     line-height: 1.5;
 
     @include dark { color: $dark-text-muted; }
+
+    // --- RESPONSIVE FONT SIZE ---
+    @include media-breakpoint-down(lg) { font-size: .500rem; }
+    // @include media-breakpoint-down(md) { font-size: 3rem; }
+    // @include media-breakpoint-down(sm) { font-size: 2.2rem; }
 }
 
 .auth-mobile-brand {
@@ -397,10 +425,19 @@
     i { color: $brand-action; }
 
     @include dark { color: $brand-accent; }
+
+    @include media-breakpoint-down(md) {
+        justify-content: center; // Center the logo and name row on mobile
+    }
 }
 
 .auth-form-header {
     margin-bottom: 28px;
+
+    @include media-breakpoint-down(md) {
+        text-align: center;
+        margin-bottom: 20px;
+    }
 
     h1 {
         font-size: 1.6rem;

@@ -46,10 +46,17 @@ class SurveyController extends Controller
             });
         }
 
-        if ($request->input('status') === 'deleted') {
-            $query->onlyTrashed();
-        } elseif ($request->input('status') !== 'all') {
-            $query->whereNull('surveys.deleted_at');
+        if ($request->filled('status')) {
+            match ($request->input('status')) {
+                'active'   => $query->whereNull('deleted_at')->where('is_active', true),
+                'inactive' => $query->whereNull('deleted_at')->where('is_active', false),
+                'deleted'  => $query->onlyTrashed(),
+                'all'      => $query->withTrashed(), // Already has withTrashed() at the top, but good for clarity
+                default    => $query->whereNull('deleted_at'),
+            };
+        } else {
+            // Default behavior: show everything that isn't archived
+            $query->whereNull('deleted_at');
         }
 
         $surveys = $query->latest()->paginate(15)->withQueryString();
@@ -140,8 +147,11 @@ class SurveyController extends Controller
         $offerings = CourseOffering::with(['subject', 'teacher', 'semester'])->whereNull('deleted_at')->get();
         $roles     = Role::orderBy('name')->get();
         $templates = SurveyTemplate::active()->orderByDesc('is_official')->orderBy('name')->get();
+        $existingAssignments = collect([
+            $survey->offering_id => collect([$survey->target_role_id])
+        ]);
 
-        return view('admin.surveys.edit', compact('survey', 'offerings', 'roles', 'templates'));
+        return view('admin.surveys.edit', compact('survey', 'offerings', 'roles', 'templates', 'existingAssignments'));
     }
 
     public function update(Request $request, Survey $survey): RedirectResponse
