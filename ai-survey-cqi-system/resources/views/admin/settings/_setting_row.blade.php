@@ -169,16 +169,38 @@
         @elseif ($s->is_sensitive)
             @php
                 $inputName = App\Http\Controllers\Admin\SettingsController::encodeKey($s->key);
-                $displayMask = $s->value ? '••••••••' . substr($s->value, -4) : 'Enter API Key...';
+                $displayMask = 'Enter API Key...';
+
+                // Check if there is a value currently stored
+                if ($s->value) {
+                    try {
+                        // We decrypt the stored value to get the original key
+                        $decryptedValue = decrypt($s->value);
+                        // Then we mask everything except the last 4 characters
+                        $displayMask = '••••••••' . substr($decryptedValue, -4);
+                    } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                        // Fallback: If it's not encrypted yet, show the last 4 of the raw string
+                        $displayMask = '••••••••' . substr($s->value, -4);
+                    }
+                }
             @endphp
-            <input type="text"
-                id="setting_{{ $inputName }}"
-                name="{{ $inputName }}"
-                value="" 
-                class="form-control"
-                autocomplete="off"
-                placeholder="{{ $displayMask }}">
-            <small class="text-muted">Current key is masked. Leave blank to keep it, or type a new one to update.</small>
+
+            <div class="input-group">
+                <span class="input-group-text bg-light">
+                    <i class="bi bi-key-fill text-muted"></i>
+                </span>
+                <input type="text"
+                    id="setting_{{ $inputName }}"
+                    name="{{ $inputName }}"
+                    value="" 
+                    class="form-control"
+                    autocomplete="off"
+                    placeholder="{{ $displayMask }}">
+            </div>
+            <small class="form-text text-muted">
+                <i class="bi bi-info-circle"></i> 
+                Key is encrypted in the database. Leave blank to keep current configuration.
+            </small>
 
         @else
             <input type="text"

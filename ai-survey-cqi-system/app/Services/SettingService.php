@@ -28,7 +28,7 @@ class SettingService
                 return $default;
             }
 
-            return $this->castValue($setting->type, $setting->value) ?? $default;
+            return $this->castValue($setting->type, $setting->value, $setting->is_sensitive) ?? $default;
         });
     }
 
@@ -67,7 +67,7 @@ class SettingService
         }
 
         $oldRaw = $setting->value;
-        $newRaw = $this->castForStorage($setting->type, $value);
+        $newRaw = $this->castForStorage($setting->type, $value, $setting->is_sensitive);
 
         // Only update if value actually changed
         if ($oldRaw === $newRaw) {
@@ -150,56 +150,79 @@ class SettingService
     /**
      * Cast a stored string value to its PHP type.
      */
-    private function castValue(string $type, ?string $value): mixed
+    private function castValue(string $type, ?string $value, bool $isSensitive = false): mixed
     {
-        if ($value === null) {
-            return null;
+        if ($value === null) return null;
+
+        // Decrypt if sensitive
+        $rawValue = $value;
+        if ($isSensitive) {
+            try {
+                $rawValue = decrypt($value);
+            } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                // Fallback if the value in DB wasn't encrypted yet
+                $rawValue = $value;
+            }
         }
 
         return match ($type) {
-            'boolean' => in_array($value, ['1', 'true', 'yes', 'on'], true),
-            'integer' => (int) $value,
-            'json'    => json_decode($value, true),
-            default   => $value,
+            'boolean' => in_array($rawValue, ['1', 'true', 'yes', 'on'], true),
+            'integer' => (int) $rawValue,
+            'json'    => json_decode($rawValue, true),
+            default   => $rawValue,
         };
     }
 
     /**
      * Cast a PHP value to a string for DB storage.
      */
-    private function castForStorage(string $type, mixed $value): ?string
+    private function castForStorage(string $type, mixed $value, bool $isSensitive = false): ?string
     {
         if ($value === null || $value === '') {
-            // For booleans, null means false — store as '0'
-            if ($type === 'boolean') {
-                return '0';
-            }
+            if ($type === 'boolean') return '0';
             return null;
         }
 
-        return match ($type) {
+        // Step 1: Handle standard casting (JSON, Boolean, etc.)
+        $processed = match ($type) {
             'boolean' => ($value && $value !== '0' && $value !== 'false') ? '1' : '0',
             'json'    => is_string($value) ? $value : json_encode($value),
             default   => (string) $value,
         };
+
+        // Step 2: NEW ENCRYPTION LOGIC
+        // If the database column 'is_sensitive' is true, encrypt the string
+        if ($isSensitive && $processed !== null) {
+            return encrypt($processed);
+        }
+
+        return $processed;
     }
 
     private function writeLog(Setting $setting, ?string $oldRaw, ?string $newRaw): void
     {
         $user = Auth::user();
-        $maskOld = $setting->is_sensitive && $oldRaw 
-            ? '••••••••' . mb_substr($oldRaw, -4) 
-            : $oldRaw;
-            
-        $maskNew = $setting->is_sensitive && $newRaw 
-            ? '••••••••' . mb_substr($newRaw, -4) 
-            : $newRaw;
+
+        $processMask = function(?string $val) use ($setting) {
+            if (!$setting->is_sensitive || !$val || $val === '(empty)') {
+                return $val;
+            }
+
+            try {
+                // Attempt to decrypt so we can mask the REAL key
+                $decrypted = decrypt($val);
+                return '••••••••' . mb_substr($decrypted, -4);
+            } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                // Fallback for values not yet encrypted
+                return '••••••••' . mb_substr($val, -4);
+            }
+        };
 
         SettingLog::create([
             'key'             => $setting->key,
             'group'           => $setting->group,
-            'old_value'       => $maskOld ?? '(empty)',
-            'new_value'       => $maskNew ?? '(empty)',
+            'old_value'       => $processMask($oldRaw) ?? '(empty)',
+            'new_value'       => $processMask($newRaw) ?? '(empty)',
             'changed_by_name' => $user?->name ?? 'System',
             'changed_by_id'   => $user?->id,
             'changed_at'      => now(),

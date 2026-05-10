@@ -101,20 +101,12 @@
                         </td>
                         <td>
                             <span class="settings-log-val settings-log-val--old">
-                                @if($log->setting?->is_sensitive)
-                                    {{ $log->old_value ?? '—' }}
-                                @else
-                                    {{ Str::limit($log->old_value ?? '—', 36) }}
-                                @endif
+                                {{ Str::limit($log->old_value ?? '—', 40) }}
                             </span>
                         </td>
                         <td>
                             <span class="settings-log-val">
-                                @if($log->setting?->is_sensitive)
-                                    {{ $log->old_value ?? '—' }}
-                                @else
-                                    {{ Str::limit($log->old_value ?? '—', 36) }}
-                                @endif
+                                {{ Str::limit($log->new_value ?? '—', 40) }}
                             </span>
                         </td>
                         <td class="fw-500" style="font-size:.845rem;">

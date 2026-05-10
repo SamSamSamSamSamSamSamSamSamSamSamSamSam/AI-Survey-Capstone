@@ -273,7 +273,7 @@
                                 {{ Str::limit($attempt->survey->title, 40) }}
                             </div>
                             <div class="text-muted-sm">
-                                {{ $attempt->survey->offering->subject->course_code }} ·
+                                {{ $attempt->survey->offering?->subject?->course_code ?? 'N/A' }} ·
                                 {{ $attempt->submitted_at->format('M d, Y') }}
                             </div>
                         </div>
