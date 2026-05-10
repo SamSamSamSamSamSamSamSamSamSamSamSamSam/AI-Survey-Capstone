@@ -7,8 +7,11 @@ use Illuminate\Http\Request;
 class SessionController extends Controller
 {
     public function check(Request $request) {
-        // Laravel sessions expire based on 'last_activity'.
-        // We calculate how many minutes until that hits session.lifetime.
+        // Guard: If session is dead, exit immediately with 401 without saving redirect paths
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
+        }
+
         $lastActivity = $request->session()->get('last_activity', time());
         $lifetime = config('session.lifetime');
         $elapsedMinutes = (time() - $lastActivity) / 60;
@@ -18,6 +21,10 @@ class SessionController extends Controller
     }
 
     public function refresh() {
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
+        }
+
         // Just hitting this route is enough to refresh the session
         return response()->json(['status' => 'ok']);
     }
