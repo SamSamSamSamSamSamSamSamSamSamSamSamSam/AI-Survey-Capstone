@@ -53,7 +53,11 @@ class EnrollmentController extends Controller
         }
 
         // Standard view variables
-        $myEnrollments = Enrollment::where('student_id', Auth::id())->latest()->get();
+        $myEnrollments = Enrollment::with(['offering.subject']) // Eager load relationships
+                ->where('student_id', Auth::id())
+                ->whereHas('offering') // Only get enrollments where the course offering still exists
+                ->latest()
+                ->get();
 
         return view('student.enrollments.index', compact('activeSemester', 'availableOfferings', 'myEnrollments'));
     }

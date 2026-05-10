@@ -13,6 +13,11 @@
  * }
  */
 
+// ── REMOVED: dead stub that was here before (updateCharts / analytics:filter
+//    listener outside the IIFE). Those couldn't reach onFilterChange() and
+//    the filter button never actually refreshed anything. The real wiring is
+//    now inside the IIFE below, exported via window.refreshAnalyticsCharts. ──
+
 (function () {
     'use strict';
 
@@ -171,11 +176,10 @@
         // Category horizontal bar
         const rawCatKeys = Object.keys(d.category_scores);
         const catKeys = rawCatKeys.map(key => {
-            return key.replace(/_/g, ' ')              // Replace underscores with space
-                    .replace(/\b\w/g, l => l.toUpperCase()); // Capitalize words
+            return key.replace(/_/g, ' ')
+                    .replace(/\b\w/g, l => l.toUpperCase());
         });
 
-        // const catKeys = Object.keys(d.category_scores);
         const catVals = Object.values(d.category_scores);
         const pass    = cfg.passingThreshold || 3.0;
         destroyChart('cats-ov');
@@ -472,8 +476,14 @@
             btn.addEventListener('click', function () { showTab(this.dataset.tab); });
         });
 
-        // Filter change
+        // Filter: semester dropdown triggers refresh on change (works for both admin & faculty)
         document.getElementById('sel-semester')?.addEventListener('change', onFilterChange);
+
+        // Admin filter button — calls onFilterChange() which reads the current
+        // dropdown values at the time it executes, so no extra param passing needed.
+        document.getElementById('btn-filter')?.addEventListener('click', onFilterChange);
+
+        // Faculty has no faculty dropdown, admin wires it here
         if (cfg.hasFacultyFilter) {
             document.getElementById('sel-faculty')?.addEventListener('change', onFilterChange);
         }
@@ -497,6 +507,10 @@
         // Load initial tab
         loadOverview();
     }
+
+    // ── Expose a global hook so Blade inline scripts can also trigger a refresh
+    //    (e.g. window.refreshAnalyticsCharts() from the filter button fallback)
+    window.refreshAnalyticsCharts = onFilterChange;
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);

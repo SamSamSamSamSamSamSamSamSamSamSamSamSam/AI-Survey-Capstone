@@ -79,7 +79,7 @@
     <p class="card-section-label mb-0">
         Curriculum Overview
     </p>
-    <a href="{{ route('admin.prospectus.create') }}" class="btn btn-sm btn-outline-secondary">
+    <a href="{{ route('admin.prospectus.create') }}" class="btn btn-sm btn-primary">
         <i class="bi bi-plus-lg me-1"></i> Add Subject
     </a>
 </div>

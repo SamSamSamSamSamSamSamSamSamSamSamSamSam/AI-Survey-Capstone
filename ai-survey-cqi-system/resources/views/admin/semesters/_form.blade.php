@@ -22,17 +22,36 @@
         Academic Year Start <span class="text-danger">*</span>
     </label>
     <p class="form-text mt-0 mb-1">The year the academic year begins (e.g. 2024 for A.Y. 2024–2025).</p>
-    <input type="number"
-           name="academic_start_year"
-           id="academic_start_year"
-           min="2000" max="2099"
-           class="form-control @error('academic_start_year') is-invalid @enderror"
-           value="{{ old('academic_start_year', $semester->academic_start_year ?? date('Y')) }}"
-           style="max-width:160px;"
-           placeholder="{{ date('Y') }}"
-           required>
+    
+    <div class="input-group" style="max-width: 160px;">
+        <input type="number"
+               name="academic_start_year"
+               id="academic_start_year"
+               min="2000" max="2099"
+               class="form-control @error('academic_start_year') is-invalid @enderror"
+               value="{{ old('academic_start_year', $semester->academic_start_year ?? date('Y')) }}"
+               placeholder="{{ date('Y') }}"
+               required>
+        
+        <!-- Vertical Up/Down Buttons -->
+        <div class="d-flex flex-column border rounded-end">
+            <button type="button" 
+                    class="btn btn-link btn-sm p-0 px-2 border-bottom text-dark" 
+                    onclick="this.closest('.input-group').querySelector('input').stepUp()"
+                    style="line-height: 1; text-decoration: none;">
+                <i class="bi bi-chevron-up" style="font-size: 0.7rem;"></i>
+            </button>
+            <button type="button" 
+                    class="btn btn-link btn-sm p-0 px-2 text-dark" 
+                    onclick="this.closest('.input-group').querySelector('input').stepDown()"
+                    style="line-height: 1; text-decoration: none;">
+                <i class="bi bi-chevron-down" style="font-size: 0.7rem;"></i>
+            </button>
+        </div>
+    </div>
+
     @error('academic_start_year')
-        <div class="invalid-feedback">{{ $message }}</div>
+        <div class="invalid-feedback d-block">{{ $message }}</div>
     @enderror
 </div>
 

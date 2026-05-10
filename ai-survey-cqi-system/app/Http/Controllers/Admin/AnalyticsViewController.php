@@ -6,11 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\FacultyAnalytics;
 use App\Models\Semester;
 use App\Models\User;
+use Illuminate\Http\Request;   // ← was missing
 use Illuminate\View\View;
 
 class AnalyticsViewController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View   // ← $request injected
     {
         // Pass only the lightweight metadata — charts load via API
         $faculties = User::whereHas('roles', fn ($q) => $q->where('name', 'faculty'))
@@ -22,7 +23,10 @@ class AnalyticsViewController extends Controller
                              ->orderByDesc('semester_number')
                              ->get(['id', 'name', 'academic_start_year', 'semester_number', 'is_active']);
 
-        $activeSemester = Semester::current();
+        // $request is now properly available
+        $activeSemester = $request->has('semester_id')
+            ? Semester::find($request->semester_id)
+            : Semester::current();
 
         $hasData = $faculties->isNotEmpty();
 

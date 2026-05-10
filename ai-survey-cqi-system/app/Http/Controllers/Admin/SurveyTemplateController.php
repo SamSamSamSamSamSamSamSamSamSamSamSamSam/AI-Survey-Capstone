@@ -46,7 +46,14 @@ class SurveyTemplateController extends Controller
 
     public function show(SurveyTemplate $surveyTemplate): View
     {
-        $surveyTemplate->load(['questions.category', 'questions.scale']);
+        // FIX: load questions in order_number order so the table always
+        // reflects the saved order after a drag-and-drop reorder.
+        $surveyTemplate->load([
+            'questions' => fn ($q) => $q->orderBy('order_number'),
+            'questions.category',
+            'questions.scale',
+        ]);
+
         $categories = QuestionCategory::orderBy('name')->get();
         $scales     = Scale::orderBy('name')->get();
 
@@ -100,7 +107,9 @@ class SurveyTemplateController extends Controller
             'question_text' => ['required', 'string'],
             'question_type' => ['required', 'in:rating,text'],
             'category_id'   => ['nullable', 'exists:question_categories,id'],
-            'scale_id'      => ['nullable', 'exists:scales,id'],
+            'scale_id'      => ['required_if:question_type,rating', 'nullable', 'exists:scales,id'],
+            ], [
+                'scale_id.required_if' => 'Please select a scale for this rating question.',
         ]);
 
         $next = $surveyTemplate->questions()->max('order_number') + 1;
@@ -129,7 +138,7 @@ class SurveyTemplateController extends Controller
     {
         $question->delete();
 
-        // Re-sequence
+        // Re-sequence remaining questions
         $surveyTemplate->questions()->orderBy('order_number')
                         ->get()->each(fn ($q, $i) => $q->update(['order_number' => $i + 1]));
 
@@ -139,11 +148,13 @@ class SurveyTemplateController extends Controller
     public function reorderQuestions(Request $request, SurveyTemplate $surveyTemplate)
     {
         $request->validate([
-            'order'              => ['required', 'array'],
-            'order.*.id'         => ['required', 'integer'],
+            'order'                => ['required', 'array'],
+            'order.*.id'           => ['required', 'integer'],
             'order.*.order_number' => ['required', 'integer', 'min:1'],
         ]);
 
+        // FIX: added survey_template_id scope to prevent updating questions
+        // belonging to a different template if IDs are tampered with.
         foreach ($request->input('order') as $item) {
             SurveyTemplateQuestion::where('id', $item['id'])
                 ->where('survey_template_id', $surveyTemplate->id)

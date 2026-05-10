@@ -33,43 +33,38 @@
 </div>
 
 {{-- Toggle options --}}
-<div class="template-toggles">
-
-    <label class="toggle-option">
-        {{-- Hidden fallback so unchecked still submits 0 --}}
-        <input type="hidden" name="is_official" value="0">
-        <input type="checkbox" name="is_official" value="1"
-               class="toggle-option__input"
-               {{ old('is_official', $surveyTemplate->is_official ?? false) ? 'checked' : '' }}>
-        <div class="toggle-option__body">
-            <span class="toggle-option__icon toggle-option__icon--star">
-                <i class="bi bi-star-fill"></i>
-            </span>
-            <div>
-                <p class="toggle-option__title">Official Questionnaire</p>
-                <p class="toggle-option__hint">
-                    Mark as the university's official evaluation instrument.
-                </p>
+<div class="row g-3 mb-4">
+    {{-- Official Status --}}
+    <div class="col-md-6">
+        <div class="card h-100 border shadow-sm">
+            <div class="card-body d-flex align-items-start">
+                <div class="flex-grow-1">
+                    <h6 class="fw-bold mb-1">Official Instrument</h6>
+                    <p class="text-muted small mb-0">Designate as the university's primary evaluation standard.</p>
+                </div>
+                <div class="form-check form-switch ms-3">
+                    <input type="hidden" name="is_official" value="0">
+                    <input class="form-check-input h5" type="checkbox" name="is_official" value="1" 
+                           id="isOfficial" {{ old('is_official', $surveyTemplate->is_official ?? false) ? 'checked' : '' }}>
+                </div>
             </div>
         </div>
-    </label>
+    </div>
 
-    <label class="toggle-option">
-        <input type="hidden" name="is_active" value="0">
-        <input type="checkbox" name="is_active" value="1"
-               class="toggle-option__input"
-               {{ old('is_active', $surveyTemplate->is_active ?? true) ? 'checked' : '' }}>
-        <div class="toggle-option__body">
-            <span class="toggle-option__icon toggle-option__icon--active">
-                <i class="bi bi-check-circle-fill"></i>
-            </span>
-            <div>
-                <p class="toggle-option__title">Active</p>
-                <p class="toggle-option__hint">
-                    Make this template available when creating surveys.
-                </p>
+    {{-- Active Status --}}
+    <div class="col-md-6">
+        <div class="card h-100 border shadow-sm">
+            <div class="card-body d-flex align-items-start">
+                <div class="flex-grow-1">
+                    <h6 class="fw-bold mb-1">Availability</h6>
+                    <p class="text-muted small mb-0">Enable this template for use in new surveys.</p>
+                </div>
+                <div class="form-check form-switch ms-3">
+                    <input type="hidden" name="is_active" value="0">
+                    <input class="form-check-input h5" type="checkbox" name="is_active" value="1" 
+                           id="isActive" {{ old('is_active', $surveyTemplate->is_active ?? true) ? 'checked' : '' }}>
+                </div>
             </div>
         </div>
-    </label>
-
+    </div>
 </div>

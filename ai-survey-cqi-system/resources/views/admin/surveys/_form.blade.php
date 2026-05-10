@@ -26,7 +26,7 @@
             
             <option value="{{ $offering->id }}"
                 data-assigned-roles="{{ $assignedRoles }}"
-                @selected(in_array($offering->id, (array) old('offering_id', $isEdit ? $survey->offering_id : [])))>
+                @selected(in_array($offering->id, (array) old('offering_id', $isEdit ? [$survey->offering_id] : [])))>
                 {{ $offering->subject->course_code }} — {{ $offering->subject->name }}
                 | {{ $offering->teacher->name }} - Group {{$offering->group_number}}
             </option>
@@ -148,37 +148,41 @@
         // 2. Define the filtering logic
         var roleSelect = document.querySelector('select[name="target_role_id"]');
         
-        function filterOfferings() {
-            if (!roleSelect) return;
-            
-            const selectedRoleId = parseInt(roleSelect.value);
-            
-            // Clear current selections in TomSelect if they become invalid
-            const currentValues = offeringSelect.getValue();
-            
-            // We iterate through the original options to determine what to show/hide
-            // Note: TomSelect uses its own internal 'options' store
-            Object.values(offeringSelect.options).forEach(option => {
-                // Access the data-assigned-roles we put in the HTML
-                // TomSelect maps data attributes to the option object
-                const assignedRoles = JSON.parse(option.assignedRoles || '[]');
+function filterOfferings() {
+    if (!roleSelect) return;
+    
+    const selectedRoleId = parseInt(roleSelect.value);
+    
+    // Get all currently selected items in the dropdown
+    const currentValues = offeringSelect.getValue(); 
+    
+    // Convert currentValues to an array of strings (TomSelect uses strings for values)
+    const selectedArray = Array.isArray(currentValues) ? currentValues : [currentValues.toString()];
 
-                if (assignedRoles.includes(selectedRoleId)) {
-                    // If the role exists for this offering, remove it from view
-                    offeringSelect.updateOption(option.value, { ...option, disabled: true });
-                    
-                    // If it was already selected, unselect it
-                    if (currentValues.includes(option.value)) {
-                        offeringSelect.removeItem(option.value);
-                    }
-                } else {
-                    // Otherwise, ensure it is enabled
-                    offeringSelect.updateOption(option.value, { ...option, disabled: false });
-                }
-            });
+    Object.values(offeringSelect.options).forEach(option => {
+        const assignedRoles = JSON.parse(option.assignedRoles || '[]');
+        const optionIdString = option.value.toString();
 
-            offeringSelect.refreshOptions(false);
+        // LOGIC: Is this option already selected in the box?
+        const isAlreadySelected = selectedArray.includes(optionIdString);
+
+        // If the role matches an existing assignment AND it's not the one we have selected
+        if (assignedRoles.includes(selectedRoleId) && !isAlreadySelected) {
+            // Disable it so the user can't pick it
+            offeringSelect.updateOption(option.value, { ...option, disabled: true });
+            
+            // Safety: if it somehow got selected but shouldn't be, remove it
+            if (selectedArray.includes(optionIdString) && !isAlreadySelected) {
+                offeringSelect.removeItem(option.value);
+            }
+        } else {
+            // Enable the option
+            offeringSelect.updateOption(option.value, { ...option, disabled: false });
         }
+    });
+
+    offeringSelect.refreshOptions(false);
+}
 
         // 3. Set up listeners
         if (roleSelect) {

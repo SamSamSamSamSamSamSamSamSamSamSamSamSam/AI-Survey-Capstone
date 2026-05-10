@@ -41,7 +41,7 @@
     <div class="d-flex gap-2">
         <a href="{{ route('admin.survey-templates.edit', $surveyTemplate->id) }}"
            class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-pencil me-1"></i> Edit Details
+            <i class="bi bi-pencil me-1"></i> Edit Template
         </a>
         <a href="{{ route('admin.survey-templates.index') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left me-1"></i> Back
@@ -109,16 +109,21 @@
 
                     {{-- Scale (rating only) --}}
                     <div class="mb-3" id="tq-scale-wrap">
-                        <label class="form-label" for="scale_id">Scale</label>
-                        <select name="scale_id" id="scale_id" class="form-select">
+                        <label class="form-label" for="scale_id">
+                            Scale <span class="text-danger" id="scale-required-star">*</span>
+                        </label>
+                        <select name="scale_id" id="scale_id" 
+                                class="form-select @error('scale_id') is-invalid @enderror">
                             <option value="">— None —</option>
                             @foreach ($scales as $scale)
-                                <option value="{{ $scale->id }}"
-                                    @selected(old('scale_id') == $scale->id)>
+                                <option value="{{ $scale->id }}" @selected(old('scale_id') == $scale->id)>
                                     {{ $scale->name }} ({{ $scale->min_value }}–{{ $scale->max_value }})
                                 </option>
                             @endforeach
                         </select>
+                        @error('scale_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100">
@@ -168,8 +173,8 @@
                         <tbody id="tq-sortable">
                             @foreach ($surveyTemplate->questions as $tq)
                             <tr data-id="{{ $tq->id }}">
-                                <td class="drag-handle">
-                                    <i class="bi bi-grip-vertical text-muted"></i>
+                                <td class="drag-handle" style="cursor:grab;">
+                                    <i class="bi bi-grip-vertical text-muted" style="pointer-events:none;"></i>
                                 </td>
                                 <td class="text-muted-sm tq-order">{{ $tq->order_number }}</td>
                                 <td style="font-size: .875rem; max-width: 260px;">
@@ -195,10 +200,10 @@
                                                 title="Edit"
                                                 data-tq-edit
                                                 data-id="{{ $tq->id }}"
-                                                data-text="{{ $tq->question_text }}"
+                                                data-text="{{ e($tq->question_text) }}"
                                                 data-type="{{ $tq->question_type }}"
-                                                data-category="{{ $tq->category_id }}"
-                                                data-scale="{{ $tq->scale_id }}"
+                                                data-category="{{ $tq->category_id ?? '' }}"
+                                                data-scale="{{ $tq->scale_id ?? '' }}"
                                                 data-order="{{ $tq->order_number }}">
                                             <i class="bi bi-pencil"></i>
                                         </button>
@@ -304,117 +309,185 @@
 @push('scripts')
 <script src="{{ asset('js/modules/confirm-action.js') }}"></script>
 <script>
-(function () {
-    'use strict';
+document.addEventListener('DOMContentLoaded', function () {
+    (function () {
+        'use strict';
 
-    const templateId  = {{ $surveyTemplate->id }};
-    const csrf        = '{{ csrf_token() }}';
-    const reorderUrl  = '{{ route('admin.survey-templates.questions.reorder', $surveyTemplate->id) }}';
+        const tbody = document.getElementById('tq-sortable');
+        if (!tbody) return; // Exit silently if table isn't present
 
-    // ---- Scale visibility toggle (add form) ----
-    const addTypeSelect = document.getElementById('tq-type');
-    const addScaleWrap  = document.getElementById('tq-scale-wrap');
+        const templateId = {{ $surveyTemplate->id }};
+        const csrf       = '{{ csrf_token() }}';
+        const reorderUrl = '{{ route("admin.survey-templates.questions.reorder", $surveyTemplate->id) }}';
 
-    function syncAddScale(val) {
-        if (addScaleWrap) addScaleWrap.style.display = val === 'rating' ? '' : 'none';
-    }
-    if (addTypeSelect) {
-        addTypeSelect.addEventListener('change', () => syncAddScale(addTypeSelect.value));
-        syncAddScale(addTypeSelect.value);
-    }
+        // --- Add Form Logic ---
+        const addTypeSelect = document.getElementById('tq-type');
+        const addScaleWrap  = document.getElementById('tq-scale-wrap');
+        function syncAddScale(val) {
+            if (addScaleWrap) addScaleWrap.style.display = val === 'rating' ? '' : 'none';
+        }
+        if (addTypeSelect) {
+            addTypeSelect.addEventListener('change', function () { syncAddScale(this.value); });
+            syncAddScale(addTypeSelect.value);
+        }
 
-    // ---- Edit modal ----
-    const modal      = new bootstrap.Modal(document.getElementById('editQuestionModal'));
-    const editForm   = document.getElementById('edit-q-form');
-    const editType   = document.getElementById('edit-type');
-    const editScale  = document.getElementById('edit-scale-wrap');
-    const saveBtn    = document.getElementById('edit-q-save');
+        // --- Edit Modal Logic ---
+        const modalEl  = document.getElementById('editQuestionModal');
+        const editForm = document.getElementById('edit-q-form');
+        const editType = document.getElementById('edit-type');
+        const editScale= document.getElementById('edit-scale-wrap');
+        const saveBtn  = document.getElementById('edit-q-save');
+        const modal    = modalEl ? new bootstrap.Modal(modalEl) : null;
 
-    function syncEditScale(val) {
-        if (editScale) editScale.style.display = val === 'rating' ? '' : 'none';
-    }
-    if (editType) {
-        editType.addEventListener('change', () => syncEditScale(editType.value));
-    }
+        function syncEditScale(val) {
+            if (editScale) editScale.style.display = val === 'rating' ? '' : 'none';
+        }
 
-    document.querySelectorAll('[data-tq-edit]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const d = this.dataset;
-            editForm.action = `/admin/survey-templates/${templateId}/questions/${d.id}`;
-            document.getElementById('edit-text').value     = d.text;
-            editType.value                                  = d.type;
-            document.getElementById('edit-category').value = d.category || '';
-            document.getElementById('edit-scale').value    = d.scale    || '';
-            document.getElementById('edit-order').value    = d.order;
-            syncEditScale(d.type);
-            modal.show();
+        if (editType) {
+            editType.addEventListener('change', function () { syncEditScale(this.value); });
+        }
+
+        document.querySelectorAll('[data-tq-edit]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const d = this.dataset; // Contains id, text, type, category, scale, order
+                if (!editForm || !modal) return;
+
+                // Update Form Action
+                editForm.action = '/admin/survey-templates/' + templateId + '/questions/' + d.id;
+
+                // Fill Fields using the data attributes in your HTML
+                document.getElementById('edit-text').value     = d.text || '';
+                document.getElementById('edit-type').value     = d.type || 'rating';
+                document.getElementById('edit-category').value = d.category || '';
+                document.getElementById('edit-scale').value    = d.scale || '';
+                document.getElementById('edit-order').value    = d.order || '';
+
+                syncEditScale(d.type);
+                modal.show();
+            });
         });
-    });
 
-    if (saveBtn) {
-        saveBtn.addEventListener('click', function () {
-            editForm.submit();
-        });
-    }
+        if (saveBtn && editForm) {
+            saveBtn.addEventListener('click', function () { editForm.submit(); });
+        }
 
-    // ---- Drag-to-reorder ----
-    const tbody = document.getElementById('tq-sortable');
-    if (!tbody) return;
+        // --- Drag and Drop Logic ---
+        let dragRow = null, ghost = null, placeholder = null;
+        let startY = 0, rowHeight = 0, dragging = false;
 
-    let dragged = null;
-
-    tbody.querySelectorAll('tr').forEach(function (row) {
-        row.draggable = true;
-
-        row.addEventListener('dragstart', function () {
-            dragged = row;
-            setTimeout(() => row.classList.add('dragging'), 0);
-        });
-        row.addEventListener('dragend', function () {
-            row.classList.remove('dragging');
-            saveOrder();
-        });
-        row.addEventListener('dragover', function (e) {
+        tbody.addEventListener('mousedown', function (e) {
+            const handle = e.target.closest('.drag-handle');
+            if (!handle) return;
+            
             e.preventDefault();
-            row.classList.add('drag-over');
-        });
-        row.addEventListener('dragleave', function () {
-            row.classList.remove('drag-over');
-        });
-        row.addEventListener('drop', function (e) {
-            e.preventDefault();
-            row.classList.remove('drag-over');
-            if (dragged && dragged !== row) {
-                const rows = [...tbody.querySelectorAll('tr')];
-                rows.indexOf(dragged) < rows.indexOf(row)
-                    ? row.after(dragged)
-                    : row.before(dragged);
-                updateOrderCells();
+            dragRow = handle.closest('tr');
+            startY = e.clientY;
+            dragging = false;
+
+            function onMouseMove(ev) {
+                if (!dragging) {
+                    if (Math.abs(ev.clientY - startY) < 5) return;
+                    dragging = true;
+                    initGhost(dragRow, ev.clientY);
+                }
+                moveGhost(ev.clientY);
             }
-        });
-    });
 
-    function updateOrderCells() {
-        tbody.querySelectorAll('tr').forEach(function (row, i) {
-            const cell = row.querySelector('.tq-order');
-            if (cell) cell.textContent = i + 1;
-        });
-    }
+            function onMouseUp() {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                if (dragging) dropGhost();
+                dragging = false;
+                dragRow = null;
+            }
 
-    function saveOrder() {
-        const order = [...tbody.querySelectorAll('tr')].map(function (r, i) {
-            return { id: parseInt(r.dataset.id), order_number: i + 1 };
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
         });
-        fetch(reorderUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrf,
-            },
-            body: JSON.stringify({ order }),
-        });
-    }
 
-})();
+        function initGhost(row, y) {
+            const rect = row.getBoundingClientRect();
+            rowHeight = rect.height;
+            ghost = row.cloneNode(true);
+            
+            // Apply styling to ghost
+            Object.assign(ghost.style, {
+                position: 'fixed',
+                top: rect.top + 'px',
+                left: rect.left + 'px',
+                width: rect.width + 'px',
+                zIndex: '9999',
+                opacity: '0.85',
+                pointerEvents: 'none',
+                boxShadow: '0 4px 20px rgba(0,0,0,.15)',
+                background: 'var(--bs-body-bg, #fff)',
+                borderRadius: '4px'
+            });
+
+            document.body.appendChild(ghost);
+
+            placeholder = document.createElement('tr');
+            placeholder.className = 'tq-placeholder';
+            placeholder.innerHTML = `<td colspan="99" style="padding:0;height:${rowHeight}px;background:rgba(0,0,0,0.02);border:1px dashed #ccc;"></td>`;
+            
+            row.replaceWith(placeholder);
+            row.style.opacity = '0';
+            document.body.appendChild(row);
+            startY = y;
+        }
+
+        function moveGhost(y) {
+            if (!ghost) return;
+            const currentTop = parseFloat(ghost.style.top);
+            ghost.style.top = (currentTop + (y - startY)) + 'px';
+            startY = y;
+
+            const ghostMid = parseFloat(ghost.style.top) + rowHeight / 2;
+            const rows = Array.from(tbody.querySelectorAll('tr:not(.tq-placeholder)'));
+            
+            let found = false;
+            for (let i = 0; i < rows.length; i++) {
+                const rect = rows[i].getBoundingClientRect();
+                if (ghostMid < rect.top + rect.height / 2) {
+                    tbody.insertBefore(placeholder, rows[i]);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) tbody.appendChild(placeholder);
+        }
+
+        function dropGhost() {
+            if (!ghost || !placeholder || !dragRow) return;
+            dragRow.style.opacity = '';
+            placeholder.replaceWith(dragRow);
+            ghost.remove();
+            ghost = placeholder = null;
+            
+            updateOrderCells();
+            saveOrder();
+        }
+
+        function updateOrderCells() {
+            tbody.querySelectorAll('tr').forEach((row, i) => {
+                const cell = row.querySelector('.tq-order');
+                if (cell) cell.textContent = i + 1;
+            });
+        }
+
+        function saveOrder() {
+            const order = Array.from(tbody.querySelectorAll('tr')).map((r, i) => ({
+                id: parseInt(r.dataset.id),
+                order_number: i + 1
+            }));
+
+            fetch(reorderUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                body: JSON.stringify({ order: order }),
+            }).catch(err => console.error('Reorder failed:', err));
+        }
+    })();
+});
 </script>
 @endpush

@@ -23,14 +23,14 @@ class SettingsSeeder extends Seeder
 
             // ── AI & NLP ───────────────────────────────────────────────────
             ['group' => 'ai',  'key' => 'ai.gemini_api_key',    'type' => 'string',  'label' => 'Gemini API Key',          'description' => 'Get your key at https://aistudio.google.com',             'value' => '',             'is_sensitive' => true],
-            ['group' => 'ai',  'key' => 'ai.gemini_model',      'type' => 'string',  'label' => 'Gemini Model',            'description' => 'Recommended: gemini-1.5-flash (fast) or gemini-1.5-pro.', 'value' => 'gemini-1.5-flash','is_sensitive' => false],
+            ['group' => 'ai',  'key' => 'ai.gemini_model',      'type' => 'string',  'label' => 'Gemini Model',            'description' => 'Recommended: gemini-2.5-flash - Fast, recommended',       'value' => 'gemini-2.5-flash','is_sensitive' => false],
             ['group' => 'ai',  'key' => 'ai.gemini_temperature','type' => 'string',  'label' => 'Gemini Temperature',      'description' => 'Creativity level: 0.0 (precise) to 1.0 (creative). Recommended: 0.4.','value' => '0.4','is_sensitive' => false],
             // ['group' => 'ai',  'key' => 'ai.nlp_server_url',    'type' => 'string',  'label' => 'NLP Server URL',          'description' => 'Flask sentiment server base URL.',                         'value' => 'http://127.0.0.1:5000','is_sensitive' => false],
             // ['group' => 'ai',  'key' => 'ai.nlp_model_name',    'type' => 'string',  'label' => 'NLP Model Name',          'description' => 'Model identifier stored in sentiment records.',            'value' => 'cqi-sentiment','is_sensitive' => false],
             // ['group' => 'ai',  'key' => 'ai.nlp_model_version', 'type' => 'string',  'label' => 'NLP Model Version',       'description' => 'Version string stored in sentiment records.',             'value' => '1.0',          'is_sensitive' => false],
             // ['group' => 'ai',  'key' => 'ai.nlp_timeout',       'type' => 'integer', 'label' => 'NLP Timeout (seconds)',   'description' => 'Max seconds to wait for NLP server response.',            'value' => '30',           'is_sensitive' => false],
-            ['group' => 'ai',  'key' => 'ai.cqi_report_institution','type'=>'string','label'=> 'CQI Report — Institution', 'description' => 'Overrides app.institution in PDF reports if set.',         'value' => '',             'is_sensitive' => false],
-            ['group' => 'ai',  'key' => 'ai.cqi_report_department','type'=>'string', 'label' => 'CQI Report — Department', 'description' => 'Overrides app.department in PDF reports if set.',          'value' => '',             'is_sensitive' => false],
+            // ['group' => 'ai',  'key' => 'ai.cqi_report_institution','type'=>'string','label'=> 'CQI Report — Institution', 'description' => 'Overrides app.institution in PDF reports if set.',         'value' => '',             'is_sensitive' => false],
+            // ['group' => 'ai',  'key' => 'ai.cqi_report_department','type'=>'string', 'label' => 'CQI Report — Department', 'description' => 'Overrides app.department in PDF reports if set.',          'value' => '',             'is_sensitive' => false],
 
             // ── SURVEY & ACADEMIC LOGIC ────────────────────────────────────
             ['group' => 'survey', 'key' => 'survey.passing_threshold',      'type' => 'string',  'label' => 'Passing Rating Threshold',        'description' => 'Minimum average rating considered "passing". Used in CQI analysis.',   'value' => '3.0',       'is_sensitive' => false],
@@ -56,9 +56,9 @@ class SettingsSeeder extends Seeder
             // ── MAIL & NOTIFICATIONS ───────────────────────────────────────
             ['group' => 'mail', 'key' => 'mail.from_name',         'type' => 'string',  'label' => 'Mail From Name',      'description' => 'Sender name shown in outgoing emails.',                    'value' => 'CQI System',         'is_sensitive' => false],
             ['group' => 'mail', 'key' => 'mail.from_address',      'type' => 'string',  'label' => 'Mail From Address',   'description' => 'Sender email address for outgoing mail.',                  'value' => 'no-reply@cqi.edu',   'is_sensitive' => false],
-            ['group' => 'mail', 'key' => 'mail.send_survey_reminders','type'=>'boolean', 'label' => 'Send Survey Reminders','description'=> 'Email students before survey deadline.',                   'value' => '1',                  'is_sensitive' => false],
-            ['group' => 'mail', 'key' => 'mail.send_cqi_notifications','type'=>'boolean','label' => 'Notify Faculty on CQI','description'=>'Email faculty when their CQI report is ready.',             'value' => '1',                  'is_sensitive' => false],
-            ['group' => 'mail', 'key' => 'mail.driver',            'type' => 'string',  'label' => 'Mail Driver (info)',  'description' => 'Current MAIL_MAILER from .env. Change in .env directly.', 'value' => '',                   'is_sensitive' => false, 'is_readonly' => true],
+            // ['group' => 'mail', 'key' => 'mail.send_survey_reminders','type'=>'boolean', 'label' => 'Send Survey Reminders','description'=> 'Email students before survey deadline.',                   'value' => '1',                  'is_sensitive' => false],
+            // ['group' => 'mail', 'key' => 'mail.send_cqi_notifications','type'=>'boolean','label' => 'Notify Faculty on CQI','description'=>'Email faculty when their CQI report is ready.',             'value' => '1',                  'is_sensitive' => false],
+            // ['group' => 'mail', 'key' => 'mail.driver',            'type' => 'string',  'label' => 'Mail Driver (info)',  'description' => 'Current MAIL_MAILER from .env. Change in .env directly.', 'value' => '',                   'is_sensitive' => false, 'is_readonly' => true],
 
             // ── SECURITY ───────────────────────────────────────────────────
             ['group' => 'security', 'key' => 'security.session_lifetime',   'type' => 'integer', 'label' => 'Session Lifetime (minutes)',   'description' => 'How long before an inactive session expires.',              'value' => '120',  'is_sensitive' => false],

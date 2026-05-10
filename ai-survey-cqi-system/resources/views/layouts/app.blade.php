@@ -68,9 +68,11 @@
         @auth
         <aside class="sidebar" id="appSidebar">
             <div class="sidebar-brand">
-                <span class="brand-name">
-                    <i class="bi bi-mortarboard-fill me-2" style="color: var(--bs-blue)"></i>{{ setting('app.name') }}
-                </span>
+                <a href="{{ route(auth()->user()->primaryRole() . '.dashboard') }}" class="text-decoration-none">
+                    <span class="brand-name">
+                        <i class="bi bi-mortarboard-fill me-2" style="color: var(--bs-blue)"></i>{{ setting('app.name') }}
+                    </span>
+                </a>
                 <span class="brand-role">{{ auth()->user()?->primaryRole() }}</span>
             </div>
 

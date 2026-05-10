@@ -38,31 +38,43 @@
 
 <div class="an-wrap">
 
-    {{-- ── Toolbar ── --}}
-    <div class="an-toolbar">
-        <div class="an-toolbar-group">
-            <label class="an-toolbar-label">Faculty</label>
-            <select id="sel-faculty" class="an-select">
-                <option value="">All Faculty</option>
-                @foreach ($faculties as $f)
-                    <option value="{{ $f->id }}">{{ $f->name }} ({{ $f->user_id_number }})</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="an-toolbar-sep"></div>
-        <div class="an-toolbar-group">
-            <label class="an-toolbar-label">Semester</label>
-            <select id="sel-semester" class="an-select">
-                <option value="">All Semesters</option>
-                @foreach ($semesters as $s)
-                    <option value="{{ $s->id }}"
-                        {{ $activeSemester?->id == $s->id ? 'selected' : '' }}>
-                        {{ $s->full_label }}{{ $s->is_active ? ' · Active' : '' }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
+{{-- ── Toolbar ── --}}
+<div class="an-toolbar d-flex align-items-center gap-3">
+    <div class="an-toolbar-group d-flex align-items-center">
+        <label class="an-toolbar-label me-2">Faculty</label>
+        <select id="sel-faculty" class="an-select">
+            <option value="">All Faculty</option>
+            @foreach ($faculties as $f)
+                <option value="{{ $f->id }}">{{ $f->name }} ({{ $f->user_id_number }})</option>
+            @endforeach
+        </select>
     </div>
+
+    <div class="an-toolbar-sep"></div>
+
+    <div class="an-toolbar-group d-flex align-items-center">
+        <label class="an-toolbar-label me-2">Semester</label>
+        <select id="sel-semester" class="an-select">
+            <option value="">All Semesters</option>
+            @foreach ($semesters as $s)
+                <option value="{{ $s->id }}"
+                    {{ $activeSemester?->id == $s->id ? 'selected' : '' }}>
+                    {{ $s->full_label }}{{ $s->is_active ? ' · Active' : '' }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    {{-- Removed ms-auto and col-md-4 --}}
+    <div class="an-toolbar-group d-flex gap-2">
+        <button type="button" id="btn-filter" class="btn btn-primary btn-sm ">
+            <i class="bi bi-sliders me-1"></i> Filter
+        </button>
+        <a href="{{ route('admin.analytics.charts') }}" class="btn btn-outline-secondary btn-sm" title="Reset Filters">
+            <i class="bi bi-arrow-counterclockwise"></i>
+        </a>
+    </div>
+</div>
 
     {{-- ── Tabs ── --}}
     <div class="an-tabs">
@@ -83,7 +95,6 @@
 @endsection
 
 @push('scripts')
-{{-- Chart.js from local node_modules via Vite, or CDN fallback --}}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 window.ANALYTICS_CONFIG = {
@@ -93,7 +104,6 @@ window.ANALYTICS_CONFIG = {
     activeSemesterId:  '{{ $activeSemester?->id ?? '' }}',
 };
 </script>
+{{-- analytics-charts.js wires up #btn-filter itself via addEventListener inside init() --}}
 @vite(['resources/js/modules/analytics-charts.js'])
-
-{{-- <script src="{{ asset('js/modules/analytics-charts.js') }}" defer></script> --}}
 @endpush

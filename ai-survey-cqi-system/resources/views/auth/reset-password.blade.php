@@ -1,12 +1,12 @@
 @extends('layouts.guest')
-@section('title', 'Activate Account')
+@section('title', 'Reset Password')
 
 @section('content')
 <div class="row justify-content-center align-items-center" style="min-height: 80vh;">
     <div class="col-md-5">
         <div class="text-center mb-4">
             <h2 class="fw-bold text-primary">AI Survey CQI</h2>
-            <p class="text-muted">Set your password to activate your account</p>
+            <p class="text-muted">Enter a new password to login your account</p>
         </div>
 
         <div class="card shadow-sm border-0">
@@ -30,9 +30,13 @@
                         <label class="form-label fw-bold">New Password</label>
                         <div class="input-group">
                             <span class="input-group-text bg-white"><i class="bi bi-lock"></i></span>
-                            <input type="password" name="password" 
-                                   class="form-control @error('password') is-invalid @enderror" 
-                                   placeholder="Create a strong password" required autofocus>
+                            <input type="password" name="password" id="password"
+                                class="form-control @error('password') is-invalid @enderror" 
+                                placeholder="Create a strong password" required autofocus>
+                            <!-- Toggle Button -->
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password', 'togglePasswordIcon')">
+                                <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                            </button>
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -43,15 +47,19 @@
                         <label class="form-label fw-bold">Confirm Password</label>
                         <div class="input-group">
                             <span class="input-group-text bg-white"><i class="bi bi-shield-check"></i></span>
-                            <input type="password" name="password_confirmation" 
-                                   class="form-control" 
-                                   placeholder="Repeat your password" required>
+                            <input type="password" name="password_confirmation" id="password_confirmation"
+                                class="form-control" 
+                                placeholder="Repeat your password" required>
+                            <!-- Toggle Button -->
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password_confirmation', 'toggleConfirmIcon')">
+                                <i class="bi bi-eye" id="toggleConfirmIcon"></i>
+                            </button>
                         </div>
                     </div>
 
                     <div class="d-grid">
                         <button type="submit" id="submitBtn" class="btn btn-primary btn-lg">
-                            <span id="btnText">Activate Account</span>
+                            <span id="btnText">Reset Password</span>
                             <div id="spinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
@@ -76,8 +84,22 @@
         const spinner = document.getElementById('spinner');
 
         btn.disabled = true;
-        text.innerText = "Activating...";
+        text.innerText = "Resetting Password...";
         spinner.classList.remove('d-none');
     };
+    function togglePassword(inputId, iconId) {
+        const passwordInput = document.getElementById(inputId);
+        const toggleIcon = document.getElementById(iconId);
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('bi-eye');
+            toggleIcon.classList.add('bi-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('bi-eye-slash');
+            toggleIcon.classList.add('bi-eye');
+        }
+    }
 </script>
 @endpush

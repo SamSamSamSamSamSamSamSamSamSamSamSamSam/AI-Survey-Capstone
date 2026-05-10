@@ -1,19 +1,3 @@
-{{-- ============================================================
-     admin/settings/_setting_row.blade.php
-     Variable: $s (Setting model instance)
-     ============================================================ --}}
-
-{{--
-    resources/views/admin/settings/_setting_row.blade.php
-
-    FIX: All input name attributes use encodeKey() to convert dots to double
-    underscores. This prevents two bugs:
-      1. PHP silently converts "app.name" POST keys to "app_name"
-      2. Laravel's $request->input('app.name') treats dot as array nesting
-
-    Example: setting key "ai.gemini_api_key" → input name "ai__gemini_api_key"
---}}
-
 @php
     use App\Http\Controllers\Admin\SettingsController;
     $inputName = SettingsController::encodeKey($s->key);
@@ -183,13 +167,18 @@
                    min="0">
 
         @elseif ($s->is_sensitive)
-            <input type="password"
-                   id="setting_{{ $inputName }}"
-                   name="{{ $inputName }}"
-                   value="{{ $s->value }}"
-                   class="form-control"
-                   autocomplete="new-password"
-                   placeholder="••••••••••••">
+            @php
+                $inputName = App\Http\Controllers\Admin\SettingsController::encodeKey($s->key);
+                $displayMask = $s->value ? '••••••••' . substr($s->value, -4) : 'Enter API Key...';
+            @endphp
+            <input type="text"
+                id="setting_{{ $inputName }}"
+                name="{{ $inputName }}"
+                value="" 
+                class="form-control"
+                autocomplete="off"
+                placeholder="{{ $displayMask }}">
+            <small class="text-muted">Current key is masked. Leave blank to keep it, or type a new one to update.</small>
 
         @else
             <input type="text"

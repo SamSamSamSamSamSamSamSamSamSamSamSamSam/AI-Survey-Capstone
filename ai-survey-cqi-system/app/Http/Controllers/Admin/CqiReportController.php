@@ -142,4 +142,26 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
         return redirect()->route('admin.cqi-reports.index')
                          ->with('success', 'CQI report archived.');
     }
+
+    public function restore(string $id): RedirectResponse
+    {
+        // Find the report including those that are soft-deleted
+        $report = CqiReport::withTrashed()->findOrFail($id);
+
+        // Guard: Check if an active report already exists for this specific survey offering
+        // This prevents duplicate active reports for the same course offering.
+        $exists = CqiReport::where('survey_id', $report->survey_id)
+                        ->where('offering_id', $report->offering_id)
+                        ->exists();
+
+        if ($exists) {
+            return redirect()->route('admin.cqi-reports.index')
+                            ->with('error', "Cannot restore: An active CQI report for this offering already exists.");
+        }
+
+        $report->restore();
+
+        return redirect()->route('admin.cqi-reports.index')
+                        ->with('success', 'CQI Report has been restored successfully.');
+    }
 }

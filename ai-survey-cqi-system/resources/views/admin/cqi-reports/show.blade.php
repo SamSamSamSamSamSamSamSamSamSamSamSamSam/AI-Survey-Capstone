@@ -24,14 +24,26 @@
            class="btn btn-sm btn-primary">
             <i class="bi bi-download me-1"></i> Download PDF
         </a>
-        <form method="POST"
-              action="{{ route('admin.cqi-reports.send-to-faculty', $cqiReport->id) }}"
-              data-confirm="Mark this report as sent to {{ $cqiReport->faculty?->name }}?">
-            @csrf
-            <button type="submit" class="btn btn-sm btn-outline-secondary">
-                <i class="bi bi-send me-1"></i> Send to Faculty
+        @php
+            // Check if any log entry has the specific action
+            $isSent = $cqiReport->logs->contains('action', 'sent_to_faculty');
+        @endphp
+        @if($isSent)
+            {{-- Show a disabled/indicator version --}}
+            <button type="button" class="btn btn-sm btn-success" disabled>
+                <i class="bi bi-check-circle-fill me-1"></i> Already Sent to Faculty
             </button>
-        </form>
+        @else
+            {{-- Show the active Send button --}}
+            <form method="POST" 
+                action="{{ route('admin.cqi-reports.send-to-faculty', $cqiReport->id) }}" 
+                data-confirm="Mark this report as sent to {{ $cqiReport->faculty?->name }}?">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-send me-1"></i> Send to Faculty
+                </button>
+            </form>
+        @endif
         <a href="{{ route('admin.cqi-reports.index') }}" class="btn btn-sm btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i> Back
         </a>

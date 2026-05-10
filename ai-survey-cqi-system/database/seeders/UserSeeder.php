@@ -63,7 +63,7 @@ class UserSeeder extends Seeder
         $teachersample2 = User::create([
             'user_id_number' => 'TEACHER002',
             'name' => 'Teacher B',
-            'email' => 'teacher2@example.com',
+            'email' => 'teacherb@example.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
             'must_change_password' => false,

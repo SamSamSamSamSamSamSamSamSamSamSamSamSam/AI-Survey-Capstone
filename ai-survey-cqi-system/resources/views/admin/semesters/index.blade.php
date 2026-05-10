@@ -12,7 +12,7 @@
 
 <div class="page-header">
     <div>
-        <h2 class="page-heading">Semesters</h2>
+        <h2 class="page-heading">Initialize Semesters</h2>
         <p class="page-subheading">Manage academic semesters and control which one is currently active.</p>
     </div>
     <a href="{{ route('admin.semesters.create') }}" class="btn btn-primary">
@@ -83,38 +83,39 @@
                         </td>
                         <td class="text-end">
                             <div class="table-actions">
-                                <a href="{{ $semester->is_active ? '#' : route('admin.semesters.edit', $semester->id) }}" 
-                                    class="btn btn-sm btn-icon {{ $semester->is_active ? 'disabled' : '' }}" 
-                                    title="{{ $semester->is_active ? 'Cannot edit while active' : 'Edit' }}"
-                                    style="{{ $semester->is_active ? 'pointer-events: auto; cursor: not-allowed;' : '' }}">
-                                        
-                                    <i class="bi {{ $semester->is_active ? 'bi-lock-fill text-muted' : 'bi-pencil' }}"></i>
-                                </a>
-
+                                {{-- Only show Edit button if the semester is NOT active --}}
                                 @if (! $semester->is_active)
+                                    <a href="{{ route('admin.semesters.edit', $semester->id) }}" 
+                                    class="btn btn-sm btn-icon" 
+                                    title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+
                                     <form method="POST"
-                                          action="{{ route('admin.semesters.activate', $semester->id) }}"
-                                          class="d-inline"
-                                          data-confirm="Set &quot;{{ $semester->full_label }}&quot; as the active semester?">
+                                        action="{{ route('admin.semesters.activate', $semester->id) }}"
+                                        class="d-inline"
+                                        data-confirm="Set &quot;{{ $semester->full_label }}&quot; as the active semester?">
                                         @csrf @method('PATCH')
                                         <button type="submit" class="btn btn-sm btn-icon btn-icon--success" title="Activate">
                                             <i class="bi bi-toggle-off"></i>
                                         </button>
                                     </form>
+
                                     <form method="POST"
-                                          action="{{ route('admin.semesters.destroy', $semester->id) }}"
-                                          class="d-inline"
-                                          data-confirm="Delete the semester &quot;{{ $semester->full_label }}&quot;? This cannot be undone.">
+                                        action="{{ route('admin.semesters.destroy', $semester->id) }}"
+                                        class="d-inline"
+                                        data-confirm="Delete the semester &quot;{{ $semester->full_label }}&quot;? This cannot be undone.">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-icon btn-icon--danger" title="Delete">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
                                 @else
+                                    {{-- Show only the Deactivate toggle if it IS active --}}
                                     <form method="POST"
-                                          action="{{ route('admin.semesters.deactivate', $semester->id) }}"
-                                          class="d-inline"
-                                          data-confirm="Deactivate &quot;{{ $semester->full_label }}&quot;? No active semester will be set.">
+                                        action="{{ route('admin.semesters.deactivate', $semester->id) }}"
+                                        class="d-inline"
+                                        data-confirm="Deactivate &quot;{{ $semester->full_label }}&quot;? No active semester will be set.">
                                         @csrf @method('PATCH')
                                         <button type="submit" class="btn btn-sm btn-icon" title="Deactivate" style="color:#d97706;">
                                             <i class="bi bi-toggle-on"></i>

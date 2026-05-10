@@ -14,7 +14,7 @@
 
 <div class="page-header">
     <div>
-        <h2 class="page-heading">Edit Template</h2>
+        <h2 class="page-heading">Modify Template</h2>
         <p class="page-subheading">Editing <strong>{{ $surveyTemplate->name }}</strong></p>
     </div>
     <a href="{{ route('admin.survey-templates.index') }}" class="btn btn-outline-secondary btn-sm">

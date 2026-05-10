@@ -144,14 +144,39 @@ class SurveyController extends Controller
 
     public function edit(Survey $survey): View
     {
-        $offerings = CourseOffering::with(['subject', 'teacher', 'semester'])->whereNull('deleted_at')->get();
+        $activeSemester = Semester::current();
+        $offerings = CourseOffering::with(['subject', 'teacher', 'semester'])
+            ->when($activeSemester, fn ($q) => $q->where('semester_id', $activeSemester->id))
+            ->whereNull('deleted_at')
+            ->get();
+        if ($survey->offering_id && !$offerings->contains('id', $survey->offering_id)) {
+            $assignedOffering = CourseOffering::with(['subject', 'teacher', 'semester'])->find($survey->offering_id);
+            if ($assignedOffering) {
+                $offerings->push($assignedOffering);
+            }
+        }
         $roles     = Role::orderBy('name')->get();
         $templates = SurveyTemplate::active()->orderByDesc('is_official')->orderBy('name')->get();
-        $existingAssignments = collect([
-            $survey->offering_id => collect([$survey->target_role_id])
-        ]);
+        $existingAssignments = Survey::whereNull('deleted_at')
+            ->select('offering_id', 'target_role_id')
+            ->get()
+            ->groupBy('offering_id')
+            ->map(fn($group) => $group->pluck('target_role_id'));
+        $currentOfferingIds = (array) old('offering_id', [$survey->offering_id]);
+        $studentRoleId = Role::where('name', 'student')->value('id');
+        $isEdit = true;
 
-        return view('admin.surveys.edit', compact('survey', 'offerings', 'roles', 'templates', 'existingAssignments'));
+        return view('admin.surveys.edit', compact(
+            'survey', 
+            'offerings', 
+            'roles', 
+            'templates', 
+            'existingAssignments', 
+            'activeSemester', 
+            'studentRoleId',
+            'isEdit',
+            'currentOfferingIds'
+        ));
     }
 
     public function update(Request $request, Survey $survey): RedirectResponse

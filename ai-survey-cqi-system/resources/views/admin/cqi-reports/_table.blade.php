@@ -56,9 +56,9 @@
                     <td class="text-muted-sm">{{ $report->created_at->format('M d, Y') }}</td>
                     <td class="text-end">
                         @if (! $report->trashed())
-                        @php
-                            $isSent = $report->logs->contains('action', 'sent_to_faculty');
-                        @endphp
+                            @php
+                                $isSent = $report->logs->contains('action', 'sent_to_faculty');
+                            @endphp
                             <div class="table-actions">
                                 <a href="{{ route('admin.cqi-reports.show', $report->id) }}" class="btn btn-sm btn-icon" title="View"><i class="bi bi-eye"></i></a>
                                 <a href="{{ route('admin.cqi-reports.download', $report->id) }}" class="btn btn-sm btn-icon" title="Download"><i class="bi bi-download"></i></a>
@@ -81,6 +81,16 @@
                                     <button type="submit" class="btn btn-sm btn-icon btn-icon--danger"><i class="bi bi-archive"></i></button>
                                 </form>
                             </div>
+                        @else
+                            <form method="POST"
+                                    action="{{ route('admin.cqi-reports.restore', $report->id) }}"
+                                    class="d-inline">
+                                @csrf @method('PATCH')
+                                <button type="submit" class="btn btn-sm btn-icon btn-icon--success"
+                                        title="Restore">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                </button>
+                            </form>
                         @endif
                     </td>
                 </tr>

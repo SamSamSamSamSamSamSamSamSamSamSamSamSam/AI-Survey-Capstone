@@ -73,22 +73,19 @@ class SettingsController extends Controller
         $data = [];
 
         foreach ($groupSettings->where('type', '!=', 'file') as $setting) {
-            if ($setting->is_readonly) {
-                continue;
-            }
+            if ($setting->is_readonly) continue;
 
             $inputName = $this->encodeKey($setting->key);
+            $raw = $request->post($inputName);
+
+            // FIX: If it's sensitive and the input is EMPTY, do not update it.
+            if ($setting->is_sensitive && ($raw === '' || $raw === null)) {
+                continue; 
+            }
 
             if ($setting->type === 'boolean') {
-                // Checkboxes: if not present in POST = unchecked = false
-                // The hidden input with value="0" ensures the key is always present
                 $data[$setting->key] = $request->boolean($inputName);
             } else {
-                // Use get() on raw post data to avoid dot-notation nesting issue
-                $raw = $request->post($inputName);
-
-                // Treat empty string as null for nullable fields,
-                // but keep "0" and "false" as valid values
                 $data[$setting->key] = ($raw === '' || $raw === null) ? null : $raw;
             }
         }

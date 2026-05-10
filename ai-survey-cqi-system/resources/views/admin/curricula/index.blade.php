@@ -134,12 +134,11 @@
 
                         <td class="text-end">
                             <div class="table-actions">
-                                <a href="{{ route('admin.curricula.show', $curriculum->id) }}"
-                                   class="btn btn-sm btn-icon" title="View">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-
                                 @if (! $curriculum->trashed())
+                                    <a href="{{ route('admin.curricula.show', $curriculum->id) }}"
+                                    class="btn btn-sm btn-icon" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
                                     <a href="{{ route('admin.curricula.edit', $curriculum->id) }}"
                                        class="btn btn-sm btn-icon" title="Edit">
                                         <i class="bi bi-pencil"></i>
@@ -147,7 +146,8 @@
 
                                     <form method="POST"
                                           action="{{ route('admin.curricula.toggle-active', $curriculum->id) }}"
-                                          class="d-inline">
+                                          class="d-inline"
+                                          data-confirm="{{ $curriculum->is_active ? 'Deactivate' : 'Activate' }} the curriculum &quot;{{ $curriculum->curriculum_code }}&quot;?">                                          
                                         @csrf @method('PATCH')
                                         <button type="submit"
                                                 class="btn btn-sm btn-icon {{ $curriculum->is_active ? '' : 'btn-icon--success' }}"

@@ -86,20 +86,5 @@
 @endsection
 
 @push('scripts')
-<script>
-(function () {
-    const templateSelect = document.getElementById('template_id');
-    const titleInput     = document.getElementById('survey_title');
 
-    if (templateSelect && titleInput) {
-        templateSelect.addEventListener('change', function () {
-            const selected = this.options[this.selectedIndex];
-            // Only auto-fill title if the user hasn't typed a custom one yet
-            if (selected.value && !titleInput.value.trim()) {
-                titleInput.value = selected.dataset.name || '';
-            }
-        });
-    }
-})();
-</script>
 @endpush

@@ -59,7 +59,7 @@
         <button class="an-tab" data-tab="categories">Categories</button>
         <button class="an-tab" data-tab="sentiment">Sentiment</button>
         <button class="an-tab" data-tab="benchmark">Benchmarking</button>
-        <button class="an-tab" data-tab="pivot">Pivot Explorer</button>
+        <button class="an-tab" data-tab="pivot">More Charts</button>
     </div>
 
     @include('faculty.analytics._panels')

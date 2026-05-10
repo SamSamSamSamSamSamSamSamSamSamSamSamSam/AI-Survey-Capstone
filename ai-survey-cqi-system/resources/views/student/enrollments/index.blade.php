@@ -98,7 +98,8 @@
                     <tr>
                         <td>
                             <div class="fw-500 text-mono" style="font-size:.8rem;">
-                                {{ $enrollment->offering->subject->course_code }} - Group {{$enrollment->offering->group_number}}
+                                {{ $enrollment->offering?->subject?->course_code ?? 'N/A' }} 
+                                - Group {{ $enrollment->offering?->group_number ?? '?' }}
                             </div>
                             <div class="text-muted-sm">
                                 {{ Str::limit($enrollment->offering->subject->name, 32) }}

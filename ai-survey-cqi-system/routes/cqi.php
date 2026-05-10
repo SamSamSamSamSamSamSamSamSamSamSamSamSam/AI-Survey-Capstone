@@ -28,4 +28,5 @@ Route::get('cqi-reports/{cqiReport}/download', [CqiReportController::class, 'dow
 Route::post('cqi-reports/{cqiReport}/send-to-faculty', [CqiReportController::class, 'sendToFaculty'])->name('cqi-reports.send-to-faculty');
 Route::delete('cqi-reports/{cqiReport}',    [CqiReportController::class, 'destroy'])       ->name('cqi-reports.destroy');
 Route::get('cqi-reports/sse/{survey_id}',   [CqiSseController::class, 'stream'])           ->name('cqi-reports.sse');
+Route::patch('cqi-reports/{id}/restore',    [CqiReportController::class, 'restore'])          ->name('cqi-reports.restore');
 

@@ -52,10 +52,10 @@
 
                 <div class="col-md-6 d-flex gap-2">
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-funnel me-1"></i> Filter
+                        <i class="bi bi-sliders me-1"></i> Filter
                     </button>
                     <a href="{{ route('admin.settings.logs') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-lg me-1"></i> Reset
+                        <i class="bi bi-arrow-counterclockwise"></i>
                     </a>
                 </div>
 
@@ -88,9 +88,10 @@
                     @foreach ($logs as $log)
                     <tr>
                         <td>
-                            <span class="program-code-badge" style="font-size:.72rem;">
+                            {{-- <span class="program-code-badge" style="font-size:.72rem;">
                                 {{ $log->key }}
-                            </span>
+                            </span> --}}
+                            {{ $log->setting?->label ?? $log->key }}
                         </td>
                         <td>
                             <span class="scope-badge scope-badge--survey"
@@ -100,12 +101,20 @@
                         </td>
                         <td>
                             <span class="settings-log-val settings-log-val--old">
-                                {{ Str::limit($log->old_value ?? '—', 36) }}
+                                @if($log->setting?->is_sensitive)
+                                    {{ $log->old_value ?? '—' }}
+                                @else
+                                    {{ Str::limit($log->old_value ?? '—', 36) }}
+                                @endif
                             </span>
                         </td>
                         <td>
                             <span class="settings-log-val">
-                                {{ Str::limit($log->new_value ?? '—', 36) }}
+                                @if($log->setting?->is_sensitive)
+                                    {{ $log->old_value ?? '—' }}
+                                @else
+                                    {{ Str::limit($log->old_value ?? '—', 36) }}
+                                @endif
                             </span>
                         </td>
                         <td class="fw-500" style="font-size:.845rem;">

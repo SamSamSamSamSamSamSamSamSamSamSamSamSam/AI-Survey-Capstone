@@ -90,7 +90,7 @@
                                     </form>
 
                                     {{-- Archive Form with AJAX class --}}
-                                    <form method="POST" 
+                                    {{-- <form method="POST" 
                                           action="{{ route('admin.analytics.destroy', $analytic->id) }}" 
                                           class="d-inline archive-form"
                                           data-id="{{ $analytic->id }}">
@@ -98,7 +98,7 @@
                                         <button type="submit" class="btn btn-sm btn-icon btn-icon--danger" title="Archive">
                                             <i class="bi bi-archive"></i>
                                         </button>
-                                    </form>
+                                    </form> --}}
                                 </div>
                             </td>
                         </tr>

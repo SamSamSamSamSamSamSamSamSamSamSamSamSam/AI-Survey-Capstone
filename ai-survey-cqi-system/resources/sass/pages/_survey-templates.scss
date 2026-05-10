@@ -166,3 +166,31 @@
         border-color: $dark-border;
     }
 }
+
+// ============================================================
+// Sortable question rows
+// ============================================================
+
+.drag-handle {
+    cursor: grab;
+    width: 40px;
+    text-align: center;
+    color: $light-text-muted;
+    user-select: none;
+
+    &:active { cursor: grabbing; }
+
+    [data-bs-theme="dark"] & { color: $dark-text-muted; }
+}
+
+// Placeholder gap left in the table while a row is being dragged
+tr.tq-placeholder td {
+    background: rgba($brand-action, .06);
+    border-top: 2px dashed rgba($brand-action, .35) !important;
+    border-bottom: 2px dashed rgba($brand-action, .35) !important;
+
+    [data-bs-theme="dark"] & {
+        background: rgba($brand-accent, .08);
+        border-color: rgba($brand-accent, .4) !important;
+    }
+}

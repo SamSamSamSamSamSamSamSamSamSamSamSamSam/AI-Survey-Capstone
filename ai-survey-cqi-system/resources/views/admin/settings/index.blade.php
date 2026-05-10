@@ -12,7 +12,7 @@
 
 <div class="page-header">
     <div>
-        <h2 class="page-heading">System Settings</h2>
+        <h2 class="page-heading">Settings</h2>
         <p class="page-subheading">Configure application behaviour, AI integrations, and maintenance options.</p>
     </div>
     <a href="{{ route('admin.settings.logs') }}" class="btn btn-outline-secondary btn-sm">
@@ -64,7 +64,7 @@
     {{-- ===== RIGHT: Panels ===== --}}
     <div class="settings-panels">
 
-        @if (session('success'))
+        {{-- @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show mb-3" role="alert">
                 <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -75,7 +75,7 @@
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('error') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        @endif
+        @endif --}}
 
         {{-- ─── APP IDENTITY ─── --}}
         <div class="settings-panel {{ $activeTab === 'app' ? 'settings-panel--active' : '' }}"
@@ -120,7 +120,7 @@
                           enctype="multipart/form-data">
                         @csrf @method('PUT')
 
-                        <p class="settings-subsection">Gemini AI (CQI Report Generation)</p>
+                        {{-- <p class="settings-subsection">Gemini AI (CQI Report Generation)</p> --}}
                         @foreach ($groups['ai']->filter(fn ($s) => str_starts_with($s->key, 'ai.gemini')) as $s)
                             @include('admin.settings._setting_row', ['s' => $s])
                         @endforeach
@@ -144,10 +144,10 @@
                             <span class="settings-test-result d-none" id="test-nlp"></span>
                         </div>
 
-                        <p class="settings-subsection">CQI Report Identity Override</p>
+                        {{-- <p class="settings-subsection">CQI Report Identity Override</p>
                         @foreach ($groups['ai']->filter(fn ($s) => str_starts_with($s->key, 'ai.cqi')) as $s)
                             @include('admin.settings._setting_row', ['s' => $s])
-                        @endforeach
+                        @endforeach --}}
 
                         <div class="settings-save-bar">
                             <span class="settings-save-bar__hint">API keys are masked in the audit log.</span>

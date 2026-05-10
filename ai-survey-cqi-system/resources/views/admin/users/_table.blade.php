@@ -48,13 +48,12 @@
                     </td>
                     <td class="text-end">
                         <div class="table-actions">
-
-                            <a href="{{ route('admin.users.show', $user->id) }}"
-                                class="btn btn-sm btn-icon" title="View">
-                                <i class="bi bi-eye"></i>
-                            </a>
-
+                            
                             @if (! $user->trashed())
+                                <a href="{{ route('admin.users.show', $user->id) }}"
+                                    class="btn btn-sm btn-icon" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
 
                                 <a href="{{ route('admin.users.edit', $user->id) }}"
                                     class="btn btn-sm btn-icon" title="Edit">

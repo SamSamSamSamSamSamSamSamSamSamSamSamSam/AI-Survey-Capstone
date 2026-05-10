@@ -112,13 +112,11 @@
 
                         <td class="text-end">
                             <div class="table-actions">
-
-                                <a href="{{ route('admin.programs.show', $program->id) }}"
-                                   class="btn btn-sm btn-icon" title="View">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-
                                 @if (! $program->trashed())
+                                    <a href="{{ route('admin.programs.show', $program->id) }}"
+                                    class="btn btn-sm btn-icon" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
                                     <a href="{{ route('admin.programs.edit', $program->id) }}"
                                        class="btn btn-sm btn-icon" title="Edit">
                                         <i class="bi bi-pencil"></i>

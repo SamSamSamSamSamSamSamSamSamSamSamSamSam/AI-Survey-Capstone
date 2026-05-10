@@ -187,12 +187,19 @@ class SettingService
     private function writeLog(Setting $setting, ?string $oldRaw, ?string $newRaw): void
     {
         $user = Auth::user();
+        $maskOld = $setting->is_sensitive && $oldRaw 
+            ? '••••••••' . mb_substr($oldRaw, -4) 
+            : $oldRaw;
+            
+        $maskNew = $setting->is_sensitive && $newRaw 
+            ? '••••••••' . mb_substr($newRaw, -4) 
+            : $newRaw;
 
         SettingLog::create([
             'key'             => $setting->key,
             'group'           => $setting->group,
-            'old_value'       => $setting->is_sensitive ? '••••••' : ($oldRaw ?? '(empty)'),
-            'new_value'       => $setting->is_sensitive ? '••••••' : ($newRaw ?? '(empty)'),
+            'old_value'       => $maskOld ?? '(empty)',
+            'new_value'       => $maskNew ?? '(empty)',
             'changed_by_name' => $user?->name ?? 'System',
             'changed_by_id'   => $user?->id,
             'changed_at'      => now(),

@@ -61,11 +61,17 @@
 <script>
 function toggleScaleField(type) {
     const field = document.getElementById('scale-field');
-    if (field) field.style.display = type === 'rating' ? '' : 'none';
+    if (field) {
+        // Toggle display based on question type
+        field.style.display = (type === 'rating') ? 'block' : 'none';
+    }
 }
-// Run on page load
+
+// Run on page load to set the correct initial state
 document.addEventListener('DOMContentLoaded', function () {
-    const sel = document.getElementById('q-type');
-    if (sel) toggleScaleField(sel.value);
+    const typeSelect = document.getElementById('question_type'); // Corrected ID
+    if (typeSelect) {
+        toggleScaleField(typeSelect.value);
+    }
 });
 </script>

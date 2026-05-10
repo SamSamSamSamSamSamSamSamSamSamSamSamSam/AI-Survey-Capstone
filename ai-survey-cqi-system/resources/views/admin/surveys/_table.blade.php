@@ -82,11 +82,11 @@
                     {{-- ACTIONS --}}
                     <td class="text-end pe-3">
                         <div class="table-actions">
-                            <a href="{{ route('admin.surveys.show', $survey->id) }}" class="btn btn-sm btn-icon" title="View">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            
+                                                        
                             @if (! $survey->trashed())
+                                <a href="{{ route('admin.surveys.show', $survey->id) }}" class="btn btn-sm btn-icon" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
                                 {{-- Edit: Only show if NOT active --}}
                                 @if (!$survey->is_active)
                                     <a href="{{ route('admin.surveys.edit', $survey->id) }}" 
