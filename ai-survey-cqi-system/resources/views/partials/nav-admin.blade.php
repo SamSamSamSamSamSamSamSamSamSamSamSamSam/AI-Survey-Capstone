@@ -47,6 +47,10 @@
 
 <p class="nav-section">Academic Structure</p>
 
+<a href="{{ route('admin.semesters.index') }}" class="nav-link {{ request()->routeIs('admin.semesters.*') ? 'active' : '' }}">
+    <i class="bi bi-calendar3"></i> <span>Academic Terms</span>
+</a>
+
 <a href="{{ route('admin.programs.index') }}" class="nav-link {{ request()->routeIs('admin.programs.*') ? 'active' : '' }}">
     <i class="bi bi-mortarboard"></i> <span>Programs</span>
 </a>
@@ -57,10 +61,6 @@
 
 <a href="{{ route('admin.subjects.index') }}" class="nav-link {{ request()->routeIs('admin.subjects.*') ? 'active' : '' }}">
     <i class="bi bi-book"></i> <span>Subjects</span>
-</a>
-
-<a href="{{ route('admin.semesters.index') }}" class="nav-link {{ request()->routeIs('admin.semesters.*') ? 'active' : '' }}">
-    <i class="bi bi-calendar3"></i> <span>Academic Terms</span>
 </a>
 
 <a href="{{ route('admin.prospectus.index') }}" class="nav-link {{ request()->routeIs('admin.prospectus.*') ? 'active' : '' }}">

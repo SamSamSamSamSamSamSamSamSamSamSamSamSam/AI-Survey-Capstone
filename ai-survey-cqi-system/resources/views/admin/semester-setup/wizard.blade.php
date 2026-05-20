@@ -10,6 +10,22 @@
 
 @section('content')
 
+<div class="page-header">
+    <div>
+        <h2 class="page-heading">Setup New Academic Term</h2>
+        <p class="page-subheading">Configure the academic term for a new semester.</p>
+    </div>
+
+    {{-- <div class="d-flex gap-2">
+        <a href="{{ route('admin.surveys.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> New Survey
+        </a>
+        <a href="{{ route('admin.surveys.global-assign') }}" class="btn btn-outline-primary">
+            <i class="bi bi-send-check-fill me-1"></i> Deploy All
+        </a>
+    </div> --}}
+</div>
+
 {{-- @php
     $uploadMax = ini_get('upload_max_filesize');
     $execTime  = ini_get('max_execution_time');

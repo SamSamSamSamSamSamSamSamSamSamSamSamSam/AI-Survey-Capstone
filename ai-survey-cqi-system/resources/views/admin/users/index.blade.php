@@ -86,9 +86,9 @@
                 </div>
 
                 <div class="col-md-4 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
+                    {{-- <button type="submit" class="btn btn-primary">
                         <i class="bi bi-sliders me-1"></i> Filter
-                    </button>
+                    </button> --}}
                     <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-counterclockwise"></i>
                     </a>

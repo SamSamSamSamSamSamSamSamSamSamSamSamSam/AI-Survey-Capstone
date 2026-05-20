@@ -38,7 +38,7 @@
         <form id="filterForm" method="GET" action="{{ route('admin.offerings.index') }}">
             <div class="row g-3 align-items-end">
 
-                <div class="col-md-2">
+                <div class="col-md-4">
                     <label class="form-label">Semester</label>
                     <select name="semester_id" class="form-select filter-input">
                         <option value="">All Semesters</option>
@@ -84,7 +84,7 @@
                 </div>
 
 
-                <div class="col-md-12">
+                <div class="col-md-6">
                     <div class="d-flex gap-2">
                         <div class="input-icon-wrap flex-grow-1">
                             <i class="bi bi-search input-icon"></i>

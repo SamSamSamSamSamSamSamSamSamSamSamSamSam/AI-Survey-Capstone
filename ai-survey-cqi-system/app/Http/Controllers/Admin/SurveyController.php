@@ -22,6 +22,7 @@ class SurveyController extends Controller
         $semesters          = Semester::orderByDesc('academic_start_year')->orderByDesc('semester_number')->get();
         $activeSemester     = Semester::current();
         $selectedSemesterId = $request->input('semester_id', $activeSemester?->id);
+        $roles = Role::all();
 
         $query = Survey::with(['offering.subject', 'offering.semester', 'offering.teacher', 'targetRole', 'creator', 'template'])
                        ->withCount('questions')
@@ -29,6 +30,10 @@ class SurveyController extends Controller
 
         if ($selectedSemesterId) {
             $query->whereHas('offering', fn ($q) => $q->where('semester_id', $selectedSemesterId));
+        }
+
+        if ($targetRoleId = $request->input('target_role_id')) {
+            $query->where('target_role_id', $targetRoleId);
         }
 
         if ($search = $request->input('search')) {
@@ -65,7 +70,7 @@ class SurveyController extends Controller
             return view('admin.surveys._table', compact('surveys'))->render();
         }
 
-        return view('admin.surveys.index', compact('surveys', 'semesters', 'activeSemester', 'selectedSemesterId'));
+        return view('admin.surveys.index', compact('surveys', 'semesters', 'activeSemester', 'selectedSemesterId', 'roles'));
 
     }
 

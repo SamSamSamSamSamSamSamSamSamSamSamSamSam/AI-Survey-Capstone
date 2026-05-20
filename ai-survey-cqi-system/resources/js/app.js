@@ -7,6 +7,7 @@ import TomSelect from 'tom-select';
 import Chart from 'chart.js/auto';
 import { initSessionMonitor } from './modules/session-timeout';
 import { initConfirmAction } from './modules/confirm-action';
+import axios from 'axios';
 
 window.TomSelect = TomSelect;
 window.Chart = Chart;

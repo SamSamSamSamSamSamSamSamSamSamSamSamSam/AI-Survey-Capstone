@@ -73,9 +73,9 @@
                         @if ($survey->trashed())
                             <span class="status-pill status-pill--archived"><i class="bi bi-archive me-1"></i>Archived</span>
                         @elseif ($survey->is_active)
-                            <span class="status-pill status-pill--active"><i class="bi bi-check-circle me-1"></i>Active</span>
+                            <span class="status-pill status-pill--active"><i class="bi bi-broadcast me-1"></i>Active</span>
                         @else
-                            <span class="status-pill status-pill--inactive"><i class="bi bi-pause-circle me-1"></i>Inactive</span>
+                            <span class="status-pill status-pill--inactive"><i class="bi bi-slash-circle me-1"></i>Inactive</span>
                         @endif
                     </td>
 

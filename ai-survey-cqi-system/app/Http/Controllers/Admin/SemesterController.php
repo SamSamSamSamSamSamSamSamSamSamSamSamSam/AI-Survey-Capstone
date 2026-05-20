@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\StoreSemesterRequest;
+use App\Http\Requests\Admin\StoreSchoolYearRequest;
 use App\Http\Requests\Admin\UpdateSemesterRequest;
 use App\Models\Semester;
 use Illuminate\Http\RedirectResponse;
@@ -11,27 +11,60 @@ use Illuminate\View\View;
 
 class SemesterController extends Controller
 {
+    // -------------------------------------------------------------------------
+    // Index
+    // -------------------------------------------------------------------------
+
     public function index(): View
     {
-        $semesters = Semester::latest('academic_start_year')
-                             ->orderByDesc('semester_number')
-                             ->paginate(15);
+        $grouped        = Semester::groupedByYear();           // Collection keyed by academic_start_year
+        $activeSemester = Semester::current();
+        $search         = request('search');
 
-        return view('admin.semesters.index', compact('semesters'));
+        // Apply search filter if present
+        if ($search) {
+            $grouped = Semester::where('name', 'like', "%{$search}%")
+                ->orWhere('academic_start_year', 'like', "%{$search}%")
+                ->orderByDesc('academic_start_year')
+                ->orderBy('semester_number')
+                ->get()
+                ->groupBy('academic_start_year');
+        }
+
+        return view('admin.semesters.index', compact('grouped', 'activeSemester', 'search'));
     }
+
+    // -------------------------------------------------------------------------
+    // Create School Year (replaces old single-semester create)
+    // -------------------------------------------------------------------------
 
     public function create(): View
     {
         return view('admin.semesters.create');
     }
 
-    public function store(StoreSemesterRequest $request): RedirectResponse
+    public function store(StoreSchoolYearRequest $request): RedirectResponse
     {
-        Semester::create($request->validated());
+        $startYear     = (int) $request->validated()['academic_start_year'];
+        $includeSummer = (bool) ($request->validated()['include_summer'] ?? false);
+
+        $created = Semester::generateForYear($startYear, $includeSummer);
+
+        $count   = $created->count();
+        $ayLabel = "S.Y. {$startYear}–" . ($startYear + 1);
+
+        if ($count === 0) {
+            return redirect()->route('admin.semesters.index')
+                ->with('info', "All semesters for {$ayLabel} already exist.");
+        }
 
         return redirect()->route('admin.semesters.index')
-                         ->with('success', 'Semester created.');
+            ->with('success', "{$count} semester(s) created for {$ayLabel}.");
     }
+
+    // -------------------------------------------------------------------------
+    // Edit / Update a single semester (name only — year & number stay fixed)
+    // -------------------------------------------------------------------------
 
     public function edit(Semester $semester): View
     {
@@ -40,12 +73,16 @@ class SemesterController extends Controller
 
     public function update(UpdateSemesterRequest $request, Semester $semester): RedirectResponse
     {
-        // Prevent editing is_active directly through the form — use activate/deactivate
-        $semester->update($request->safe()->except('is_active'));
+        // Only allow updating the display name; year and number are immutable post-creation.
+        $semester->update($request->safe()->only('name'));
 
         return redirect()->route('admin.semesters.index')
-                         ->with('success', 'Semester updated.');
+            ->with('success', 'Semester name updated.');
     }
+
+    // -------------------------------------------------------------------------
+    // Delete
+    // -------------------------------------------------------------------------
 
     public function destroy(Semester $semester): RedirectResponse
     {
@@ -60,28 +97,36 @@ class SemesterController extends Controller
         $semester->delete();
 
         return redirect()->route('admin.semesters.index')
-                         ->with('success', 'Semester deleted.');
+            ->with('success', "{$semester->full_label} has been deleted.");
     }
 
+    // -------------------------------------------------------------------------
+    // Activate / Deactivate
+    // -------------------------------------------------------------------------
+
     /**
-     * Activate a semester — deactivates all others automatically.
+     * Activate a semester — automatically deactivates all others.
      */
     public function activate(Semester $semester): RedirectResponse
     {
         $semester->activate();
 
         return redirect()->route('admin.semesters.index')
-                         ->with('success', "{$semester->full_label} is now the active semester.");
+            ->with('success', "{$semester->full_label} is now the active semester.");
     }
 
     /**
-     * Deactivate the current semester (no active semester state).
+     * Deactivate the current semester (leaves no active semester).
      */
     public function deactivate(Semester $semester): RedirectResponse
     {
+        if (! $semester->is_active) {
+            return back()->with('info', 'That semester is already inactive.');
+        }
+
         $semester->deactivate();
 
         return redirect()->route('admin.semesters.index')
-                         ->with('success', 'Semester deactivated. No active semester is set.');
+            ->with('success', 'Semester deactivated. No active semester is currently set.');
     }
 }

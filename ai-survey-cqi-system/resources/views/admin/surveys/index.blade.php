@@ -28,51 +28,72 @@
 <div class="card filter-card mb-3">
     <div class="card-body">
         <form method="GET" action="{{ route('admin.surveys.index') }}" id="survey-filter-form">
-            <div class="row g-3 align-items-end">
-                {{-- Semester Filter --}}
-                <div class="col-md-3">
-                    <label class="form-label">Semester</label>
-                    <select name="semester_id" class="form-select filter-select">
-                        <option value="">All Semesters</option>
-                        @foreach ($semesters as $sem)
-                            <option value="{{ $sem->id }}" @selected($selectedSemesterId == $sem->id)>
-                                {{ $sem->full_label }} @if ($sem->is_active) · Active @endif
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+            <div class="d-flex flex-column gap-3">
+                
+                {{-- First Row: Core Dropdown Select Filters --}}
+                <div class="row g-3 align-items-end">
+                    {{-- Semester Filter --}}
+                    <div class="col-md-4">
+                        <label class="form-label">Semester</label>
+                        <select name="semester_id" class="form-select filter-select">
+                            <option value="">All Semesters</option>
+                            @foreach ($semesters as $sem)
+                                <option value="{{ $sem->id }}" @selected($selectedSemesterId == $sem->id)>
+                                    {{ $sem->full_label }} @if ($sem->is_active) · Active @endif
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                {{-- Search Input --}}
-                <div class="col-md-3">
-                    <label class="form-label">Search</label>
-                    <div class="input-icon-wrap">
-                        <i class="bi bi-search input-icon"></i>
-                        <input type="text" name="search" id="survey-search" class="form-control auth-input"
-                               placeholder="Title, course code, teacher..." value="{{ request('search') }}" autocomplete="off">
+                    {{-- Target Role Filter --}}
+                    <div class="col-md-4">
+                        <label class="form-label">Target Role</label>
+                        <select name="target_role_id" class="form-select filter-select">
+                            <option value="">All Roles</option>
+                            @foreach ($roles as $role)
+                                <option value="{{ $role->id }}" @selected(request('target_role_id') == $role->id)>
+                                    {{ ucfirst($role->name) }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Status Filter --}}
+                    <div class="col-md-4">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select filter-select">
+                            <option value="">All Non-archived</option>
+                            @foreach(['active' => 'Active Only', 'inactive' => 'Inactive Only', 'deleted' => 'Archived', 'all' => 'All Records'] as $val => $label)
+                                <option value="{{ $val }}" @selected(request('status') === $val)>{{ $label }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
-                {{-- Status Filter --}}
-                <div class="col-md-3">
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-select filter-select">
-                        <option value="">All Non-archived</option>
-                        <option value="active" @selected(request('status') === 'active')>Active Only</option>
-                        <option value="inactive" @selected(request('status') === 'inactive')>Inactive Only</option>
-                        <option value="deleted" @selected(request('status') === 'deleted')>Archived</option>
-                        <option value="all" @selected(request('status') === 'all')>All Records</option>
-                    </select>
+                {{-- Second Row: Search input and Form Execution Actions --}}
+                <div class="row g-3 align-items-end">
+                    {{-- Search Input --}}
+                    <div class="col-md-5">
+                        <div class="input-icon-wrap">
+                            <i class="bi bi-search input-icon"></i>
+                            <input type="text" name="search" id="survey-search" class="form-control auth-input"
+                                   placeholder="Search by title, course code, or faculty name…" value="{{ request('search') }}" autocomplete="off">
+                        </div>
+                    </div>
+
+                    {{-- Action Buttons --}}
+                    <div class="col-md-3">
+                        <div class="d-flex gap-2">
+                            {{-- <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="bi bi-sliders me-1"></i> Filter
+                            </button> --}}
+                            <a href="{{ route('admin.surveys.index') }}" class="btn btn-outline-secondary px-3" title="Reset Filters">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
-                {{-- Buttons --}}
-                <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary ">
-                        <i class="bi bi-sliders me-1"></i> Filter
-                    </button>
-                    <a href="{{ route('admin.surveys.index') }}" class="btn btn-outline-secondary px-3" title="Reset">
-                        <i class="bi bi-arrow-counterclockwise"></i>
-                    </a>
-                </div>
             </div>
         </form>
     </div>

@@ -106,6 +106,7 @@ class DashboardController extends Controller
         $cqiReports = CqiReport::with(['survey.offering.subject', 'survey.offering.semester'])
             ->where('faculty_id', $user->id)
             ->whereNull('deleted_at')
+            ->whereHas('logs', function ($query) { $query->where('action', 'sent_to_faculty'); })
             ->latest()
             ->take(5)
             ->get();

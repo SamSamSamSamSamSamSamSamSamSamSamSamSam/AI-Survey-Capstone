@@ -25,9 +25,36 @@
 
 <div class="form-page-layout">
     <div class="form-card">
+
+        {{-- Read-only context info --}}
+        <div class="alert alert-light border mb-4 d-flex gap-3" style="font-size:.875rem;">
+            <div>
+                <span class="text-muted">Academic Year</span><br>
+                <strong>{{ $semester->academic_year_label }}</strong>
+            </div>
+            <div class="vr"></div>
+            <div>
+                <span class="text-muted">Semester</span><br>
+                <strong>{{ $semester->semester_label }}</strong>
+            </div>
+            <div class="vr"></div>
+            <div>
+                <span class="text-muted">Status</span><br>
+                @if ($semester->is_active)
+                    <span class="status-pill status-pill--active">
+                        <i class="bi bi-check-circle me-1"></i>Active
+                    </span>
+                @else
+                    <span class="status-pill status-pill--archived">Inactive</span>
+                @endif
+            </div>
+        </div>
+
         <form method="POST" action="{{ route('admin.semesters.update', $semester->id) }}" novalidate>
             @csrf @method('PUT')
+
             @include('admin.semesters._form')
+
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-check-lg me-1"></i> Save Changes
