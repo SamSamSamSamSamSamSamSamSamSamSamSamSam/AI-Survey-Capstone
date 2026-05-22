@@ -28,6 +28,9 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
 
     public function handle(): void
     {
+        Cache::forget("faculty_analytics_categories_{$this->surveyId}");
+        Cache::forget("faculty_analytics_sentiment_{$this->surveyId}");
+
         $survey = Survey::with([
             'offering.teacher',
             'questions.responses.sentiment.sentimentType',

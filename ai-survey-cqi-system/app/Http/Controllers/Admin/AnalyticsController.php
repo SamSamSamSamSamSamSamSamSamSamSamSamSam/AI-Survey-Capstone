@@ -109,8 +109,26 @@ class AnalyticsController extends Controller
      */
     public function recompute(Survey $survey): RedirectResponse
     {
-        ComputeFacultyAnalyticsJob::dispatch($survey->id);
+        $attempts = $survey->attempts()->whereNotNull('submitted_at')->get();
 
-        return back()->with('success', 'Analytics recomputation queued.');
+        if ($attempts->isEmpty()) {
+            return back()->with('error', 'No submitted responses found to recompute.');
+        }
+
+        \Illuminate\Support\Facades\Cache::forget("faculty_analytics_categories_{$survey->id}");
+         \Illuminate\Support\Facades\Cache::forget("faculty_analytics_sentiment_{$survey->id}");
+
+        $jobs = [];
+
+        foreach ($attempts as $attempt) {
+            $jobs[] = new \App\Jobs\AnalyzeSentimentJob($attempt->id);
+        }
+
+        $jobs[] = new \App\Jobs\ComputeFacultyAnalyticsJob($survey->id);
+
+        \Illuminate\Support\Facades\Bus::chain($jobs)->dispatch();
+
+        // Refined toast message matching the exact UI intent
+        return back()->with('success', 'Sentiment extraction and faculty metrics calculation successfully queued.');
     }
 }
