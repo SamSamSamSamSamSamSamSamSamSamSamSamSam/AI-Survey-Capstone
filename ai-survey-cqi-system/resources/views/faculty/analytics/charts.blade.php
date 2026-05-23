@@ -36,7 +36,7 @@
 
 <div class="an-wrap">
 
-    {{-- ── Semester filter only (no faculty selector for faculty role) ── --}}
+    {{-- ── Filters: Semester + Course (cascading) ── --}}
     <div class="an-toolbar">
         <div class="an-toolbar-group">
             <label class="an-toolbar-label">Semester</label>
@@ -48,6 +48,13 @@
                         {{ $s->full_label }}{{ $s->is_active ? ' · Active' : '' }}
                     </option>
                 @endforeach
+            </select>
+        </div>
+        <div class="an-toolbar-group">
+            <label class="an-toolbar-label">Course</label>
+            <select id="sel-course" class="an-select">
+                <option value="">All Courses</option>
+                {{-- Options are populated dynamically by JS based on the selected semester --}}
             </select>
         </div>
     </div>
@@ -78,8 +85,10 @@ window.ANALYTICS_CONFIG = {
     passingThreshold:  {{ setting('survey.passing_threshold', 3.0) }},
     hasFacultyFilter:  false,
     activeSemesterId:  '{{ $activeSemester?->id ?? '' }}',
+    // All courses this faculty has taught that have analytics data, keyed by semester_id.
+    // Empty string key "" holds courses across all semesters (union, for "All Semesters" mode).
+    coursesBySemester: @json($coursesBySemester),
 };
 </script>
 @vite(['resources/js/modules/analytics-charts.js'])
-{{-- <script src="{{ asset('js/modules/analytics-charts.js') }}" defer></script> --}}
 @endpush

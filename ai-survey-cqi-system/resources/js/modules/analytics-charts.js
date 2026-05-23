@@ -5,18 +5,14 @@
  *
  * Expected config shape:
  * {
- *   baseUrl:        '/api/analytics',          // API base
- *   passingThreshold: 3.0,                     // from settings
- *   hasFacultyFilter: true|false,              // admin=true, faculty=false
- *   activeSemesterId: '5'|null,
- *   palette:        ['#...'],                  // optional override
+ *   baseUrl:           '/api/analytics',
+ *   passingThreshold:  3.0,
+ *   hasFacultyFilter:  true|false,          // admin=true, faculty=false
+ *   activeSemesterId:  '5'|null,
+ *   coursesBySemester: { semId: [{id, code, name}], ... } | null,
+ *   palette:           ['#...'],            // optional override
  * }
  */
-
-// ── REMOVED: dead stub that was here before (updateCharts / analytics:filter
-//    listener outside the IIFE). Those couldn't reach onFilterChange() and
-//    the filter button never actually refreshed anything. The real wiring is
-//    now inside the IIFE below, exported via window.refreshAnalyticsCharts. ──
 
 (function () {
     'use strict';
@@ -32,13 +28,13 @@
     const SENT_COLS = ['#1D9E75', '#888780', '#E24B4A'];
 
     // ── State ─────────────────────────────────────────────────
-    const charts    = {};
-    const cache     = {};
-    let trendData   = null;
-    let catData     = null;
-    let sentData    = null;
-    let benchData   = null;
-    let pivotData   = null;
+    const charts  = {};
+    const cache   = {};
+    let trendData = null;
+    let catData   = null;
+    let sentData  = null;
+    let benchData = null;
+    let pivotData = null;
 
     const BASE = cfg.baseUrl || '/api/analytics';
     const CSRF = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
@@ -55,7 +51,11 @@
     }
 
     function params(extra = {}) {
-        const p = { semester_id: document.getElementById('sel-semester')?.value || '', ...extra };
+        const p = {
+            semester_id: document.getElementById('sel-semester')?.value || '',
+            offering_id: document.getElementById('sel-course')?.value   || '',
+            ...extra,
+        };
         if (cfg.hasFacultyFilter) {
             p.faculty_id = document.getElementById('sel-faculty')?.value || '';
         }
@@ -95,6 +95,49 @@
         return { color: 'rgba(128,128,128,0.08)' };
     }
 
+    // ── Course dropdown cascade ────────────────────────────────
+    // Populates #sel-course based on the selected semester.
+    // coursesBySemester comes from ANALYTICS_CONFIG (injected by Blade).
+    // When "All Semesters" is selected we build a deduplicated union of all courses.
+    function populateCourseDropdown(keepValue) {
+        const courseEl = document.getElementById('sel-course');
+        if (!courseEl) return;
+
+        const map = cfg.coursesBySemester || {};
+        const semId = document.getElementById('sel-semester')?.value || '';
+
+        let courses;
+        if (semId && map[semId]) {
+            // Specific semester selected: show only that semester's courses
+            courses = map[semId];
+        } else {
+            // "All Semesters": flatten + deduplicate by offering id
+            const seen = new Set();
+            courses = Object.values(map).flat().filter(c => {
+                if (seen.has(c.id)) return false;
+                seen.add(c.id);
+                return true;
+            }).sort((a, b) => a.code.localeCompare(b.code));
+        }
+
+        // Preserve the current selection if it still applies
+        const current = keepValue ?? courseEl.value;
+
+        courseEl.innerHTML = '<option value="">All Courses</option>';
+        courses.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name ? `${c.code} — ${c.name}` : c.code;
+            if (String(c.id) === String(current)) opt.selected = true;
+            courseEl.appendChild(opt);
+        });
+
+        // If previously-selected offering is no longer in the list, reset it
+        if (current && !courses.some(c => String(c.id) === String(current))) {
+            courseEl.value = '';
+        }
+    }
+
     // ── Tab switching ─────────────────────────────────────────
     function showTab(t) {
         document.querySelectorAll('.an-tab').forEach(b => b.classList.remove('an-tab--active'));
@@ -105,12 +148,12 @@
         const panel = document.getElementById('tab-' + t);
         if (panel) panel.classList.add('an-panel--active');
 
-        if (t === 'overview')    loadOverview();
-        if (t === 'trends')      loadTrends();
-        if (t === 'categories')  loadCategories();
-        if (t === 'sentiment')   loadSentiment();
-        if (t === 'benchmark')   loadBenchmark();
-        if (t === 'pivot')       loadPivot();
+        if (t === 'overview')   loadOverview();
+        if (t === 'trends')     loadTrends();
+        if (t === 'categories') loadCategories();
+        if (t === 'sentiment')  loadSentiment();
+        if (t === 'benchmark')  loadBenchmark();
+        if (t === 'pivot')      loadPivot();
     }
 
     function onFilterChange() {
@@ -120,12 +163,18 @@
         showTab(active);
     }
 
+    // Called when the semester dropdown changes.
+    // Re-populates the course list first, then refreshes charts.
+    function onSemesterChange() {
+        populateCourseDropdown(null); // reset course selection on semester change
+        onFilterChange();
+    }
+
     // ══════════════════════════════════════════════════════════
     // OVERVIEW
     // ══════════════════════════════════════════════════════════
     async function loadOverview() {
         const d   = await apiFetch('overview', params());
-        console.log("API Response Data:", d);
         const tab = document.getElementById('tab-overview');
 
         if (d.empty) {
@@ -175,11 +224,9 @@
 
         // Category horizontal bar
         const rawCatKeys = Object.keys(d.category_scores);
-        const catKeys = rawCatKeys.map(key => {
-            return key.replace(/_/g, ' ')
-                    .replace(/\b\w/g, l => l.toUpperCase());
-        });
-
+        const catKeys = rawCatKeys.map(key =>
+            key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        );
         const catVals = Object.values(d.category_scores);
         const pass    = cfg.passingThreshold || 3.0;
         destroyChart('cats-ov');
@@ -246,9 +293,9 @@
         }
 
         // Per-course comparison
-        const courses   = Object.keys(trendData.course_series || {});
-        const allSems   = [...new Set(courses.flatMap(c => Object.keys(trendData.course_series[c])))];
-        const lastFour  = allSems.slice(-4);
+        const courses  = Object.keys(trendData.course_series || {});
+        const allSems  = [...new Set(courses.flatMap(c => Object.keys(trendData.course_series[c])))];
+        const lastFour = allSems.slice(-4);
         makeLegend('leg-course', courses, PAL);
         destroyChart('course-trend');
         charts['course-trend'] = new Chart(document.getElementById('c-course-trend'), {
@@ -266,10 +313,8 @@
         drawCategoryCharts();
     }
 
-    const formatLabel = (key) => {
-        return key.replace(/_/g, ' ')
-                .replace(/\b\w/g, l => l.toUpperCase());
-    };
+    const formatLabel = (key) =>
+        key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
     function drawCategoryCharts() {
         if (!catData) return;
@@ -383,8 +428,7 @@
         const dep = benchData.dept_category_avg  || {};
         const detailEl = document.getElementById('bench-detail');
         if (detailEl) detailEl.innerHTML = Object.keys(my).map(cat => {
-            const displayLabel = cat.replace(/_/g, ' ')
-                                .replace(/\b\w/g, l => l.toUpperCase());
+            const displayLabel = cat.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             const mv = my[cat] ?? 0, dv = dep[cat] ?? 0;
             const diff  = (mv - dv).toFixed(2);
             const badge = diff > 0.05 ? `<span class="an-badge an-badge--up">+${diff}</span>` : diff < -0.05 ? `<span class="an-badge an-badge--dn">${diff}</span>` : `<span class="an-badge an-badge--eq">≈ same</span>`;
@@ -413,10 +457,10 @@
         if (!pivotData) return;
         const rows = (pivotData.rows || []).map(r => ({
             ...r,
-            cleanLabel: formatLabel(r.label)
+            cleanLabel: formatLabel(r.label),
         }));
-        const ctype  = document.getElementById('piv-chart')?.value || 'bar';
-        const yLabels= { avg_rating: 'Avg rating', response_count: 'Responses', positive_sentiment_percent: 'Positive %', negative_sentiment_percent: 'Negative %' };
+        const ctype   = document.getElementById('piv-chart')?.value || 'bar';
+        const yLabels = { avg_rating: 'Avg rating', response_count: 'Responses', positive_sentiment_percent: 'Positive %', negative_sentiment_percent: 'Negative %' };
 
         const titleEl = document.getElementById('piv-title');
         if (titleEl) titleEl.textContent = yLabels[pivotData.metric] + ' by ' + pivotData.x_axis + (pivotData.group_by !== 'none' ? ' — grouped by ' + pivotData.group_by : '');
@@ -471,19 +515,24 @@
 
     // ── Wire up event listeners once DOM is ready ─────────────
     function init() {
+        // Populate the course dropdown on page load (respects initial semester selection)
+        populateCourseDropdown(null);
+
         // Tab buttons
         document.querySelectorAll('.an-tab').forEach(btn => {
             btn.addEventListener('click', function () { showTab(this.dataset.tab); });
         });
 
-        // Filter: semester dropdown triggers refresh on change (works for both admin & faculty)
-        document.getElementById('sel-semester')?.addEventListener('change', onFilterChange);
+        // Semester change: cascade to course dropdown, then refresh
+        document.getElementById('sel-semester')?.addEventListener('change', onSemesterChange);
 
-        // Admin filter button — calls onFilterChange() which reads the current
-        // dropdown values at the time it executes, so no extra param passing needed.
+        // Course change: just refresh (no cascade needed)
+        document.getElementById('sel-course')?.addEventListener('change', onFilterChange);
+
+        // Admin filter button
         document.getElementById('btn-filter')?.addEventListener('click', onFilterChange);
 
-        // Faculty has no faculty dropdown, admin wires it here
+        // Admin faculty dropdown
         if (cfg.hasFacultyFilter) {
             document.getElementById('sel-faculty')?.addEventListener('change', onFilterChange);
         }
@@ -508,8 +557,6 @@
         loadOverview();
     }
 
-    // ── Expose a global hook so Blade inline scripts can also trigger a refresh
-    //    (e.g. window.refreshAnalyticsCharts() from the filter button fallback)
     window.refreshAnalyticsCharts = onFilterChange;
 
     if (document.readyState === 'loading') {
