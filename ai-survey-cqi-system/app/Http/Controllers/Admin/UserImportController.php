@@ -24,7 +24,6 @@ class UserImportController extends Controller
         $requiredHeaders = ['user_id_number', 'name', 'email', 'role'];
         if (!$header || count(array_intersect($requiredHeaders, array_map('strtolower', $header))) < 4) {
             fclose($handle);
-            // Invalid file structure — hard failure, no success message
             return back()->withErrors([
                 'csv_file' => 'Invalid CSV format. Please ensure your file has headers: ' . implode(', ', $requiredHeaders),
             ]);
@@ -44,6 +43,7 @@ class UserImportController extends Controller
                 ->exists();
 
             if ($exists) {
+                $results['errors'][] = "Skipped duplicate: {$data[2]} ({$data[0]}) already exists.";
                 $results['skipped']++;
                 continue;
             }
@@ -72,26 +72,25 @@ class UserImportController extends Controller
 
         fclose($handle);
 
-        $message = "Import complete! Imported: {$results['imported']}, Skipped: {$results['skipped']}.";
-        $redirect = redirect()->route('admin.users.index');
+        $message   = "Import complete! Imported: {$results['imported']}, Skipped: {$results['skipped']}.";
+        $redirect  = redirect()->route('admin.users.index');
+        $hasIssues = $results['skipped'] > 0 || !empty($results['errors']);
 
-        // ── Banner colour reflects actual outcome ─────────────────────────────
-        // Nothing imported and there are row errors → danger
-        if ($results['imported'] === 0 && !empty($results['errors'])) {
+        // Nothing got through and there were skips/errors → danger
+        if ($results['imported'] === 0 && $hasIssues) {
             return $redirect
                 ->with('error', $message)
                 ->withErrors($results['errors']);
         }
 
-        // Some imported but also some row errors → warning (partial success)
-        if ($results['imported'] > 0 && !empty($results['errors'])) {
+        // Some imported but not all rows were clean → warning
+        if ($results['imported'] > 0 && $hasIssues) {
             return $redirect
                 ->with('warning', $message)
                 ->withErrors($results['errors']);
         }
 
-        // Everything went through (errors array may still be empty even with skips,
-        // skips alone are not failures — duplicate rows are expected behaviour)
+        // Every row imported successfully
         return $redirect->with('success', $message);
     }
 
