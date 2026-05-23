@@ -27,7 +27,7 @@ class DashboardController extends Controller
             ->when($activeSemester, fn ($q) => $q->where('semester_id', $activeSemester->id))
             ->whereNull('deleted_at')
             ->withCount('enrollments')
-            ->get();
+            ->paginate(6);
 
         // ── Surveys targeting THIS faculty as respondent ─────────────────────
         // Uses shared method — correctly excludes own courses
@@ -41,9 +41,9 @@ class DashboardController extends Controller
                 $q->where('teacher_id', $user->id)
                   ->when($activeSemester, fn ($q2) => $q2->where('semester_id', $activeSemester->id))
             )
-            ->whereNull('deleted_at')
+            ->orderBy('is_active', 'desc')
             ->withCount(['attempts' => fn ($q) => $q->whereNotNull('submitted_at')])
-            ->get();
+            ->paginate(6);
 
         $activeSurveys   = $taughtSurveys->where('is_active', true);
         $inactiveSurveys = $taughtSurveys->where('is_active', false);
@@ -136,6 +136,7 @@ class DashboardController extends Controller
             'cqiReports',
             'totalOfferings',
             'totalStudentsTaught',
+            'taughtSurveys',
         ));
     }
 }

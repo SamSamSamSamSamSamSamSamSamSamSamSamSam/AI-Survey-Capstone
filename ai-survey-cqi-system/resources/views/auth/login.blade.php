@@ -174,10 +174,10 @@
                     </div>
                 @endif
 
-                @if($errors->has('login'))
+                @if($errors->any())
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         <i class="bi bi-exclamation-triangle-fill"></i>
-                        {{ $errors->first('login') }}
+                        {{ $errors->first() }} {{-- Grabs the very first error that occurred --}}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 @endif
@@ -225,7 +225,7 @@
                             <button type="button" class="input-icon-right toggle-password"
                                     data-target="password" aria-label="Toggle password visibility"
                                     tabindex="-1">
-                                <i class="bi bi-eye" id="pwIcon"></i>
+                                <i class="bi bi-eye-slash" id="pwIcon"></i>
                             </button>
                         </div>
                         @error('password')

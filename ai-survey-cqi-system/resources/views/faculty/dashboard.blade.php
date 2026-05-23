@@ -123,7 +123,7 @@
                             <thead>
                                 <tr>
                                     <th>Subject</th>
-                                    <th>Block / Group</th>
+                                    <th>Group</th>
                                     <th class="text-center">Students</th>
                                 </tr>
                             </thead>
@@ -139,10 +139,7 @@
                                         </div>
                                     </td>
                                     <td class="text-muted-sm">
-                                        {{ $offering->block?->name ?? '—' }}
-                                        @if ($offering->group_number)
-                                            · Grp {{ $offering->group_number }}
-                                        @endif
+                                        {{ $offering->group_number ?? '—' }}
                                     </td>
                                     <td class="text-center">
                                         <span class="count-badge">{{ $offering->enrollments_count }}</span>
@@ -154,59 +151,67 @@
                     </div>
                 @endif
             </div>
+            {{-- Pagination Links Container --}}
+            @if ($activeOfferings->hasPages())
+                <div class="mt-3 pt-2 border-top d-flex justify-content-center dashboard-pagination">
+                    {{ $activeOfferings->links() }}
+                </div>
+            @endif
         </div>
     </div>
 
     {{-- Survey Status --}}
     <div class="col-lg-6">
         <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">Survey Status</h5>
-                @if ($activeSurveys->isEmpty() && $inactiveSurveys->isEmpty())
-                    <div class="empty-state" style="padding: 24px 0;">
-                        <div class="empty-state-icon"><i class="bi bi-clipboard-x"></i></div>
-                        <p class="empty-state-text">No surveys for your courses yet.</p>
+            <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="card-title mb-0">Survey Status</h5>
+                        <span class="count-badge">{{ $taughtSurveys->total() }}</span>
                     </div>
-                @else
-                    <div class="d-flex flex-column gap-2">
-                        @foreach ($activeSurveys->take(4) as $survey)
-                        <div class="faculty-survey-row">
-                            <div class="faculty-survey-row__info">
-                                <span class="text-mono" style="font-size:.78rem;">
-                                    {{ $survey->offering->subject->course_code }}
-                                </span>
-                                <span class="text-muted-sm">
-                                    {{ Str::limit($survey->title, 38) }}
-                                </span>
-                            </div>
-                            <div class="d-flex align-items-center gap-2 flex-shrink-0">
-                                <span class="count-badge count-badge--responses">
-                                    {{ $survey->attempts_count }}
-                                </span>
-                                <span class="status-pill status-pill--active" style="font-size:.67rem; padding: 2px 7px;">
-                                    Active
-                                </span>
-                            </div>
+
+                    @if ($taughtSurveys->isEmpty())
+                        <div class="empty-state" style="padding: 24px 0;">
+                            <div class="empty-state-icon"><i class="bi bi-clipboard-x"></i></div>
+                            <p class="empty-state-text">No surveys for your courses yet.</p>
                         </div>
-                        @endforeach
-                        @foreach ($inactiveSurveys->take(3) as $survey)
-                        <div class="faculty-survey-row">
-                            <div class="faculty-survey-row__info">
-                                <span class="text-mono" style="font-size:.78rem;">
-                                    {{ $survey->offering->subject->course_code }}
-                                </span>
-                                <span class="text-muted-sm">
-                                    {{ Str::limit($survey->title, 38) }}
-                                </span>
+                    @else
+                        <div class="d-flex flex-column gap-2 mb-3">
+                            @foreach ($taughtSurveys as $survey)
+                            <div class="faculty-survey-row">
+                                <div class="faculty-survey-row__info">
+                                    <span class="text-mono" style="font-size:.78rem;">
+                                        {{ $survey->offering->subject->course_code }}
+                                    </span>
+                                    <span class="text-muted-sm">
+                                        {{ Str::limit($survey->title, 38) }}
+                                    </span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                                    <span class="count-badge {{ $survey->is_active ? 'count-badge--responses' : '' }}">
+                                        {{ $survey->attempts_count }}
+                                    </span>
+                                    
+                                    @if($survey->is_active)
+                                        <span class="status-pill status-pill--active" style="font-size:.67rem; padding: 2px 7px;">
+                                            Active
+                                        </span>
+                                    @else
+                                        <span class="status-pill status-pill--inactive" style="font-size:.67rem; padding: 2px 7px;">
+                                            Inactive
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
-                            <div class="d-flex align-items-center gap-2 flex-shrink-0">
-                                <span class="count-badge">{{ $survey->attempts_count }}</span>
-                                <span class="status-pill status-pill--inactive" style="font-size:.67rem; padding: 2px 7px;">
-                                    Inactive
-                                </span>
-                            </div>
+                            @endforeach
                         </div>
-                        @endforeach
+                    @endif
+                </div>
+
+                {{-- Pagination Links Container --}}
+                @if ($taughtSurveys->hasPages())
+                    <div class="mt-auto pt-2 border-top d-flex justify-content-center dashboard-pagination">
+                        {{ $taughtSurveys->links('pagination::bootstrap-5') }}
                     </div>
                 @endif
             </div>

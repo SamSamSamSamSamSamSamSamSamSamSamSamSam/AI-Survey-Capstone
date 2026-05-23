@@ -9,12 +9,12 @@
     <i class="bi bi-ui-checks-grid"></i> <span>Survey Manager</span>
 </a>
 
-<a href="{{ route('admin.semester-setup.index') }}" class="nav-link {{ request()->routeIs('admin.semester-setup.*') ? 'active' : '' }}">
-   <i class="bi bi-calendar2-plus"></i> <span>Semester Setup</span>
-</a>
-
 <a href="{{ route('admin.offerings.index') }}" class="nav-link {{ request()->routeIs('admin.offerings.*') ? 'active' : '' }}">
     <i class="bi bi-easel"></i> <span>Class Offerings</span>
+</a>
+
+<a href="{{ route('admin.semester-setup.index') }}" class="nav-link {{ request()->routeIs('admin.semester-setup.*') ? 'active' : '' }}">
+   <i class="bi bi-calendar2-plus"></i> <span>Semester Setup</span>
 </a>
 
 <p class="nav-section">Analytics &amp; CQI</p>

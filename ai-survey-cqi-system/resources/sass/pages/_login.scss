@@ -508,6 +508,11 @@
 
         &:has(~ .input-icon-right) { padding-right: 42px; }
 
+        &.is-invalid:has(~ .input-icon-right) {
+            background-position: right 42px center; // Moves the error icon to the left of the eye toggle
+            padding-right: 68px; // Gives extra room so text doesn't hit the icons
+        }
+
         &:focus {
             border-color: $brand-action;
             box-shadow: 0 0 0 3px rgba($brand-action, .14);
