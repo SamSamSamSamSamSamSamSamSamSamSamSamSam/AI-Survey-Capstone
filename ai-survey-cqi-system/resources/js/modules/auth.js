@@ -29,11 +29,11 @@
 
             if (input.type === 'password') {
                 input.type = 'text';
-                icon.classList.replace('bi-eye', 'bi-eye-slash');
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
                 this.setAttribute('aria-label', 'Hide password');
             } else {
                 input.type = 'password';
-                icon.classList.replace('bi-eye-slash', 'bi-eye');
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
                 this.setAttribute('aria-label', 'Show password');
             }
         });

@@ -56,6 +56,11 @@ class AnalyticsDataController extends Controller
             );
         }
 
+        // Course (offering) filter — faculty selects a specific subject they taught
+        if ($offeringId = $request->input('offering_id')) {
+            $q->where('offering_id', $offeringId);
+        }
+
         return $q;
     }
 
@@ -100,20 +105,18 @@ class AnalyticsDataController extends Controller
 
     public function overview(Request $request): JsonResponse
     {
-        // SECURITY FIX: Add pagination to prevent memory exhaustion
         $perPage = min((int)$request->input('per_page', 50), 100);
         $page = max(1, (int)$request->input('page', 1));
-        
+
         $paginated = $this->baseQuery($request)
             ->paginate($perPage, ['*'], 'page', $page);
-        
+
         $records = $paginated->items();
 
         if (empty($records)) {
             return response()->json(['empty' => true, 'pagination' => []]);
         }
 
-        // ── Summary stats ─────────────────────────────────────────────────────
         $collection = collect($records);
         $totalResponses   = $collection->sum('response_count');
         $avgRating        = $collection->whereNotNull('avg_rating')->avg('avg_rating');
@@ -121,7 +124,6 @@ class AnalyticsDataController extends Controller
         $avgNeutral       = $collection->whereNotNull('neutral_sentiment_percent')->avg('neutral_sentiment_percent');
         $avgNegative      = $collection->whereNotNull('negative_sentiment_percent')->avg('negative_sentiment_percent');
 
-        // ── Rating distribution (count of records by rounded avg_rating) ──────
         $distribution = $collection->whereNotNull('avg_rating')
             ->groupBy(fn ($r) => (string) round($r->avg_rating))
             ->map->count()
@@ -132,7 +134,6 @@ class AnalyticsDataController extends Controller
             $dist[(string) $i] = $distribution[(string) $i] ?? 0;
         }
 
-        // ── Category scores ───────────────────────────────────────────────────
         $allCatScores = [];
         foreach ($records as $rec) {
             foreach ($rec->category_scores ?? [] as $cat => $score) {
@@ -140,7 +141,7 @@ class AnalyticsDataController extends Controller
             }
         }
         $avgCatScores = collect($allCatScores)
-            ->map(fn ($scores) => round(collect($scores)->avg(), 2)) // Use Laravel's avg()
+            ->map(fn ($scores) => round(collect($scores)->avg(), 2))
             ->sortByDesc(fn ($v) => $v)
             ->toArray();
 
@@ -153,21 +154,21 @@ class AnalyticsDataController extends Controller
                 'avg_negative_pct' => round($avgNegative, 1),
                 'surveys_count'    => count($records),
             ],
-            'distribution'   => $dist,
-            'category_scores'=> $avgCatScores,
-            'sentiment'      => [
+            'distribution'    => $dist,
+            'category_scores' => $avgCatScores,
+            'sentiment'       => [
                 'positive' => round($avgPositive, 1),
                 'neutral'  => round($avgNeutral, 1),
                 'negative' => round($avgNegative, 1),
             ],
             'pagination' => [
-                'total' => $paginated->total(),
-                'per_page' => $paginated->perPage(),
+                'total'        => $paginated->total(),
+                'per_page'     => $paginated->perPage(),
                 'current_page' => $paginated->currentPage(),
-                'last_page' => $paginated->lastPage(),
-                'from' => $paginated->firstItem(),
-                'to' => $paginated->lastItem(),
-            ]
+                'last_page'    => $paginated->lastPage(),
+                'from'         => $paginated->firstItem(),
+                'to'           => $paginated->lastItem(),
+            ],
         ]);
     }
 
@@ -178,8 +179,9 @@ class AnalyticsDataController extends Controller
 
     public function trends(Request $request): JsonResponse
     {
-        $scope   = $this->resolveFacultyScope($request);
-        $metric  = $request->input('metric', 'avg_rating');
+        $scope      = $this->resolveFacultyScope($request);
+        $metric     = $request->input('metric', 'avg_rating');
+        $offeringId = $request->input('offering_id');
 
         $allowed = ['avg_rating', 'positive_sentiment_percent', 'negative_sentiment_percent', 'response_count'];
         if (! in_array($metric, $allowed)) {
@@ -202,6 +204,10 @@ class AnalyticsDataController extends Controller
                 $q->whereIn('faculty_id', $scope);
             }
 
+            if ($offeringId) {
+                $q->where('offering_id', $offeringId);
+            }
+
             $records = $q->with('survey.offering.subject')->get();
 
             if ($records->isEmpty()) continue;
@@ -216,7 +222,6 @@ class AnalyticsDataController extends Controller
                 'value'          => $val ?? 0,
             ];
 
-            // Per-course breakdown for this semester
             foreach ($records as $rec) {
                 $code = $rec->survey->offering->subject->course_code ?? 'Unknown';
                 if (! isset($courseData[$code])) {
@@ -240,14 +245,15 @@ class AnalyticsDataController extends Controller
 
     public function categories(Request $request): JsonResponse
     {
-        $scope = $this->resolveFacultyScope($request);
+        $scope      = $this->resolveFacultyScope($request);
+        $offeringId = $request->input('offering_id');
 
         $semesters = Semester::orderBy('academic_start_year')
                              ->orderBy('semester_number')
                              ->get();
 
-        $overTime  = [];
-        $latest    = null;
+        $overTime = [];
+        $latest   = null;
 
         foreach ($semesters as $sem) {
             $q = FacultyAnalytics::whereHas('survey.offering', fn ($sq) =>
@@ -256,6 +262,10 @@ class AnalyticsDataController extends Controller
 
             if ($scope) {
                 $q->whereIn('faculty_id', $scope);
+            }
+
+            if ($offeringId) {
+                $q->where('offering_id', $offeringId);
             }
 
             $records = $q->get();
@@ -278,7 +288,7 @@ class AnalyticsDataController extends Controller
             $latest = $avgCats;
         }
 
-        // Department avg per category (aggregated across ALL faculty, all semesters)
+        // Department avg (always unfiltered — full picture for benchmarking)
         $deptQuery = FacultyAnalytics::all();
         $deptCats  = [];
         foreach ($deptQuery as $rec) {
@@ -288,14 +298,14 @@ class AnalyticsDataController extends Controller
         }
         $deptAvgCats = collect($deptCats)
             ->map(function ($s) {
-            return round(collect($s)->flatten()->filter(fn($v) => is_numeric($v))->avg(), 2);
-        })
+                return round(collect($s)->flatten()->filter(fn($v) => is_numeric($v))->avg(), 2);
+            })
             ->toArray();
 
         return response()->json([
-            'latest_scores'   => $latest ?? [],
-            'over_time'       => $overTime,
-            'dept_avg'        => $deptAvgCats,
+            'latest_scores'    => $latest ?? [],
+            'over_time'        => $overTime,
+            'dept_avg'         => $deptAvgCats,
             'passing_threshold'=> (float) setting('survey.passing_threshold', 3.0),
         ]);
     }
@@ -307,15 +317,16 @@ class AnalyticsDataController extends Controller
 
     public function sentiment(Request $request): JsonResponse
     {
-        $scope = $this->resolveFacultyScope($request);
+        $scope      = $this->resolveFacultyScope($request);
+        $offeringId = $request->input('offering_id');
 
         $semesters = Semester::orderBy('academic_start_year')
                              ->orderBy('semester_number')
                              ->get();
 
-        $trend        = [];
-        $byCourse     = [];
-        $allKeywords  = [];
+        $trend       = [];
+        $byCourse    = [];
+        $allKeywords = [];
 
         foreach ($semesters as $sem) {
             $q = FacultyAnalytics::whereHas('survey.offering', fn ($sq) =>
@@ -323,6 +334,10 @@ class AnalyticsDataController extends Controller
             );
 
             if ($scope) $q->whereIn('faculty_id', $scope);
+
+            if ($offeringId) {
+                $q->where('offering_id', $offeringId);
+            }
 
             $records = $q->with('survey.offering.subject')->get();
             if ($records->isEmpty()) continue;
@@ -333,7 +348,6 @@ class AnalyticsDataController extends Controller
                 'negative' => round($records->avg('negative_sentiment_percent'), 1),
             ];
 
-            // Per-course for latest semester
             if ($sem->id === $semesters->last()->id) {
                 foreach ($records as $rec) {
                     $code = $rec->survey->offering->subject->course_code ?? 'Unknown';
@@ -356,9 +370,9 @@ class AnalyticsDataController extends Controller
         $topKeywords = array_slice($allKeywords, 0, 20, true);
 
         return response()->json([
-            'trend'       => $trend,
-            'by_course'   => $byCourse,
-            'keywords'    => $topKeywords,
+            'trend'     => $trend,
+            'by_course' => $byCourse,
+            'keywords'  => $topKeywords,
         ]);
     }
 
@@ -369,39 +383,36 @@ class AnalyticsDataController extends Controller
 
     public function benchmark(Request $request): JsonResponse
     {
-        $scope     = $this->resolveFacultyScope($request);
-        $semId     = $request->input('semester_id');
-        $against   = $request->input('against', 'dept'); // dept | history | sem
+        $scope      = $this->resolveFacultyScope($request);
+        $semId      = $request->input('semester_id');
+        $offeringId = $request->input('offering_id');
+        $against    = $request->input('against', 'dept');
 
-        // My records
         $myQuery = FacultyAnalytics::query();
         if ($scope) $myQuery->whereIn('faculty_id', $scope);
         if ($semId) $myQuery->whereHas('survey.offering', fn ($q) => $q->where('semester_id', $semId));
+        if ($offeringId) $myQuery->where('offering_id', $offeringId);
 
         $myRecords = $myQuery->with(['survey.offering.semester', 'survey.offering.subject'])->get();
 
-        // All-faculty records (for dept benchmark + ranking)
+        // All-faculty records for dept benchmark + ranking (never scoped to offering)
         $allQuery = FacultyAnalytics::query();
         if ($semId) $allQuery->whereHas('survey.offering', fn ($q) => $q->where('semester_id', $semId));
         $allRecords = $allQuery->with(['faculty', 'survey.offering.subject'])->get();
 
-        // Per-semester my avg
         $mySemData = $myRecords->groupBy(
             fn ($r) => $r->survey->offering->semester->full_label
         )->map(fn ($recs) => round($recs->avg('avg_rating'), 2));
 
-        // Dept avg per semester
         $deptSemData = $allRecords->groupBy(
             fn ($r) => $r->survey->offering->semester->full_label
         )->map(fn ($recs) => round($recs->avg('avg_rating'), 2));
 
-        // Benchmark values based on type
         $benchmarkSeries = match ($against) {
             'history' => $mySemData->mapWithKeys(fn ($v, $k) => [$k => round($myRecords->avg('avg_rating'), 2)]),
             default   => $deptSemData,
         };
 
-        // Category comparison
         $myLatestCats = [];
         $deptCats     = [];
 
@@ -424,12 +435,11 @@ class AnalyticsDataController extends Controller
             ->map(fn ($s) => round(collect($s)->flatten()->filter(fn($v) => is_numeric($v))->avg(), 2))
             ->toArray();
 
-        // Faculty ranking
         $ranking = $allRecords->groupBy('faculty_id')
             ->map(fn ($recs) => [
-                'faculty_id'   => $recs->first()->faculty_id,
-                'faculty_name' => $recs->first()->faculty?->name ?? 'Unknown',
-                'avg_rating'   => round($recs->avg('avg_rating'), 2),
+                'faculty_id'    => $recs->first()->faculty_id,
+                'faculty_name'  => $recs->first()->faculty?->name ?? 'Unknown',
+                'avg_rating'    => round($recs->avg('avg_rating'), 2),
                 'response_count'=> $recs->sum('response_count'),
             ])
             ->sortByDesc('avg_rating')
@@ -442,9 +452,9 @@ class AnalyticsDataController extends Controller
         }
 
         return response()->json([
-            'my_series'        => $mySemData,
-            'benchmark_series' => $benchmarkSeries,
-            'benchmark_label'  => match ($against) {
+            'my_series'         => $mySemData,
+            'benchmark_series'  => $benchmarkSeries,
+            'benchmark_label'   => match ($against) {
                 'dept'    => 'Department average',
                 'sem'     => 'Semester average',
                 'history' => 'Your historical average',
@@ -463,10 +473,11 @@ class AnalyticsDataController extends Controller
 
     public function pivot(Request $request): JsonResponse
     {
-        $scope   = $this->resolveFacultyScope($request);
-        $xAxis   = $request->input('x', 'semester');   // semester | course | category
-        $yMetric = $request->input('y', 'avg_rating'); // avg_rating | response_count | positive_pct | negative_pct
-        $groupBy = $request->input('group', 'none');   // none | course | semester
+        $scope      = $this->resolveFacultyScope($request);
+        $xAxis      = $request->input('x', 'semester');
+        $yMetric    = $request->input('y', 'avg_rating');
+        $groupBy    = $request->input('group', 'none');
+        $offeringId = $request->input('offering_id');
 
         $allowed_y = ['avg_rating', 'response_count', 'positive_sentiment_percent', 'negative_sentiment_percent'];
         if (! in_array($yMetric, $allowed_y)) {
@@ -479,9 +490,10 @@ class AnalyticsDataController extends Controller
         ]);
 
         if ($scope) $records->whereIn('faculty_id', $scope);
+        if ($offeringId) $records->where('offering_id', $offeringId);
+
         $records = $records->get();
 
-        // Build rows based on x-axis dimension
         $result = [];
 
         if ($xAxis === 'semester') {
@@ -489,7 +501,6 @@ class AnalyticsDataController extends Controller
         } elseif ($xAxis === 'course') {
             $grouped = $records->groupBy(fn ($r) => $r->survey->offering->subject->course_code ?? 'Unknown');
         } else { // category
-            // Flatten category scores
             $catData = [];
             foreach ($records as $rec) {
                 foreach ($rec->category_scores ?? [] as $cat => $score) {
@@ -498,28 +509,16 @@ class AnalyticsDataController extends Controller
             }
             $result = collect($catData)
                 ->map(function ($scores, $categoryName) {
-                    $avg = collect($scores)
-                        ->flatten()
-                        ->filter(fn($v) => is_numeric($v))
-                        ->avg();
-
-                    return [
-                        'x'     => $categoryName, // Use the actual category key here
-                        'value' => round($avg ?? 0, 2)
-                    ];
+                    $avg = collect($scores)->flatten()->filter(fn($v) => is_numeric($v))->avg();
+                    return ['x' => $categoryName, 'value' => round($avg ?? 0, 2)];
                 })
-                ->values() // Optional: resets keys to 0, 1, 2... for clean JSON arrays
+                ->values()
                 ->toArray();
 
             $rows = [];
             foreach ($catData as $cat => $scores) {
                 $numericScores = collect($scores)->flatten()->filter(fn($v) => is_numeric($v));
-                $average = $numericScores->avg() ?? 0;
-                $rows[] = [
-                    'label' => $cat, 
-                    'value' => round($average, 2), 
-                    'group' => null
-                ];
+                $rows[] = ['label' => $cat, 'value' => round($numericScores->avg() ?? 0, 2), 'group' => null];
             }
 
             return response()->json(['rows' => $rows, 'metric' => $yMetric, 'x_axis' => $xAxis, 'group_by' => $groupBy]);
@@ -533,7 +532,6 @@ class AnalyticsDataController extends Controller
                 return ['label' => $label, 'value' => $value, 'group' => null];
             })->values()->toArray();
         } else {
-            // Group within each x-axis value
             $subKey = $groupBy === 'course'
                 ? fn ($r) => $r->survey->offering->subject->course_code ?? 'Unknown'
                 : fn ($r) => $r->survey->offering->semester->full_label ?? 'Unknown';
@@ -550,10 +548,10 @@ class AnalyticsDataController extends Controller
         }
 
         return response()->json([
-            'rows'    => $rows,
-            'metric'  => $yMetric,
-            'x_axis'  => $xAxis,
-            'group_by'=> $groupBy,
+            'rows'     => $rows,
+            'metric'   => $yMetric,
+            'x_axis'   => $xAxis,
+            'group_by' => $groupBy,
         ]);
     }
 }

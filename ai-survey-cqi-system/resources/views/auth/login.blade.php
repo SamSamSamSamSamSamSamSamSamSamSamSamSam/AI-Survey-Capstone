@@ -225,7 +225,7 @@
                             <button type="button" class="input-icon-right toggle-password"
                                     data-target="password" aria-label="Toggle password visibility"
                                     tabindex="-1">
-                                <i class="bi bi-eye" id="pwIcon"></i>
+                                <i class="bi bi-eye-slash" id="pwIcon"></i>
                             </button>
                         </div>
                         @error('password')
