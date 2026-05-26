@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\FacultyAnalytics;
 use App\Models\Semester;
 use App\Models\User;
-use Illuminate\Http\Request;   // ← was missing
+use Illuminate\Http\Request;   
 use Illuminate\View\View;
 
 class AnalyticsViewController extends Controller

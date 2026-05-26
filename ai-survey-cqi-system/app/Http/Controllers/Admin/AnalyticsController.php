@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\AnalyzeSentimentJob;
 use App\Jobs\ComputeFacultyAnalyticsJob;
+use App\Models\CqiReport;
 use App\Models\FacultyAnalytics;
+use App\Models\Response;
 use App\Models\Semester;
 use App\Models\Survey;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class AnalyticsController extends Controller
@@ -83,7 +87,7 @@ class AnalyticsController extends Controller
         ]);
 
         // Open-ended response samples
-        $textResponses = \App\Models\Response::query()
+        $textResponses = Response::query()
             ->join('survey_attempts', 'responses.attempt_id', '=', 'survey_attempts.id')
             ->join('survey_questions', 'responses.survey_question_id', '=', 'survey_questions.id')
             ->where('survey_attempts.survey_id', $analytic->survey_id)
@@ -96,7 +100,7 @@ class AnalyticsController extends Controller
             ->groupBy('survey_question_id');
 
         // Check for existing CQI report
-        $existingReport = \App\Models\CqiReport::where('survey_id', $analytic->survey_id)
+        $existingReport = CqiReport::where('survey_id', $analytic->survey_id)
                                                 ->whereNull('deleted_at')
                                                 ->latest()
                                                 ->first();
@@ -115,16 +119,16 @@ class AnalyticsController extends Controller
             return back()->with('error', 'No submitted responses found to recompute.');
         }
 
-        \Illuminate\Support\Facades\Cache::forget("faculty_analytics_categories_{$survey->id}");
-         \Illuminate\Support\Facades\Cache::forget("faculty_analytics_sentiment_{$survey->id}");
+        Cache::forget("faculty_analytics_categories_{$survey->id}");
+        Cache::forget("faculty_analytics_sentiment_{$survey->id}");
 
         $jobs = [];
 
         foreach ($attempts as $attempt) {
-            $jobs[] = new \App\Jobs\AnalyzeSentimentJob($attempt->id);
+            $jobs[] = new AnalyzeSentimentJob($attempt->id);
         }
 
-        $jobs[] = new \App\Jobs\ComputeFacultyAnalyticsJob($survey->id);
+        $jobs[] = new ComputeFacultyAnalyticsJob($survey->id);
 
         \Illuminate\Support\Facades\Bus::chain($jobs)->dispatch();
 
