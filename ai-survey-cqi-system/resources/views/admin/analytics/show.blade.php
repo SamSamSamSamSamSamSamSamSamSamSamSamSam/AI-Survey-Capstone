@@ -142,7 +142,8 @@
             <div class="card-body">
                 <h5 class="card-title">Category Scores</h5>
                 @if ($analytic->category_scores)
-                    <div class="category-score-list">
+                    @include('admin.analytics._weighted_breakdown', ['analytic' => $analytic])
+                    {{-- <div class="category-score-list">
                         @foreach ($analytic->category_scores as $cat => $score)
                             @php
                                 // Skip the stats object to avoid the calculation error
@@ -177,7 +178,7 @@
                             </div>
                         </div>
                         @endforeach
-                    </div>
+                    </div> --}}
                 @else
                     <div class="empty-state" style="padding: 32px 0;">
                         <div class="empty-state-icon"><i class="bi bi-bar-chart"></i></div>

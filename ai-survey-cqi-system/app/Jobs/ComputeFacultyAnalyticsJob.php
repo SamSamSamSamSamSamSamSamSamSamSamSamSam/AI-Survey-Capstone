@@ -6,6 +6,7 @@ use App\Models\FacultyAnalytics;
 use App\Models\Response;
 use App\Models\SurveyAttempt;
 use App\Models\Survey;
+use App\Services\CategoryWeightService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -26,7 +27,7 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
         public readonly string $surveyId
     ) {}
 
-    public function handle(): void
+    public function handle(CategoryWeightService $weightService): void
     {
         Cache::forget("faculty_analytics_categories_{$this->surveyId}");
         Cache::forget("faculty_analytics_sentiment_{$this->surveyId}");
@@ -42,7 +43,7 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
             return;
         }
 
-        $attempts = $survey->attempts;
+        $attempts      = $survey->attempts;
         $responseCount = $attempts->count();
 
         if ($responseCount === 0) {
@@ -50,11 +51,11 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
             return;
         }
 
-        // ------------------------------------------------------------------
-        // 1. Quantitative Ratings & Descriptive Statistics (Optimized)
-        // ------------------------------------------------------------------
         $attemptIds = $attempts->pluck('id')->toArray();
-        
+
+        // ------------------------------------------------------------------
+        // 1. Global descriptive stats — unchanged
+        // ------------------------------------------------------------------
         $ratingStats = DB::table('responses')
             ->join('survey_questions', 'responses.survey_question_id', '=', 'survey_questions.id')
             ->whereIn('responses.attempt_id', $attemptIds)
@@ -71,27 +72,27 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
 
         $avgRating = $ratingStats->count > 0 ? round($ratingStats->avg_val ?? 0, 2) : 0;
         $stdDev    = $ratingStats->count > 0 ? round($ratingStats->std_dev ?? 0, 2) : 0;
-        
-        // Mode: get most common rating value
-        $mode = $ratingStats->count > 0 ? DB::table('responses')
-            ->join('survey_questions', 'responses.survey_question_id', '=', 'survey_questions.id')
-            ->whereIn('responses.attempt_id', $attemptIds)
-            ->where('survey_questions.question_type', 'rating')
-            ->whereNotNull('responses.scale_value')
-            ->select('responses.scale_value', DB::raw('COUNT(*) as freq'))
-            ->groupBy('responses.scale_value')
-            ->orderByDesc('freq')
-            ->first()?->scale_value ?? 0 : 0;
-        
-        // Median calculation - FIXED: Calculate offset in PHP to prevent MySQL Syntax Error
+
+        // Mode
+        $mode = $ratingStats->count > 0
+            ? DB::table('responses')
+                ->join('survey_questions', 'responses.survey_question_id', '=', 'survey_questions.id')
+                ->whereIn('responses.attempt_id', $attemptIds)
+                ->where('survey_questions.question_type', 'rating')
+                ->whereNotNull('responses.scale_value')
+                ->select('responses.scale_value', DB::raw('COUNT(*) as freq'))
+                ->groupBy('responses.scale_value')
+                ->orderByDesc('freq')
+                ->first()?->scale_value ?? 0
+            : 0;
+
+        // Median
         $median = 0;
         if ($ratingStats && $ratingStats->count > 0) {
             $totalCount = $ratingStats->count;
-            $isEven = ($totalCount % 2 == 0);
-            
-            // For median: if odd, take middle 1; if even, take middle 2 and average them
-            $limit = $isEven ? 2 : 1;
-            $offset = $isEven ? ($totalCount / 2) - 1 : floor($totalCount / 2);
+            $isEven     = ($totalCount % 2 === 0);
+            $limit      = $isEven ? 2 : 1;
+            $offset     = $isEven ? ($totalCount / 2) - 1 : floor($totalCount / 2);
 
             $medianResult = DB::selectOne(
                 "SELECT AVG(scale_value) as median FROM (
@@ -103,20 +104,23 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
                     AND responses.scale_value IS NOT NULL
                     ORDER BY responses.scale_value
                     LIMIT ? OFFSET ?
-                ) as sub", [(int)$limit, (int)$offset]
+                ) as sub",
+                [(int) $limit, (int) $offset]
             );
 
             $median = $medianResult?->median ?? 0;
         }
-        
-        $median = is_numeric($median) ? round($median, 2) : (($ratingStats->min_val ?? 0) + ($ratingStats->max_val ?? 0)) / 2;
+
+        $median = is_numeric($median)
+            ? round($median, 2)
+            : (($ratingStats->min_val ?? 0) + ($ratingStats->max_val ?? 0)) / 2;
 
         // ------------------------------------------------------------------
-        // 2. Category scores — average rating per question category (Cached)
+        // 2. Category means — rating questions only (unchanged)
         // ------------------------------------------------------------------
-        $categoryScores = Cache::remember(
+        $categoryMeans = Cache::remember(
             "faculty_analytics_categories_{$survey->id}",
-            3600, 
+            3600,
             function () use ($attemptIds) {
                 return DB::table('responses')
                     ->join('survey_questions', 'responses.survey_question_id', '=', 'survey_questions.id')
@@ -135,7 +139,56 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
         );
 
         // ------------------------------------------------------------------
-        // 3. Sentiment distribution (Batch query)
+        // 3. NEW: Resolve weights for this survey's rating categories
+        // ------------------------------------------------------------------
+        $scaleMax = $survey->questions
+            ->where('question_type', 'rating')
+            ->first()
+            ?->scale?->max_value ?? 5;
+
+        // Load survey questions with their category name for weight resolution
+        $surveyQuestions = DB::table('survey_questions')
+            ->join('question_categories', 'survey_questions.category_id', '=', 'question_categories.id')
+            ->where('survey_questions.survey_id', $survey->id)
+            ->where('survey_questions.question_type', 'rating')
+            ->whereNull('survey_questions.deleted_at')
+            ->select(
+                'survey_questions.category_id',
+                'survey_questions.question_type',
+                'survey_questions.category_weight',
+                'question_categories.name as category_name'
+            )
+            ->get();
+
+        // Build [category_id => weight] map
+        $weightsByCategoryId = $weightService->resolveWeights($surveyQuestions);
+
+        // Map category_id → category_name for weight lookup by name
+        $categoryIdToName = $surveyQuestions
+            ->unique('category_id')
+            ->pluck('category_name', 'category_id')
+            ->toArray();
+
+        $weightsByCategoryName = [];
+        foreach ($weightsByCategoryId as $catId => $weight) {
+            $name = $categoryIdToName[$catId] ?? null;
+            if ($name) {
+                $weightsByCategoryName[$name] = $weight;
+            }
+        }
+
+        // Compute weighted scores using CategoryWeightService
+        $weightedData = [];
+        if (! empty($weightsByCategoryName) && ! empty($categoryMeans)) {
+            $weightedData = $weightService->computeWeightedScores(
+                $categoryMeans,
+                $weightsByCategoryName,
+                (float) $scaleMax
+            );
+        }
+
+        // ------------------------------------------------------------------
+        // 4. Sentiment — unchanged
         // ------------------------------------------------------------------
         $sentimentCounts = Cache::remember(
             "faculty_analytics_sentiment_{$survey->id}",
@@ -158,18 +211,61 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
         $negativePct = $totalSentiments > 0 ? round(($sentimentCounts['negative'] ?? 0) / $totalSentiments * 100, 2) : 0;
 
         // ------------------------------------------------------------------
-        // 4. Top keywords (Batch query with limit)
+        // 5. Keywords — unchanged
         // ------------------------------------------------------------------
         $textResponses = Response::whereIn('attempt_id', $attemptIds)
             ->whereNotNull('text_response')
             ->select('text_response')
-            ->limit(1000) 
+            ->limit(1000)
             ->pluck('text_response');
 
         $topKeywords = $this->extractTopKeywords($textResponses->toArray());
 
         // ------------------------------------------------------------------
-        // 5. Upsert faculty_analytics
+        // 6. Build category_scores JSON
+        //
+        //    Structure (backward compatible):
+        //    {
+        //      "Assessment": 4.2,          ← existing raw means (unchanged)
+        //      "Classroom Management": 4.5,
+        //      ...
+        //      "_weights": {               ← NEW
+        //        "Assessment": 30,
+        //        ...
+        //      },
+        //      "_weighted_scores": {       ← NEW
+        //        "Assessment": 25.2,
+        //        ...
+        //      },
+        //      "_achievements": {          ← NEW  (normalised % per category)
+        //        "Assessment": 84.0,
+        //        ...
+        //      },
+        //      "_overall_weighted_score": 85.2, ← NEW
+        //      "_overall_stats": {         ← existing
+        //        "median": 4.3,
+        //        "mode": 4,
+        //        "std_dev": 0.6
+        //      }
+        //    }
+        // ------------------------------------------------------------------
+        $categoryScoresJson = array_merge(
+            $categoryMeans,                       // raw means — unchanged, existing consumers work
+            [
+                '_weights'               => $weightedData['weights']               ?? [],
+                '_weighted_scores'       => $weightedData['weighted_scores']       ?? [],
+                '_achievements'          => $weightedData['achievements']          ?? [],
+                '_overall_weighted_score'=> $weightedData['overall_weighted_score']?? null,
+                '_overall_stats'         => [
+                    'median'  => $median,
+                    'mode'    => $mode,
+                    'std_dev' => $stdDev,
+                ],
+            ]
+        );
+
+        // ------------------------------------------------------------------
+        // 7. Upsert — unchanged (same updateOrCreate pattern)
         // ------------------------------------------------------------------
         FacultyAnalytics::updateOrCreate(
             ['survey_id' => $survey->id],
@@ -181,15 +277,7 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
                 'positive_sentiment_percent' => $positivePct,
                 'neutral_sentiment_percent'  => $neutralPct,
                 'negative_sentiment_percent' => $negativePct,
-                
-                'category_scores'            => array_merge($categoryScores, [
-                    '_overall_stats' => [
-                        'median'  => $median,
-                        'mode'    => $mode,
-                        'std_dev' => $stdDev,
-                    ]
-                ]),
-                
+                'category_scores'            => $categoryScoresJson,
                 'top_keywords'               => $topKeywords,
                 'last_computed_at'           => now(),
             ]
@@ -197,6 +285,10 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
 
         Log::info("ComputeFacultyAnalyticsJob: completed for survey {$this->surveyId}.");
     }
+
+    // -------------------------------------------------------------------------
+    // Helpers — unchanged
+    // -------------------------------------------------------------------------
 
     private function extractTopKeywords(array $texts, int $limit = 20): array
     {
@@ -207,22 +299,19 @@ class ComputeFacultyAnalyticsJob implements ShouldQueue
             'our','their','its','by','as','if','so','no','yes','very','also','just',
             'about','up','out','all','from','can','will','would','could','should',
             'what','how','when','where','why','who','which','than','more','some',
-            'teacher','professor','instructor','subject','course','class', 'sir',
+            'teacher','professor','instructor','subject','course','class','sir',
         ]);
 
-        $wordCounts = [];
-        $maxWords = 10000;
-        $processedWords = 0;
+        $wordCounts      = [];
+        $maxWords        = 10000;
+        $processedWords  = 0;
 
         foreach ($texts as $text) {
             if ($processedWords >= $maxWords) break;
-            
             preg_match_all('/\b[a-z]{3,}\b/i', strtolower($text), $matches);
-            
             foreach ($matches[0] as $word) {
                 if ($processedWords >= $maxWords) break;
                 if (isset($stopWords[$word])) continue;
-                
                 $wordCounts[$word] = ($wordCounts[$word] ?? 0) + 1;
                 $processedWords++;
             }

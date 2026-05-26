@@ -125,7 +125,38 @@ class SurveyController extends Controller
 
                 if ($validated['template_id'] ?? null) {
                     $template = \App\Models\SurveyTemplate::with('questions')->find($validated['template_id']);
-                    $template?->copyQuestionsTo($survey);
+                    if ($template) {
+                        // 2. Copy the questions to the new survey first
+                        $template->copyQuestionsTo($survey);
+
+                        // 3. Define $templateQuestions so the snippet works perfectly
+                        $templateQuestions = $template->questions;
+
+                        // --- START OF SNIPPET ---
+                        // Build category_id → weight map from template
+                        $templateWeightMap = $templateQuestions
+                            ->where('question_type', 'rating')
+                            ->whereNotNull('category_id')
+                            ->whereNotNull('category_weight')
+                            ->groupBy('category_id')
+                            ->map(fn ($qs) => $qs->first()->category_weight)
+                            ->toArray();
+
+                        // If template has no weights yet, auto-distribute
+                        if (empty($templateWeightMap)) {
+                            $weightService = app(\App\Services\CategoryWeightService::class);
+                            $templateWeightMap = $weightService->distributeEqually($templateQuestions);
+                        }
+
+                        // Copy weights to survey_questions
+                        foreach ($templateWeightMap as $categoryId => $weight) {
+                            \App\Models\SurveyQuestion::where('survey_id', $survey->id)
+                                ->where('category_id', $categoryId)
+                                ->where('question_type', 'rating')
+                                ->update(['category_weight' => $weight]);
+                        }
+                        // --- END OF SNIPPET ---
+                    }
                 }
             }
         });

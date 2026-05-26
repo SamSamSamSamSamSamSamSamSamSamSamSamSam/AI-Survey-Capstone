@@ -133,119 +133,157 @@
 
 </div>
 
-{{-- ===== QUESTIONS ===== --}}
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <p class="card-section-label mb-0">
-        Questions
-        <span class="ms-2 count-badge">{{ $survey->questions->count() }}</span>
-    </p>
-    @if (! $survey->is_active)
-        <a href="{{ route('admin.surveys.questions.create', $survey->id) }}"
-           class="btn btn-sm btn-primary">
-            <i class="bi bi-plus-lg me-1"></i> Add Question
-        </a>
-    @endif
-</div>
+{{-- ===== QUESTIONS & WEIGHT CONFIGURATION TABS ===== --}}
+<div>
+    <ul class="nav nav-tabs mb-4" id="surveyManagementTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="survey-questions-tab" data-bs-toggle="tab" data-bs-target="#survey-questions-pane" type="button" role="tab" aria-controls="survey-questions-pane" aria-selected="true">
+                <i class="bi bi-list-check me-2"></i>Questions
+                <span class="badge bg-secondary ms-1">{{ $survey->questions->count() }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="survey-weights-tab" data-bs-toggle="tab" data-bs-target="#survey-weights-pane" type="button" role="tab" aria-controls="survey-weights-pane" aria-selected="false">
+                <i class="bi bi-sliders me-2"></i>Categories
+            </button>
+        </li>
+    </ul>
 
-@if ($survey->questions->isEmpty())
-    <div class="card">
-        <div class="empty-state">
-            <div class="empty-state-icon"><i class="bi bi-question-circle"></i></div>
-            <p class="empty-state-text">No questions yet.</p>
-            <a href="{{ route('admin.surveys.questions.create', $survey->id) }}"
-               class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg me-1"></i> Add First Question
-            </a>
-        </div>
-    </div>
-@else
-    <div class="card">
-        <div class="table-responsive">
-            <table class="table data-table align-middle mb-0" id="question-table">
-                <thead>
-                    <tr>
-                        @if (! $survey->is_active)
-                            <th style="width: 48px;"></th>
-                        @endif
-                        <th style="width: 48px;">#</th>
-                        <th>Question</th>
-                        <th>Category</th>
-                        <th>Type</th>
-                        @if (! $survey->is_active)
-                            <th class="text-end">Actions</th>
-                        @endif
-                    </tr>
-                </thead>
-                <tbody id="sortable-questions">
-                    @foreach ($survey->questions as $question)
-                    <tr data-id="{{ $question->id }}">
-
-                        @if (! $survey->is_active)
-                            <td class="drag-handle" title="Drag to reorder">
-                                <i class="bi bi-grip-vertical text-muted"></i>
-                            </td>
-                        @endif
-
-                        <td class="text-muted-sm question-order">{{ $question->order }}</td>
-
-                        <td class="fw-500" style="font-size:.875rem; max-width: 380px;">
-                            {{ $question->question_text }}
-                        </td>
-
-                        <td>
-                            @if ($question->category)
-                                <span class="category-tag">{{ $question->category->name }}</span>
-                            @else
-                                <span class="text-muted-sm">—</span>
-                            @endif
-                        </td>
-
-                        <td>
-                            @if ($question->isRating())
-                                <span class="question-type-badge question-type-badge--rating">
-                                    <i class="bi bi-bar-chart-line me-1"></i>Likert (1–5)
-                                </span>
-                            @else
-                                <span class="question-type-badge question-type-badge--open">
-                                    <i class="bi bi-chat-text me-1"></i>Open-ended
-                                </span>
-                            @endif
-                        </td>
-
-                        @if (! $survey->is_active)
-                        <td class="text-end">
-                            <div class="table-actions">
-                                <a href="{{ route('admin.surveys.questions.edit', [$survey->id, $question->id]) }}"
-                                   class="btn btn-sm btn-icon" title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <form method="POST"
-                                      action="{{ route('admin.surveys.questions.destroy', [$survey->id, $question->id]) }}"
-                                      class="d-inline"
-                                      data-confirm="Delete this question permanently?">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-icon btn-icon--danger" title="Delete">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                        @endif
-
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        @if (! $survey->is_active && $survey->questions->count() > 1)
-            <div class="px-4 py-2 border-top" style="font-size: .75rem; color: var(--bs-secondary-color);">
-                <i class="bi bi-grip-vertical me-1"></i>
-                Drag rows to reorder questions. Order is saved automatically.
+    <div class="tab-content" id="surveyManagementTabsContent">
+        
+        {{-- TAB 1: Questions Table --}}
+        <div class="tab-pane fade show active" id="survey-questions-pane" role="tabpanel" aria-labelledby="survey-questions-tab" tabindex="0">
+            
+            {{-- Questions Table Action Header --}}
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <p class="card-section-label mb-0">
+                    Questions List
+                </p>
+                @if (! $survey->is_active)
+                    <a href="{{ route('admin.surveys.questions.create', $survey->id) }}"
+                       class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i> Add Question
+                    </a>
+                @endif
             </div>
-        @endif
+
+            @if ($survey->questions->isEmpty())
+                <div class="card">
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="bi bi-question-circle"></i></div>
+                        <p class="empty-state-text">No questions yet.</p>
+                        <a href="{{ route('admin.surveys.questions.create', $survey->id) }}"
+                           class="btn btn-primary btn-sm">
+                            <i class="bi bi-plus-lg me-1"></i> Add First Question
+                        </a>
+                    </div>
+                </div>
+            @else
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="table data-table align-middle mb-0" id="question-table">
+                            <thead>
+                                <tr>
+                                    @if (! $survey->is_active)
+                                        <th style="width: 48px;"></th>
+                                    @endif
+                                    <th style="width: 48px;">#</th>
+                                    <th>Question</th>
+                                    <th>Category</th>
+                                    <th>Type</th>
+                                    @if (! $survey->is_active)
+                                        <th class="text-end">Actions</th>
+                                    @endif
+                                </tr>
+                            </thead>
+                            <tbody id="sortable-questions">
+                                @foreach ($survey->questions as $question)
+                                <tr data-id="{{ $question->id }}">
+
+                                    @if (! $survey->is_active)
+                                        <td class="drag-handle" title="Drag to reorder">
+                                            <i class="bi bi-grip-vertical text-muted"></i>
+                                        </td>
+                                    @endif
+
+                                    <td class="text-muted-sm question-order">{{ $question->order }}</td>
+
+                                    <td class="fw-500" style="font-size:.875rem; max-width: 380px;">
+                                        {{ $question->question_text }}
+                                    </td>
+
+                                    <td>
+                                        @if ($question->category)
+                                            <span class="category-tag">{{ $question->category->name }}</span>
+                                        @else
+                                            <span class="text-muted-sm">—</span>
+                                        @endif
+                                    </td>
+
+                                    <td>
+                                        @if ($question->isRating())
+                                            <span class="question-type-badge question-type-badge--rating">
+                                                <i class="bi bi-bar-chart-line me-1"></i>Likert (1–5)
+                                            </span>
+                                        @else
+                                            <span class="question-type-badge question-type-badge--open">
+                                                <i class="bi bi-chat-text me-1"></i>Open-ended
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    @if (! $survey->is_active)
+                                    <td class="text-end">
+                                        <div class="table-actions">
+                                            <a href="{{ route('admin.surveys.questions.edit', [$survey->id, $question->id]) }}"
+                                               class="btn btn-sm btn-icon" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <form method="POST"
+                                                  action="{{ route('admin.surveys.questions.destroy', [$survey->id, $question->id]) }}"
+                                                  class="d-inline"
+                                                  data-confirm="Delete this question permanently?">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-icon btn-icon--danger" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                    @endif
+
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (! $survey->is_active && $survey->questions->count() > 1)
+                        <div class="px-4 py-2 border-top" style="font-size: .75rem; color: var(--bs-secondary-color);">
+                            <i class="bi bi-grip-vertical me-1"></i>
+                            Drag rows to reorder questions. Order is saved automatically.
+                        </div>
+                    @endif
+                </div>
+            @endif
+        </div>
+
+        {{-- TAB 2: Weight Configuration --}}
+        <div class="tab-pane fade" id="survey-weights-pane" role="tabpanel" aria-labelledby="survey-weights-tab" tabindex="0">
+            @php
+                $weightQuestions = $survey->questions->load('category');
+            @endphp
+            @include('admin.surveys._weight_config', [
+                'weightQuestions'   => $weightQuestions,
+                'weightFormAction'  => route('admin.surveys.weights.save', $survey),
+                'weightReadOnly'    => $survey->is_active,   // read-only when active
+                'weightOwner'       => 'survey',
+                'weightOwnerId'     => $survey->id,
+            ])
+        </div>
+
     </div>
-@endif
+</div>
 
 @endsection
 

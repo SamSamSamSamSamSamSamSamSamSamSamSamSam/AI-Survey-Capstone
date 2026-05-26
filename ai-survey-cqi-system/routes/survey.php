@@ -1,10 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\GlobalSurveyController;
 use App\Http\Controllers\Admin\QuestionCategoryController;
 use App\Http\Controllers\Admin\SurveyController;
 use App\Http\Controllers\Admin\SurveyQuestionController;
 use App\Http\Controllers\Admin\SurveyTemplateController;
-use App\Http\Controllers\Admin\GlobalSurveyController;
+use App\Http\Controllers\Admin\SurveyWeightController;
 use Illuminate\Support\Facades\Route;
 
 // ---------------------------------------------------------------------------
@@ -17,6 +18,13 @@ Route::post('surveys/global-assign', [GlobalSurveyController::class, 'store']) -
 
 // Surveys
 Route::resource('surveys', SurveyController::class);
+// Category Weights — Surveys
+Route::patch('surveys/{survey}/weights',
+    [SurveyWeightController::class, 'saveSurveyWeights'])
+    ->name('surveys.weights.save');
+Route::post('surveys/{survey}/weights/auto-distribute',
+    [SurveyWeightController::class, 'autoDistributeSurvey'])
+    ->name('surveys.weights.auto-distribute');
 Route::patch('surveys/{survey}/toggle-active', [SurveyController::class, 'toggleActive'])->name('surveys.toggle-active');
 Route::patch('surveys/{id}/restore',           [SurveyController::class, 'restore'])->name('surveys.restore')->withTrashed();
 Route::get('surveys/{survey}/attempts',        [SurveyController::class, 'attempts'])->name('surveys.attempts');
@@ -33,6 +41,13 @@ Route::prefix('surveys/{survey}/questions')->name('surveys.questions.')->group(f
 
 // Survey Templates
 Route::resource('survey-templates', SurveyTemplateController::class);
+// Category Weights — Survey Templates
+Route::patch('survey-templates/{surveyTemplate}/weights',
+    [SurveyWeightController::class, 'saveTemplateWeights'])
+    ->name('survey-templates.weights.save');
+Route::post('survey-templates/{surveyTemplate}/weights/auto-distribute',
+    [SurveyWeightController::class, 'autoDistributeTemplate'])
+    ->name('survey-templates.weights.auto-distribute');
 Route::prefix('survey-templates/{surveyTemplate}/questions')->name('survey-templates.questions.')->group(function () {
     Route::post('/',           [SurveyTemplateController::class, 'storeQuestion'])  ->name('store');
     Route::put('/{question}',  [SurveyTemplateController::class, 'updateQuestion']) ->name('update');

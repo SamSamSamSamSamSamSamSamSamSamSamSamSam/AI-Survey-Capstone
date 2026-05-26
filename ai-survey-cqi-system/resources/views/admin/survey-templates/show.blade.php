@@ -135,97 +135,131 @@
         </div>
     </div>
 
-    {{-- ===== RIGHT: Questions list ===== --}}
-    <div>
-        <div class="card">
-            <div class="template-card-header d-flex align-items-center justify-content-between">
-                <span>
-                    <i class="bi bi-list-check me-2 text-muted"></i>
-                    Questions
-                    <span class="ms-2 count-badge">{{ $surveyTemplate->questions->count() }}</span>
-                </span>
-                @if ($surveyTemplate->questions->count() > 1)
-                    <span class="text-muted-sm">
-                        <i class="bi bi-grip-vertical me-1"></i>Drag to reorder
+{{-- ===== RIGHT: Questions list & Weight Configuration Tabs ===== --}}
+<div>
+    <ul class="nav nav-tabs mb-4" id="templateManagementTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="questions-tab" data-bs-toggle="tab" data-bs-target="#questions-pane" type="button" role="tab" aria-controls="questions-pane" aria-selected="true">
+                <i class="bi bi-list-check me-2"></i>Questions
+                <span class="badge bg-secondary ms-1">{{ $surveyTemplate->questions->count() }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="weights-tab" data-bs-toggle="tab" data-bs-target="#weights-pane" type="button" role="tab" aria-controls="weights-pane" aria-selected="false">
+                <i class="bi bi-sliders me-2"></i>Categories
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="templateManagementTabsContent">
+        
+        {{-- TAB 1: Questions Table --}}
+        <div class="tab-pane fade show active" id="questions-pane" role="tabpanel" aria-labelledby="questions-tab" tabindex="0">
+            <div class="card">
+                <div class="template-card-header d-flex align-items-center justify-content-between">
+                    <span>
+                        {{-- <i class="bi bi-list-check me-2 text-muted"></i> --}}
+                        Questions List
                     </span>
+                    @if ($surveyTemplate->questions->count() > 1)
+                        <span class="text-muted-sm">
+                            <i class="bi bi-grip-vertical me-1"></i>Drag to reorder
+                        </span>
+                    @endif
+                </div>
+
+                @if ($surveyTemplate->questions->isEmpty())
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="bi bi-question-circle"></i></div>
+                        <p class="empty-state-text">No questions yet. Add one using the form.</p>
+                    </div>
+                @else
+                    <div class="table-responsive">
+                        <table class="table data-table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;"></th>
+                                    <th style="width: 36px;">#</th>
+                                    <th>Question</th>
+                                    <th>Type</th>
+                                    <th>Category</th>
+                                    <th>Scale</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tq-sortable">
+                                @foreach ($surveyTemplate->questions as $tq)
+                                <tr data-id="{{ $tq->id }}">
+                                    <td class="drag-handle" style="cursor:grab;">
+                                        <i class="bi bi-grip-vertical text-muted" style="pointer-events:none;"></i>
+                                    </td>
+                                    <td class="text-muted-sm tq-order">{{ $tq->order_number }}</td>
+                                    <td style="font-size: .875rem; max-width: 260px;">
+                                        {{ $tq->question_text }}
+                                    </td>
+                                    <td>
+                                        @if ($tq->isRating())
+                                            <span class="question-type-badge question-type-badge--rating">
+                                                <i class="bi bi-bar-chart-line me-1"></i>Likert
+                                            </span>
+                                        @else
+                                            <span class="question-type-badge question-type-badge--open">
+                                                <i class="bi bi-chat-text me-1"></i>Open
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="text-muted-sm">{{ $tq->category?->name ?? '—' }}</td>
+                                    <td class="text-muted-sm">{{ $tq->scale?->name ?? '—' }}</td>
+                                    <td class="text-end">
+                                        <div class="table-actions">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-icon"
+                                                    title="Edit"
+                                                    data-tq-edit
+                                                    data-id="{{ $tq->id }}"
+                                                    data-text="{{ e($tq->question_text) }}"
+                                                    data-type="{{ $tq->question_type }}"
+                                                    data-category="{{ $tq->category_id ?? '' }}"
+                                                    data-scale="{{ $tq->scale_id ?? '' }}"
+                                                    data-order="{{ $tq->order_number }}">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <form method="POST"
+                                                  action="{{ route('admin.survey-templates.questions.destroy', [$surveyTemplate->id, $tq->id]) }}"
+                                                  class="d-inline"
+                                                  data-confirm="Remove this question from the template?">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-icon btn-icon--danger" title="Remove">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 @endif
             </div>
-
-            @if ($surveyTemplate->questions->isEmpty())
-                <div class="empty-state">
-                    <div class="empty-state-icon"><i class="bi bi-question-circle"></i></div>
-                    <p class="empty-state-text">No questions yet. Add one using the form.</p>
-                </div>
-            @else
-                <div class="table-responsive">
-                    <table class="table data-table align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th style="width: 40px;"></th>
-                                <th style="width: 36px;">#</th>
-                                <th>Question</th>
-                                <th>Type</th>
-                                <th>Category</th>
-                                <th>Scale</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tq-sortable">
-                            @foreach ($surveyTemplate->questions as $tq)
-                            <tr data-id="{{ $tq->id }}">
-                                <td class="drag-handle" style="cursor:grab;">
-                                    <i class="bi bi-grip-vertical text-muted" style="pointer-events:none;"></i>
-                                </td>
-                                <td class="text-muted-sm tq-order">{{ $tq->order_number }}</td>
-                                <td style="font-size: .875rem; max-width: 260px;">
-                                    {{ $tq->question_text }}
-                                </td>
-                                <td>
-                                    @if ($tq->isRating())
-                                        <span class="question-type-badge question-type-badge--rating">
-                                            <i class="bi bi-bar-chart-line me-1"></i>Likert
-                                        </span>
-                                    @else
-                                        <span class="question-type-badge question-type-badge--open">
-                                            <i class="bi bi-chat-text me-1"></i>Open
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="text-muted-sm">{{ $tq->category?->name ?? '—' }}</td>
-                                <td class="text-muted-sm">{{ $tq->scale?->name ?? '—' }}</td>
-                                <td class="text-end">
-                                    <div class="table-actions">
-                                        <button type="button"
-                                                class="btn btn-sm btn-icon"
-                                                title="Edit"
-                                                data-tq-edit
-                                                data-id="{{ $tq->id }}"
-                                                data-text="{{ e($tq->question_text) }}"
-                                                data-type="{{ $tq->question_type }}"
-                                                data-category="{{ $tq->category_id ?? '' }}"
-                                                data-scale="{{ $tq->scale_id ?? '' }}"
-                                                data-order="{{ $tq->order_number }}">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
-                                        <form method="POST"
-                                              action="{{ route('admin.survey-templates.questions.destroy', [$surveyTemplate->id, $tq->id]) }}"
-                                              class="d-inline"
-                                              data-confirm="Remove this question from the template?">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-icon btn-icon--danger" title="Remove">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
         </div>
+
+        {{-- TAB 2: Weight Configuration --}}
+        <div class="tab-pane fade" id="weights-pane" role="tabpanel" aria-labelledby="weights-tab" tabindex="0">
+            @php
+                $weightQuestions = $surveyTemplate->questions->load('category');
+            @endphp
+            @include('admin.surveys._weight_config', [
+                'weightQuestions'   => $weightQuestions,
+                'weightFormAction'  => route('admin.survey-templates.weights.save', $surveyTemplate),
+                'weightReadOnly'    => false,
+                'weightOwner'       => 'template',
+                'weightOwnerId'     => $surveyTemplate->id,
+            ])
+        </div>
+
     </div>
+</div>
 
 </div>{{-- /.template-show-grid --}}
 
