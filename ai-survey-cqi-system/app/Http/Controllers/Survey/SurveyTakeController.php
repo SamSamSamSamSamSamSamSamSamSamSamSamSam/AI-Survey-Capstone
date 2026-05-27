@@ -258,6 +258,9 @@ class SurveyTakeController extends Controller
         $base = $this->getBaseSurveyQuery($user)
             ->whereHas('attempts', fn ($q) => 
                 $q->where('student_id', $user->id)->whereNotNull('submitted_at')
+            )
+            ->whereHas('offering.semester', fn ($q) => 
+                $q->where('is_active', true) // Adjust 'is_active' if your column name is different
             );
 
         return match ($role) {

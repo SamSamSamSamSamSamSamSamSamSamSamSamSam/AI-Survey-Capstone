@@ -97,7 +97,25 @@ class AnalyticsController extends Controller
             ->with(['question', 'sentiment.sentimentType'])
             ->select('responses.*')
             ->get()
-            ->groupBy('survey_question_id');
+            ->groupBy('survey_question_id')
+            ->map(function ($responses) {
+                // Calculate counts without running extra queries
+                $total = $responses->count();
+                $positive = $responses->filter(fn($r) => $r->sentiment?->sentimentType?->label === 'positive')->count();
+                $negative = $responses->filter(fn($r) => $r->sentiment?->sentimentType?->label === 'negative')->count();
+                $neutral  = $total - ($positive + $negative);
+
+                return [
+                    'question_text' => $responses->first()->question->question_text,
+                    'items' => $responses,
+                    'stats' => [
+                        'total' => $total,
+                        'positive_pct' => $total > 0 ? ($positive / $total) * 100 : 0,
+                        'negative_pct' => $total > 0 ? ($negative / $total) * 100 : 0,
+                        'neutral_pct' => $total > 0 ? ($neutral / $total) * 100 : 0,
+                    ]
+                ];
+            });
 
         // Check for existing CQI report
         $existingReport = CqiReport::where('survey_id', $analytic->survey_id)

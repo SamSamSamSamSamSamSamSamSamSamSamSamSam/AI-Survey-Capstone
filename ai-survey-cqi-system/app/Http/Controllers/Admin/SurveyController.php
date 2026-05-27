@@ -26,6 +26,14 @@ class SurveyController extends Controller
 
         $query = Survey::with(['offering.subject', 'offering.semester', 'offering.teacher', 'targetRole', 'creator', 'template'])
                        ->withCount('questions')
+                       ->withCount([
+                            'attempts as responses_count' => function ($q) {
+                                $q->whereNotNull('submitted_at');
+                            }
+                        ])
+                        ->with(['offering' => function($query) {
+                            $query->withCount('enrollments');
+                        }])
                        ->withTrashed();
 
         if ($selectedSemesterId) {
@@ -296,7 +304,7 @@ class SurveyController extends Controller
             ->with(['responses.question.scale.options', 'responses.question.category'])
             ->whereNotNull('submitted_at')
             ->latest('submitted_at')
-            ->paginate(20);
+            ->paginate(1);
 
         return view('admin.surveys.attempts', compact('survey', 'attempts'));
     }

@@ -221,53 +221,75 @@
     <div class="card-body">
         <h5 class="card-title">Open-ended Responses &amp; Sentiment</h5>
 
-        <div class="accordion analytic-accordion" id="responseAccordion">
-            @foreach ($textResponses as $questionId => $responses)
-            @php $accId = 'q-' . $questionId; @endphp
-            <div class="accordion-item analytic-accordion__item">
-                <h2 class="accordion-header">
-                    <button class="accordion-button analytic-accordion__btn {{ $loop->first ? '' : 'collapsed' }}"
-                            type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#{{ $accId }}">
-                        <span class="analytic-accordion__q-text">
-                            {{ $responses->first()->question->question_text }}
-                        </span>
-                        <span class="analytic-accordion__q-count ms-3">
-                            {{ $responses->count() }} response(s)
-                        </span>
-                    </button>
-                </h2>
-                <div id="{{ $accId }}"
-                     class="accordion-collapse collapse {{ $loop->first ? 'show' : '' }}"
-                     data-bs-parent="#responseAccordion">
-                    <div class="accordion-body analytic-accordion__body">
-                        @foreach ($responses as $resp)
-                        <div class="text-response-row">
-                            <div class="text-response-row__text">
-                                {{ $resp->text_response ?: '(no response)' }}
-                            </div>
-                            @if ($resp->sentiment)
-                                @php
-                                    $label = $resp->sentiment->sentimentType->label;
-                                    $type  = match($label) { 'positive' => 'positive', 'negative' => 'negative', default => 'neutral' };
-                                @endphp
-                                <span class="sentiment-badge sentiment-badge--{{ $type }} flex-shrink-0">
-                                    {{ ucfirst($label) }}
-                                    ({{ number_format($resp->sentiment->sentiment_score * 100, 1) }}%)
-                                </span>
-                            @else
-                                <span class="sentiment-badge sentiment-badge--neutral flex-shrink-0">
-                                    Pending
-                                </span>
-                            @endif
-                        </div>
-                        @endforeach
+<div class="accordion analytic-accordion" id="responseAccordion">
+    @foreach ($textResponses as $questionId => $responses)
+    @php $accId = 'q-' . $questionId; @endphp
+    <div class="accordion-item analytic-accordion__item">
+        <h2 class="accordion-header">
+            <button class="accordion-button analytic-accordion__btn {{ $loop->first ? '' : 'collapsed' }}"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#{{ $accId }}">
+                <span class="analytic-accordion__q-text">
+                    {{-- Changed: Access directly via the array key --}}
+                    {{ $responses['question_text'] }}
+                </span>
+                <span class="analytic-accordion__q-count ms-3">
+                    {{-- Changed: Access total from stats array or count the items --}}
+                    {{ $responses['stats']['total'] }} response(s)
+                </span>
+            </button>
+        </h2>
+        <div id="{{ $accId }}"
+             class="accordion-collapse collapse {{ $loop->first ? 'show' : '' }}"
+             data-bs-parent="#responseAccordion">
+            <div class="accordion-body analytic-accordion__body">
+                
+                {{-- VISUAL SUMMARY BAR --}}
+                <div class="p-3 mb-3 bg-light rounded border">
+                    <div class="text-muted-sm fw-600 mb-2 text-uppercase tracking-wider" style="font-size: 0.72rem;">
+                        Response Sentiment Summary Breakdown
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: {{ $responses['stats']['positive_pct'] }}%"></div>
+                        <div class="progress-bar bg-secondary text-dark" style="width: {{ $responses['stats']['neutral_pct'] }}%"></div>
+                        <div class="progress-bar bg-danger" style="width: {{ $responses['stats']['negative_pct'] }}%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2" style="font-size: 0.78rem;">
+                        <span class="text-success fw-500">Positive: {{ number_format($responses['stats']['positive_pct'], 1) }}%</span>
+                        <span class="text-muted fw-500">Neutral/Pending: {{ number_format($responses['stats']['neutral_pct'], 1) }}%</span>
+                        <span class="text-danger fw-500">Negative: {{ number_format($responses['stats']['negative_pct'], 1) }}%</span>
                     </div>
                 </div>
+
+                {{-- Your Original Responses Output Grid --}}
+                {{-- Changed: We now loop through $responses['items'] --}}
+                @foreach ($responses['items'] as $resp)
+                <div class="text-response-row">
+                    <div class="text-response-row__text">
+                        {{ $resp->text_response ?: '(no response)' }}
+                    </div>
+                    @if ($resp->sentiment)
+                        @php
+                            $label = $resp->sentiment->sentimentType->label;
+                            $type  = match($label) { 'positive' => 'positive', 'negative' => 'negative', default => 'neutral' };
+                        @endphp
+                        <span class="sentiment-badge sentiment-badge--{{ $type }} flex-shrink-0">
+                            {{ ucfirst($label) }}
+                            ({{ number_format($resp->sentiment->sentiment_score * 100, 1) }}%)
+                        </span>
+                    @else
+                        <span class="sentiment-badge sentiment-badge--neutral flex-shrink-0">
+                            Pending
+                        </span>
+                    @endif
+                </div>
+                @endforeach
             </div>
-            @endforeach
         </div>
+    </div>
+    @endforeach
+</div>
 
     </div>
 </div>

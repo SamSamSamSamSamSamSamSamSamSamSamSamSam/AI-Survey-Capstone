@@ -216,6 +216,8 @@ def build_pdf(data: dict, output_path: str):
 
     # Extract the hidden stats we injected in the PHP Job
     overall_stats = category_scores.pop('_overall_stats', {})
+    for key in ['_weights', '_weighted_scores', '_achievements', '_overall_weighted_score']:
+        category_scores.pop(key, None)
 
     if category_scores:
         hdr = [
@@ -267,25 +269,70 @@ def build_pdf(data: dict, output_path: str):
         story.append(cat_t)
         story.append(Spacer(1, 0.4 * cm))
 
-    # ── Descriptive Statistics Section (NEW) ────────────────────────────────
+    # ── Descriptive Statistics Section ──────────────────────────────────────────
     if overall_stats:
+        median  = overall_stats.get('median', 0)
+        mode    = overall_stats.get('mode', 0)
+        std_dev = overall_stats.get('std_dev', 0)
+
+        def interpret_median(val, mx=5):
+            pct = val / mx if mx else 0
+            if pct >= 0.90: return f"The typical student experience was excellent ({val:.2f}/{mx}). This score ignores extreme outliers, reflecting what most students genuinely felt."
+            if pct >= 0.80: return f"The typical student experience was very good ({val:.2f}/{mx}). Outliers aside, most students had a positive experience."
+            if pct >= 0.70: return f"The typical student experience was good ({val:.2f}/{mx}). This reflects the middle ground of what most students experienced."
+            if pct >= 0.60: return f"The typical student experience was moderate ({val:.2f}/{mx}). Excluding outliers, most students had a mixed experience."
+            return f"The typical student experience was below expectations ({val:.2f}/{mx}). Even without outliers, most students rated performance low."
+
+        def interpret_mode(val, mx=5):
+            pct = val / mx if mx else 0
+            if pct >= 0.90: return f"The single most common score given was {val:.0f}/{mx} — students most frequently chose the highest rating."
+            if pct >= 0.80: return f"The single most common score given was {val:.0f}/{mx} — most students chose a very good rating."
+            if pct >= 0.70: return f"The single most common score given was {val:.0f}/{mx} — a good rating was the most frequently selected."
+            if pct >= 0.60: return f"The single most common score given was {val:.0f}/{mx} — students most often gave a moderate rating."
+            return f"The single most common score given was {val:.0f}/{mx} — the most frequently chosen rating was low."
+
+        def interpret_std_dev(val):
+            if val <= 0.50: return f"Low Standard Deviation ({val:.2f}) — Agreement. Students share the same opinion and rated the teacher similarly."
+            if val <= 0.80: return f"Moderate Standard Deviation ({val:.2f}) — Mostly aligned. Students generally agreed, with only minor differences in ratings."
+            if val <= 1.10: return f"Moderate-High Standard Deviation ({val:.2f}) — Some division. Students had noticeably varied opinions about their experience."
+            return f"High Standard Deviation ({val:.2f}) — Split Class. Students are divided — some gave excellent scores, while others gave very low scores."
+
         story.append(sub_section_header("Descriptive Statistics", styles))
+        story.append(Spacer(1, 0.2 * cm))
+
         stats_rows = [
-            [Paragraph("<b>Median</b>", styles['label_bold']),
-             Paragraph("<b>Mode</b>", styles['label_bold']),
-             Paragraph("<b>Standard Deviation</b>", styles['label_bold'])],
-            [Paragraph(f"{overall_stats.get('median', 0):.2f}", styles['table_cell']),
-             Paragraph(f"{overall_stats.get('mode', 0):.2f}", styles['table_cell']),
-             Paragraph(f"{overall_stats.get('std_dev', 0):.2f}", styles['table_cell'])]
+            [
+                Paragraph("<b>Median</b>", styles['label_bold']),
+                Paragraph("<b>Mode</b>", styles['label_bold']),
+                Paragraph("<b>Standard Deviation</b>", styles['label_bold']),
+            ],
+            [
+                Paragraph(f"{median:.2f}", styles['table_cell']),
+                Paragraph(f"{mode:.2f}", styles['table_cell']),
+                Paragraph(f"{std_dev:.2f}", styles['table_cell']),
+            ],
+            [
+                Paragraph(interpret_median(median, scale_max), ParagraphStyle('interp',
+                    fontSize=8, fontName='Helvetica', textColor=TEXT_MUTED, leading=11)),
+                Paragraph(interpret_mode(mode, scale_max), ParagraphStyle('interp',
+                    fontSize=8, fontName='Helvetica', textColor=TEXT_MUTED, leading=11)),
+                Paragraph(interpret_std_dev(std_dev), ParagraphStyle('interp',
+                    fontSize=8, fontName='Helvetica', textColor=TEXT_MUTED, leading=11)),
+            ],
         ]
         cw_stats = [(PAGE_W - 2 * MARGIN) / 3] * 3
         stats_t = Table(stats_rows, colWidths=cw_stats)
         stats_t.setStyle(TableStyle([
             ('GRID',          (0, 0), (-1, -1), 0.5, BORDER_GRAY),
             ('BACKGROUND',    (0, 0), (-1, 0), OLIVE_PALE),
-            ('ALIGN',         (0, 0), (-1, -1), 'CENTER'),
-            ('TOPPADDING',    (0, 0), (-1, -1), 8),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('BACKGROUND',    (0, 2), (-1, 2), CREAM),
+            ('ALIGN',         (0, 0), (-1, 1), 'CENTER'),
+            ('ALIGN',         (0, 2), (-1, 2), 'LEFT'),
+            ('VALIGN',        (0, 0), (-1, -1), 'TOP'),
+            ('TOPPADDING',    (0, 0), (-1, -1), 7),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 7),
+            ('LEFTPADDING',   (0, 2), (-1, 2), 8),
+            ('RIGHTPADDING',  (0, 2), (-1, 2), 8),
         ]))
         story.append(stats_t)
         story.append(Spacer(1, 0.6 * cm))

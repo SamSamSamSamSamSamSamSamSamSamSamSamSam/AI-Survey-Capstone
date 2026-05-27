@@ -27,8 +27,8 @@ class SubmitSurveyRequest extends FormRequest
                 // Likert scale: 1–5, required
                 $rules[$key] = ['required', 'integer', 'min:1', 'max:5'];
             } else {
-                // Open-ended text: optional but max length enforced
-                $rules[$key] = ['nullable', 'string', 'max:2000'];
+                // Open-ended text: Now required with a max length enforced
+                $rules[$key] = ['required', 'string', 'max:2000'];
             }
         }
 
@@ -48,6 +48,10 @@ class SubmitSurveyRequest extends FormRequest
                 $messages["{$key}.required"] = "Please provide a rating for: \"{$question->question_text}\"";
                 $messages["{$key}.min"]      = 'Rating must be between 1 and 5.';
                 $messages["{$key}.max"]      = 'Rating must be between 1 and 5.';
+            } else {
+                // Custom message for the newly required open-ended questions
+                $messages["{$key}.required"] = "Please answer the question: \"{$question->question_text}\"";
+                $messages["{$key}.max"]      = 'Your answer cannot exceed 2000 characters.';
             }
         }
 

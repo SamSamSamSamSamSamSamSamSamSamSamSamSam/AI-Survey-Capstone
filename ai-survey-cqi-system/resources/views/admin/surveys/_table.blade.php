@@ -23,20 +23,29 @@
                 @foreach ($surveys as $survey)
                 <tr class="{{ $survey->trashed() ? 'row-muted' : '' }}">
                     {{-- GROUPED TITLE & OFFERING --}}
-                    <td class="ps-3">
-                        <div class="fw-500 text-dark">{{ $survey->title }}</div>
-                        @if($survey->offering)
-                            <div class="text-muted-sm d-flex align-items-center mt-1">
-                                <span class="text-primary fw-600 me-2">{{ $survey->offering->subject->course_code }}</span>
-                                <span class="badge bg-light text-dark border fw-normal me-2" style="font-size: 0.65rem;">
-                                    G{{ $survey->offering->group_number }}
-                                </span>
-                                <span class="opacity-75">| {{ $survey->offering->teacher->name }}</span>
-                            </div>
-                        @else
-                            <div class="text-muted-sm italic">General Survey</div>
-                        @endif
-                    </td>
+<td class="ps-3">
+    <div class="fw-500 text-dark">{{ $survey->title }}</div>
+    
+    @if($survey->offering)
+        <div class="text-muted-sm d-flex align-items-center mt-1">
+            <a href="{{ route('admin.offerings.show', $survey->offering->id) }}" 
+               class="text-decoration-none hover-underline text-primary fw-600 me-2">
+                {{ $survey->offering->subject->course_code }}
+            </a>
+
+            <a href="{{ route('admin.offerings.show', $survey->offering->id) }}" 
+               class="text-decoration-none">
+                <span class="badge bg-light text-dark border fw-normal me-2" style="font-size: 0.65rem; cursor: pointer;">
+                    G{{ $survey->offering->group_number }}
+                </span>
+            </a>
+
+            <span class="opacity-75">| {{ $survey->offering->teacher->name }}</span>
+        </div>
+    @else
+        <div class="text-muted-sm italic">General Survey</div>
+    @endif
+</td>
 
                     {{-- TARGET ROLE --}}
                     <td>
@@ -71,11 +80,33 @@
                     {{-- STATUS --}}
                     <td>
                         @if ($survey->trashed())
-                            <span class="status-pill status-pill--archived"><i class="bi bi-archive me-1"></i>Archived</span>
+                            <span class="status-pill status-pill--archived">
+                                <i class="bi bi-archive me-1"></i> Archived
+                            </span>
                         @elseif ($survey->is_active)
-                            <span class="status-pill status-pill--active"><i class="bi bi-broadcast me-1"></i>Active</span>
+                            <span class="status-pill status-pill--active">
+                                <i class="bi bi-broadcast me-1"></i> Active
+                            </span>
                         @else
-                            <span class="status-pill status-pill--inactive"><i class="bi bi-slash-circle me-1"></i>Inactive</span>
+                            @php
+                                $responses = $survey->responses_count ?? 0;
+                                // Access the eager-loaded count safely via the offering relation
+                                $enrollments = $survey->offering ? ($survey->offering->enrollments_count ?? 0) : 0;
+                            @endphp
+
+                            @if ($enrollments > 0 && $responses >= $enrollments)
+                                <span class="status-pill status-pill--previous text-muted bg-light border">
+                                    <i class="bi bi-check-all me-1"></i> Completed
+                                </span>
+                            @elseif ($responses > 0 && $responses < $enrollments)
+                                <span class="status-pill status-pill--previous text-muted bg-light border">
+                                    <i class="bi bi-dash-circle-fill me-1"></i> Closed (Partial)
+                                </span>
+                            @else
+                                <span class="status-pill status-pill--inactive">
+                                    <i class="bi bi-slash-circle me-1"></i> Inactive
+                                </span>
+                            @endif
                         @endif
                     </td>
 

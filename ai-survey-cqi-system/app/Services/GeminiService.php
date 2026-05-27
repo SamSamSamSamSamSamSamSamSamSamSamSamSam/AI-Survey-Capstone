@@ -97,9 +97,79 @@ class GeminiService
         $courseDescription   = $d['course_description'] ?? '';
         // ─────────────────────────────────────────────────────────────────────
 
+        // ── Computed analytical signals ───────────────────────────────────────────
+        $categoryScoresRaw = [];
+        foreach ($d['category_scores'] ?? [] as $cat => $score) {
+            if (! str_starts_with($cat, '_') && ! is_array($score)) {
+                $categoryScoresRaw[$cat] = (float) $score;
+            }
+        }
+
+        $strongestCategory = ! empty($categoryScoresRaw)
+            ? array_key_first(array_filter($categoryScoresRaw, fn($v) => $v === max($categoryScoresRaw)))
+            : 'N/A';
+        $weakestCategory   = ! empty($categoryScoresRaw)
+            ? array_key_first(array_filter($categoryScoresRaw, fn($v) => $v === min($categoryScoresRaw)))
+            : 'N/A';
+
+        $pos = (float) ($d['positive_pct'] ?? 0);
+        $neu = (float) ($d['neutral_pct']  ?? 0);
+        $neg = (float) ($d['negative_pct'] ?? 0);
+        $dominantSentiment = match(true) {
+            $pos >= $neu && $pos >= $neg => "Positive ({$pos}%)",
+            $neg >= $pos && $neg >= $neu => "Negative ({$neg}%)",
+            default                       => "Neutral ({$neu}%)",
+        };
+
+        $avg      = (float) ($d['avg_rating']  ?? 0);
+        $scaleMax = (int)   ($d['scale_max']   ?? 5);
+        $pct      = $scaleMax > 0 ? $avg / $scaleMax : 0;
+        $severityLevel = match(true) {
+            $pct >= 0.90 => 'Excellent — no critical concerns',
+            $pct >= 0.80 => 'Very Good — minor refinements recommended',
+            $pct >= 0.70 => 'Good — moderate improvement warranted',
+            $pct >= 0.60 => 'Fair — targeted interventions needed',
+            default       => 'Needs Improvement — immediate structured support required',
+        };
+
+        $responseCount    = (int) ($d['response_count'] ?? 0);
+        $responseReliability = match(true) {
+            $responseCount >= 30 => "High reliability ({$responseCount} respondents) — findings are statistically representative.",
+            $responseCount >= 15 => "Moderate reliability ({$responseCount} respondents) — trends are indicative but should be interpreted with caution.",
+            $responseCount >= 5  => "Low reliability ({$responseCount} respondents) — findings are directional only; avoid strong generalizations.",
+            default               => "Very low sample ({$responseCount} respondents) — interpret all findings with significant caution.",
+        };
+
+        $severityContext = match(true) {
+            $pct >= 0.80 => 'Performance is above the institutional satisfactory threshold. Focus on sustaining and refining existing practices.',
+            $pct >= 0.70 => 'Performance meets the acceptable threshold. Targeted improvements in weaker categories are recommended.',
+            $pct >= 0.60 => 'Performance is approaching but below the satisfactory threshold. Structured improvement plans should be prioritized.',
+            default       => 'Performance is significantly below expectations. Immediate faculty support and a structured intervention plan are warranted.',
+        };
+
+        $alignmentRisk = match(true) {
+            $pct >= 0.80 && $pos >= 60 => 'Low — instructional delivery appears well-aligned with student expectations.',
+            $pct >= 0.70 && $neg <= 30 => 'Moderate — some alignment gaps may exist in specific areas.',
+            $neg >= 40                  => 'High — significant negative sentiment suggests possible misalignment between delivery and student needs.',
+            default                     => 'Moderate — mixed signals; review weakest category for alignment concerns.',
+        };
+
+        $engagementIndicator = match(true) {
+            $pos >= 70  => 'Strong — majority of students expressed positive experiences.',
+            $pos >= 50  => 'Moderate — more than half responded positively, with room for improvement.',
+            $neg >= 50  => 'Weak — majority of responses indicate disengagement or dissatisfaction.',
+            default      => 'Mixed — student engagement varied; qualitative responses should be examined closely.',
+        };
+
+        // These fields are not yet computed server-side; use safe defaults
+        $feedbackThemes         = $d['feedback_themes']          ?? 'No recurring themes extracted — refer to open-ended responses above.';
+        $historicalTrends       = $d['historical_trends']        ?? 'No historical comparison data available for this offering.';
+        $scoreDistributionCtx   = $d['score_distribution_context'] ?? 'Score distribution breakdown not available.';
+
         return <<<PROMPT
-You are an academic quality assurance expert specializing in Outcomes-Based Education (OBE) and Continuous Quality Improvement (CQI). 
-Analyze the following faculty evaluation data and generate a comprehensive CQI report.
+You are a senior Higher Education Academic Quality Assurance Auditor specializing in Outcomes-Based Education (OBE), Continuous Quality Improvement (CQI), institutional analytics, and evidence-based pedagogical evaluation.
+
+Your responsibility is to transform student evaluation analytics into a contextualized, balanced, evidence-driven CQI audit report for academic improvement purposes.
 
 ## CONTEXT
 - Institution: {$d['institution']}
@@ -120,6 +190,12 @@ Analyze the following faculty evaluation data and generate a comprehensive CQI r
 ## COURSE-SPECIFIC PEDAGOGICAL CONTEXT
 {$courseContext}
 
+## RESPONSE RELIABILITY
+{$responseReliability}
+
+## PERFORMANCE SEVERITY CONTEXT
+{$severityContext}
+
 ## QUANTITATIVE RESULTS
 - Overall Average Rating: {$d['avg_rating']}/{$d['scale_max']}
 - Sentiment Distribution: {$d['positive_pct']}% positive, {$d['neutral_pct']}% neutral, {$d['negative_pct']}% negative
@@ -127,50 +203,156 @@ Analyze the following faculty evaluation data and generate a comprehensive CQI r
 ## CATEGORY SCORES
 {$categoryScores}
 
+## ANALYTICAL SIGNALS
+- Strongest Category: {$strongestCategory}
+- Weakest Category: {$weakestCategory}
+- Dominant Sentiment: {$dominantSentiment}
+- Evaluation Severity Level: {$severityLevel}
+- Instructional Alignment Risk: {$alignmentRisk}
+- Student Engagement Indicator: {$engagementIndicator}
+
+## RECURRING FEEDBACK THEMES
+{$feedbackThemes}
+
+## HISTORICAL TREND CONTEXT
+{$historicalTrends}
+
+## SCORE DISTRIBUTION CONTEXT
+{$scoreDistributionCtx}
+
 ## STUDENT OPEN-ENDED RESPONSES
 {$openEndedSamples}
 
-## IMPORTANT — COURSE-SPECIFIC REQUIREMENTS
-The following rules are MANDATORY and must be applied to every section of your output:
+## MANDATORY ANALYSIS & CROSS-REFERENCING RULES
 
-1. All recommendations, strengths, gaps, and action plan items MUST be specific to the nature of {$d['course_code']} — {$d['course_name']}.
-2. DO NOT produce generic recommendations applicable to all disciplines (e.g., "be more engaging" or "give clearer instructions" without course-specific grounding).
-3. Consider whether this course is practical, technical, laboratory-based, discussion-based, theoretical, or activity-based — and tailor every recommendation to that instructional nature.
-4. Action plan items must reflect realistic instructional strategies appropriate for this course type and program.
-5. Each identified gap, strength, and root cause must reference the actual course content, teaching method, or student feedback responses where applicable.
-6. Monitoring activities must be appropriate for evaluating improvement in this specific course type.
+1. DATA SYNTHESIS REQUIREMENT:
+- Cross-reference quantitative scores, sentiment distribution, recurring themes, and open-ended responses before drawing conclusions.
+- Do not analyze qualitative and quantitative evidence independently.
+- Conclusions must emerge from combined evidence patterns.
 
-## INSTRUCTIONS
-Based on the above data, generate a structured CQI report in **valid JSON only** with these exact keys:
+2. EVIDENCE-BASED INTERPRETATION:
+- Never make conclusions unsupported by the dataset.
+- Distinguish clearly between:
+  a. Explicitly observed issues from student responses
+  b. Reasonable pedagogical interpretations
+  c. Possible contributing factors
+- Avoid presenting assumptions or speculation as factual findings.
+
+3. BALANCED CQI ANALYSIS:
+- Maintain a professional institutional tone focused on improvement, not blame.
+- Low ratings alone do not automatically indicate faculty ineffectiveness.
+- Consider contextual contributors such as:
+  - course difficulty,
+  - technical complexity,
+  - student preparedness,
+  - adjustment challenges,
+  - laboratory limitations,
+  - curriculum pacing,
+  - and learning transition factors where relevant.
+- If strengths are supported by evidence, discuss them proportionally.
+
+4. NON-REPETITIVE REPORTING:
+- Avoid repeating identical issues across sections.
+- Each section must contribute distinct analytical value:
+  - identified_gaps = operational deficiencies
+  - root_cause_analysis = contributing systemic factors
+  - areas_for_improvement = refinement priorities
+  - action_plan = implementation strategies
+
+5. CONFIDENCE-AWARE LANGUAGE:
+- If evidence is mixed, limited, or based on smaller response patterns, use cautious language such as:
+  - "may indicate"
+  - "suggests possible"
+  - "appears associated with"
+  - "could reflect"
+- Avoid absolute claims unless strongly supported by repeated evidence patterns.
+
+6. PEDAGOGICAL FRAMEWORK INTEGRATION:
+- Frame the analysis.summary using OBE and discipline-appropriate pedagogical reasoning.
+- Evaluate whether instructional delivery appears aligned with the intended applied learning outcomes of the course.
+
+7. REALISTIC RECOMMENDATIONS:
+- Recommendations must be feasible within a normal higher education institutional environment.
+- Prefer scalable instructional improvements over unrealistic institutional transformations.
+- Recommendations should preferably reference practical instructional methods appropriate to the course context.
+
+8. GRANULAR TIMELINES:
+- Do not use vague implementation timelines such as "Next Semester".
+- Use actionable academic phases such as:
+  - "Weeks 1–4: Instructional Planning"
+  - "Midterm Implementation Phase"
+  - "Ongoing Bi-Weekly Monitoring"
+  - "Post-Semester Review"
+
+9. REALISTIC INSTITUTIONAL RESPONSIBILITY:
+- Do not assign all responsibility solely to the faculty member.
+- Where appropriate, distribute accountability among:
+  - Faculty Member
+  - Department Chair
+  - Program Coordinator
+  - Laboratory Coordinator
+  - Academic Affairs Unit
+  - Curriculum Committee
+
+## REPORT GENERATION INSTRUCTIONS
+
+Generate a structured CQI audit report in VALID JSON ONLY.
+
+STRICT REQUIREMENTS:
+- Preserve the exact JSON structure and keys below.
+- Do not add new keys.
+- Do not remove keys.
+- Do not rename keys.
+- Do not include markdown formatting.
+- Do not wrap the JSON in code blocks.
+- Do not include explanations outside the JSON object.
+- Ensure all JSON values are properly escaped and valid.
 
 {
-  "overall_interpretation": "2-3 sentence overall performance summary that references the course name and instructional context",
+  "overall_interpretation": "A concise institutional performance interpretation synthesizing overall rating trends, sentiment distribution, course context, and instructional implications.",
   "analysis": {
-    "summary": "OBE-perspective analysis paragraph grounded in the course's instructional nature",
-    "highlights": ["key highlight 1 specific to this course type", "key highlight 2", ...]
+    "summary": "An evidence-based OBE and pedagogical evaluation discussing likely instructional alignment strengths and concerns using combined quantitative and qualitative evidence.",
+    "highlights": [
+      "A major quantitative or sentiment finding tied directly to recurring student feedback patterns.",
+      "An important contrast or relationship between category performance areas.",
+      "A contextualized instructional insight grounded in the course nature and available evidence."
+    ]
   },
   "identified_gaps": [
-    {"area": "gap area", "gap": "description specific to this course type", "impact": "impact on learning outcomes for this course"}
+    {
+      "area": "The identified operational or instructional area needing improvement.",
+      "gap": "An evidence-supported description of the instructional or pedagogical gap.",
+      "impact": "The likely effect of this gap on student competency, engagement, or course-level outcomes."
+    }
   ],
-  "strengths": ["strength 1 grounded in course-specific evidence", "strength 2", ...],
-  "areas_for_improvement": ["area 1 specific to this course type", "area 2", ...],
+  "strengths": [
+    "A verified instructional, structural, or engagement-related strength supported by evidence."
+  ],
+  "areas_for_improvement": [
+    "A specific instructional or assessment refinement priority linked to observed evidence patterns."
+  ],
   "root_cause_analysis": [
-    {"issue": "issue name", "possible_cause": "root cause explanation referencing course-specific factors"}
+    {
+      "issue": "A major instructional or systemic concern identified from the dataset.",
+      "possible_cause": "Possible contributing pedagogical, structural, environmental, or assessment-related factors."
+    }
   ],
   "action_plan": [
     {
-      "area": "area for improvement",
-      "action": "specific course-appropriate instructional action",
-      "responsible_person": "who is responsible",
-      "timeline": "e.g. Next Semester",
-      "expected_outcome": "measurable expected outcome relevant to this course"
+      "area": "The corresponding improvement category.",
+      "action": "A realistic and course-appropriate instructional or institutional intervention.",
+      "responsible_person": "The appropriate academic stakeholder(s) responsible for implementation or oversight.",
+      "timeline": "A specific academic implementation phase or monitoring cycle.",
+      "expected_outcome": "A measurable or observable indicator suggesting successful implementation."
     }
   ],
-  "monitoring": ["course-appropriate monitoring activity 1", "monitoring activity 2", ...],
-  "conclusion": "2-3 sentence conclusion paragraph referencing the course name, semester, and CQI cycle"
+  "monitoring": [
+    "A measurable monitoring or evaluation mechanism appropriate to the course context and identified concerns."
+  ],
+  "conclusion": "A formal CQI-oriented closing statement summarizing the overall instructional interpretation, contextual findings, and importance of continued monitoring and refinement."
 }
 
-Return ONLY the JSON object. No markdown, no explanation, no preamble.
+Return ONLY the raw JSON object.
 PROMPT;
     }
 

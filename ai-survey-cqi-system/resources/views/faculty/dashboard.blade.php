@@ -151,7 +151,6 @@
                     </div>
                 @endif
             </div>
-            {{-- Pagination Links Container --}}
             @if ($activeOfferings->hasPages())
                 <div class="mt-3 pt-2 border-top d-flex justify-content-center dashboard-pagination">
                     {{ $activeOfferings->links() }}
@@ -191,7 +190,6 @@
                                     <span class="count-badge {{ $survey->is_active ? 'count-badge--responses' : '' }}">
                                         {{ $survey->attempts_count }}
                                     </span>
-                                    
                                     @if($survey->is_active)
                                         <span class="status-pill status-pill--active" style="font-size:.67rem; padding: 2px 7px;">
                                             Active
@@ -208,7 +206,6 @@
                     @endif
                 </div>
 
-                {{-- Pagination Links Container --}}
                 @if ($taughtSurveys->hasPages())
                     <div class="mt-auto pt-2 border-top d-flex justify-content-center dashboard-pagination">
                         {{ $taughtSurveys->links('pagination::bootstrap-5') }}
@@ -233,18 +230,51 @@
 
 <div class="row g-3 mb-4">
 
-    {{-- Category scores --}}
+    {{-- ── Category Scores ──────────────────────────────────────────────── --}}
     <div class="col-lg-7">
         <div class="card h-100">
             <div class="card-body">
-                <h5 class="card-title">Average Scores by Category</h5>
+
+                @php
+                    // Pull weighted metadata from the first analytics record that has it.
+                    // $avgCategoryScores is already computed by the dashboard controller
+                    // as an average across all analytics records for this semester.
+                    // We use the first record's _weights to show per-category weights
+                    // (weights are per-survey, but for the dashboard preview we show
+                    // the most recent record's weights as context).
+                    $firstRecord       = $analyticsRecords->first();
+                    $firstScores       = $firstRecord?->category_scores ?? [];
+                    $dashWeights       = $firstScores['_weights']          ?? [];
+                    $dashAchievements  = $firstScores['_achievements']     ?? [];
+                    $dashOverall       = $firstScores['_overall_weighted_score'] ?? null;
+                    $hasWeightedData   = !empty($dashWeights) && $dashOverall !== null;
+                @endphp
+
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="card-title mb-0">Average Scores by Category</h5>
+                    @if ($hasWeightedData)
+                        <span style="background:#1e3a5f;color:#fff;padding:3px 10px;
+                                     border-radius:20px;font-size:.72rem;font-weight:600;">
+                            Overall: {{ number_format($dashOverall, 1) }}%
+                        </span>
+                    @endif
+                </div>
+
                 @if (empty($avgCategoryScores))
                     <p class="text-muted-sm">No category data yet.</p>
                 @else
                     <div class="category-score-list">
                         @foreach ($avgCategoryScores as $cat => $score)
                         @php
-                            $pct   = min(100, round(($score / 5) * 100));
+                            $mean        = (float) $score;
+                            $achievement = isset($dashAchievements[$cat])
+                                ? (float) $dashAchievements[$cat]
+                                : round(($mean / 5) * 100, 1);
+                            $weight      = isset($dashWeights[$cat])
+                                ? (float) $dashWeights[$cat]
+                                : null;
+
+                            $pct   = min(100, $achievement);
                             $cls   = $pct >= 80 ? 'high' : ($pct >= 60 ? 'mid' : 'low');
                             $interp = match(true) {
                                 $pct >= 90 => 'Excellent',
@@ -256,12 +286,32 @@
                         @endphp
                         <div class="category-score-row">
                             <div class="category-score-row__header">
-                                <span class="category-score-row__name">{{ $cat }}</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="category-score-row__name">{{ $cat }}</span>
+                                    {{-- Weight badge — only shown when weights exist --}}
+                                    @if ($weight !== null)
+                                        <span style="background:#f3f4f6;color:#6b7280;
+                                                     padding:1px 6px;border-radius:10px;
+                                                     font-size:.68rem;font-weight:500;">
+                                            {{ number_format($weight, 0) }}%
+                                        </span>
+                                    @endif
+                                </div>
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="category-score-row__interp category-score-row__interp--{{ $cls }}">
                                         {{ $interp }}
                                     </span>
-                                    <span class="category-score-row__val">{{ number_format($score, 2) }}</span>
+                                    {{-- Show achievement % when weighted, mean score when not --}}
+                                    @if ($hasWeightedData)
+                                        <span class="category-score-row__val"
+                                              title="Achievement: {{ number_format($achievement, 1) }}% | Mean: {{ number_format($mean, 2) }}/5">
+                                            {{ number_format($achievement, 1) }}<span style="font-size:.65em;font-weight:400;color:#9ca3af;">%</span>
+                                        </span>
+                                    @else
+                                        <span class="category-score-row__val">
+                                            {{ number_format($mean, 2) }}
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
                             <div class="category-score-row__track">
@@ -270,15 +320,40 @@
                                      data-width="{{ $pct }}%">
                                 </div>
                             </div>
+                            {{-- Sub-label row: mean score when showing achievement % --}}
+                            @if ($hasWeightedData)
+                            <div style="font-size:.68rem;color:#9ca3af;margin-top:2px;">
+                                Mean: {{ number_format($mean, 2) }} / 5
+                                @if ($weight !== null)
+                                    · Weight: {{ number_format($weight, 0) }}%
+                                @endif
+                            </div>
+                            @endif
                         </div>
                         @endforeach
                     </div>
+
+                    {{-- Overall weighted score footer --}}
+                    @if ($hasWeightedData)
+                    <div style="margin-top:.75rem;padding:.6rem .75rem;
+                                background:#f0f4f8;border-radius:8px;
+                                display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-size:.8rem;font-weight:600;color:#374151;">
+                            Overall Weighted Achievement
+                        </span>
+                        <span style="font-size:.95rem;font-weight:700;color:#1e3a5f;">
+                            {{ number_format($dashOverall, 2) }}%
+                            <span style="font-size:.68rem;color:#9ca3af;font-weight:400;">/ 100</span>
+                        </span>
+                    </div>
+                    @endif
                 @endif
+
             </div>
         </div>
     </div>
 
-    {{-- Sentiment summary --}}
+    {{-- Sentiment summary — unchanged ──────────────────────────────────── --}}
     <div class="col-lg-5">
         <div class="card h-100">
             <div class="card-body">
@@ -325,7 +400,6 @@
                         </div>
                     </div>
 
-                    {{-- Per-survey breakdown --}}
                     @if ($analyticsRecords->count() > 1)
                     <div class="mt-3 pt-3 border-top">
                         <p class="card-section-label mb-2">Per Survey</p>
@@ -356,7 +430,6 @@
 {{-- ===== CQI REPORTS + ALL-TIME ===== --}}
 <div class="row g-3">
 
-    {{-- Recent CQI Reports --}}
     @if ($cqiReports->isNotEmpty())
     <div class="col-lg-8">
         <div class="card">
@@ -398,7 +471,6 @@
     </div>
     @endif
 
-    {{-- All-time summary --}}
     <div class="{{ $cqiReports->isNotEmpty() ? 'col-lg-4' : 'col-12' }}">
         <div class="card h-100">
             <div class="card-body">

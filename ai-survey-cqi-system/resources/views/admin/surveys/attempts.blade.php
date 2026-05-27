@@ -52,6 +52,11 @@
         </div>
     </div>
 @else
+    @if ($attempts->hasPages())
+        <div class="table-pagination mt-2">
+            {{ $attempts->links() }}
+        </div>
+    @endif
 
     @foreach ($attempts as $attempt)
     <div class="attempt-card mb-3">
@@ -141,12 +146,6 @@
 
     </div>
     @endforeach
-
-    @if ($attempts->hasPages())
-        <div class="table-pagination mt-2">
-            {{ $attempts->links() }}
-        </div>
-    @endif
 
 @endif
 

@@ -172,6 +172,10 @@
                                     <span class="status-pill status-pill--archived">
                                         <i class="bi bi-archive me-1"></i>Archived
                                     </span>
+                                @elseif ($activeSemester && $offering->semester_id !== $activeSemester->id)
+                                    <span class="status-pill status-pill--previous text-muted bg-light border">
+                                        <i class="bi bi-clock-history me-1"></i>Closed
+                                    </span>
                                 @else
                                     <span class="status-pill status-pill--active">
                                         <i class="bi bi-check-circle me-1"></i>Active

@@ -37,7 +37,7 @@
 <div class="card mb-4">
     <div class="card-header d-flex align-items-center justify-content-between">
         <span class="fw-600" style="font-size:.875rem;">
-            <i class="bi bi-bar-chart-steps me-2 text-primary"></i>
+            {{-- <i class="bi bi-bar-chart-steps me-2 text-primary"></i> --}}
             Category Performance Breakdown
         </span>
         @if ($hasWeights)
@@ -101,7 +101,7 @@
                             $achievement >= 80 => ['Very Good',    '#1d4ed8', '#dbeafe'],
                             $achievement >= 70 => ['Good',         '#1e3a5f', '#e0f2fe'],
                             $achievement >= 60 => ['Fair',         '#92400e', '#fef3c7'],
-                            default             => ['Needs Work',  '#b91c1c', '#fee2e2'],
+                            default             => ['Needs Improvement',  '#b91c1c', '#fee2e2'],
                         };
                     @endphp
                     <tr style="border-bottom:0.5px solid #f3f4f6;">
@@ -149,11 +149,12 @@
                 <tfoot>
                     <tr style="background:#f0f4f8;border-top:2px solid #e5e7eb;">
                         <td style="padding:.65rem 1rem;font-weight:700;color:#111;">
-                            Overall Weighted Score
+                            Overall Score
                         </td>
                         <td class="text-center" style="font-weight:600;color:#6b7280;">
-                            {{ number_format($analytic->avg_rating, 2) }} / {{ $scaleMax }}
-                            <div style="font-size:.7rem;color:#9ca3af;">simple avg</div>
+                            {{ number_format($analytic->avg_rating, 2) }} 
+                            {{-- / {{ $scaleMax }} --}}
+                            {{-- <div style="font-size:.7rem;color:#9ca3af;">simple avg</div> --}}
                         </td>
                         <td class="text-center" style="font-weight:700;color:#374151;">
                             100%
@@ -166,7 +167,7 @@
                                     $ov >= 80 => ['Very Good',  '#1d4ed8', '#dbeafe'],
                                     $ov >= 70 => ['Good',       '#1e3a5f', '#e0f2fe'],
                                     $ov >= 60 => ['Fair',       '#92400e', '#fef3c7'],
-                                    default    => ['Needs Work','#b91c1c', '#fee2e2'],
+                                    default    => ['Needs Improvement','#b91c1c', '#fee2e2'],
                                 };
                             @endphp
                             <span class="badge"
@@ -177,7 +178,7 @@
                         </td>
                         <td class="text-center" style="font-weight:700;color:#1e3a5f;font-size:1rem;">
                             {{ number_format($overallWeighted, 2) }}
-                            <span style="font-size:.7rem;color:#9ca3af;font-weight:400;">/ 100</span>
+                            {{-- <span style="font-size:.7rem;color:#9ca3af;font-weight:400;">/ 100</span> --}}
                         </td>
                         <td style="padding:.65rem 1rem;">
                             <div style="height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;margin-bottom:3px;">

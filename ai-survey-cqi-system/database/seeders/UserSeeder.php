@@ -35,7 +35,7 @@ class UserSeeder extends Seeder
                 'user_id_number' => $adminData['id'],
                 'name' => $adminData['name'],
                 'email' => $adminData['email'],
-                'password' => Hash::make(env($adminData['env'], 'default_password')),
+                'password' => Hash::make(env($adminData['env'], 'password')),
                 'email_verified_at' => now(),
                 'must_change_password' => false,
             ]);

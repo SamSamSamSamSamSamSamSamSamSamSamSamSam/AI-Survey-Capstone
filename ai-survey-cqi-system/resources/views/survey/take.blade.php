@@ -632,9 +632,10 @@
                 {{-- Question text --}}
                 <p class="st-question__text">
                     {{ $question->question_text }}
-                    @if ($question->isRating())
+                    <span class="st-question__required-star">*</span>
+                    {{-- @if ($question->isRating())
                         <span class="st-question__required-star">*</span>
-                    @endif
+                    @endif --}}
                 </p>
 
                 {{-- ── RATING: Likert scale row ── --}}
@@ -739,9 +740,9 @@
 
     <div class="st-submit-bar__spacer"></div>
 
-    <span class="st-submit-bar__count" id="answeredCount">
+    {{-- <span class="st-submit-bar__count" id="answeredCount">
         0 / {{ $survey->questions->where('question_type', 'rating')->count() }} required
-    </span>
+    </span> --}}
 
     <button type="submit" form="surveyForm"
             class="btn btn-primary st-submit-bar__btn"

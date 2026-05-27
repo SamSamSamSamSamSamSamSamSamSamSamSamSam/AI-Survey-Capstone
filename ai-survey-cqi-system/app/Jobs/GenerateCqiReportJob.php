@@ -51,11 +51,29 @@ class GenerateCqiReportJob implements ShouldQueue
     }
 
     // -------------------------------------------------------------------------
+    // Strip internal weight keys from category_scores before sending to Gemini.
+    //
+    // ComputeFacultyAnalyticsJob stores these keys in category_scores for the
+    // analytics UI, but they are implementation-level metadata — not meaningful
+    // category names for Gemini to interpret. Passing them would confuse the
+    // AI into treating "_weights", "_weighted_scores", etc. as real categories.
+    //
+    // Only the top-level raw means (e.g. "Assessment": 4.2) are sent to Gemini.
+    // -------------------------------------------------------------------------
+    private function cleanCategoryScores(array $categoryScores): array
+    {
+        return array_filter(
+            $categoryScores,
+            fn ($key) => ! str_starts_with((string) $key, '_'),
+            ARRAY_FILTER_USE_KEY
+        );
+    }
+
+    // -------------------------------------------------------------------------
     // Friendly error messages for common Gemini / PDF failures
     // -------------------------------------------------------------------------
     private function friendlyError(string $message): string
     {
-
         $lower = strtolower($message);
 
         if (str_contains($lower, 'python was not found') || str_contains($lower, 'microsoft store')) {
@@ -137,6 +155,15 @@ class GenerateCqiReportJob implements ShouldQueue
         $lastName     = strtoupper(end($nameParts));
         $academicYear = $semester->academic_start_year . '–' . ($semester->academic_start_year + 1);
 
+        // ── Strip internal weight keys from category_scores ───────────────────
+        // category_scores JSON may contain _weights, _weighted_scores,
+        // _achievements, _overall_weighted_score, _overall_stats from
+        // ComputeFacultyAnalyticsJob. These are UI/analytics metadata and must
+        // NOT be sent to Gemini as category names.
+        // $rawCategoryScores     = $analytics->category_scores ?? [];
+        // $cleanedCategoryScores = $this->cleanCategoryScores($rawCategoryScores);
+        // ─────────────────────────────────────────────────────────────────────
+
         $analyticsPayload = [
             'institution'        => config('cqi.institution', 'University'),
             'department'         => config('cqi.department', ''),
@@ -180,7 +207,7 @@ class GenerateCqiReportJob implements ShouldQueue
         $pdfPayload = array_merge($analyticsPayload, [
             'title'        => "CQI Report — {$teacher->name} — {$subject->course_code}",
             'ai_content'   => $aiContent,
-            'statistics'   => $analytics->toArray(),
+            'statistics'   => $analytics->toArray(), // full analytics array preserved for PDF
             'generated_at' => now()->format('F d, Y h:i A'),
         ]);
 
@@ -230,10 +257,9 @@ class GenerateCqiReportJob implements ShouldQueue
 
     public function failed(\Throwable $exception): void
     {
-        // This fires after all retries are exhausted
         $this->setStatus('failed', $this->friendlyError($exception->getMessage()), [
-            'raw_error'   => $exception->getMessage(),
-            'step'        => 'unknown',
+            'raw_error'       => $exception->getMessage(),
+            'step'            => 'unknown',
             'retry_exhausted' => true,
         ]);
 
@@ -241,4 +267,4 @@ class GenerateCqiReportJob implements ShouldQueue
             'error' => $exception->getMessage(),
         ]);
     }
-}       
+}

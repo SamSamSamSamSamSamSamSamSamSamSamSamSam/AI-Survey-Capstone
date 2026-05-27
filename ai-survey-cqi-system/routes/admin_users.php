@@ -7,10 +7,12 @@
 
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserImportController;
+use Illuminate\Support\Facades\Route;
 
 
 Route::get('users/import', [UserImportController::class, 'showImportForm'])->name('users.import');
 Route::post('users/import', [UserImportController::class, 'import'])->name('users.import.post');
+Route::post('users/import/preview', [UserImportController::class, 'previewValidation'])->name('users.import.preview');
 
 Route::resource('users', UserController::class);
 
