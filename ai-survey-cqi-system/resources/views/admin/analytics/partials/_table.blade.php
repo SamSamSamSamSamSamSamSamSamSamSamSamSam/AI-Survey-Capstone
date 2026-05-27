@@ -34,7 +34,7 @@
                             </td>
                             <td>
                                 <div class="text-mono" style="font-size:.8rem;">
-                                    {{ $analytic->survey->offering->subject->course_code }}
+                                    {{ $analytic->survey->offering->subject->course_code }} - {{ $analytic->survey->offering->group_number }}
                                 </div>
                                 <div class="text-muted-sm">
                                     {{ Str::limit($analytic->survey->offering->subject->name, 28) }}
