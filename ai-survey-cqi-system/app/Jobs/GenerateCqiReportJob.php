@@ -204,11 +204,38 @@ class GenerateCqiReportJob implements ShouldQueue
         // Step 5 — PDF
         $this->setStatus('processing', 'Generating PDF report…');
 
+        // Strip internal underscore keys from category_scores so the Python
+        // script doesn't try to render _weights, _weighted_scores etc. as rows.
+        // Pass them separately so the PDF can use them for the weighted table.
+        $rawCategoryScores = array_filter(
+            $analyticsPayload['category_scores'],
+            fn ($k) => ! str_starts_with((string) $k, '_'),
+            ARRAY_FILTER_USE_KEY
+        );
+
+        $weightedMeta = [
+            'weights'               => $analyticsPayload['category_scores']['_weights']                ?? [],
+            'weighted_scores'       => $analyticsPayload['category_scores']['_weighted_scores']        ?? [],
+            'achievements'          => $analyticsPayload['category_scores']['_achievements']           ?? [],
+            'overall_weighted_score'=> $analyticsPayload['category_scores']['_overall_weighted_score'] ?? null,
+            'overall_stats'         => $analyticsPayload['category_scores']['_overall_stats']          ?? [],
+        ];
+
         $pdfPayload = array_merge($analyticsPayload, [
-            'title'        => "CQI Report — {$teacher->name} — {$subject->course_code}",
-            'ai_content'   => $aiContent,
-            'statistics'   => $analytics->toArray(), // full analytics array preserved for PDF
-            'generated_at' => now()->format('F d, Y h:i A'),
+            'title'           => "CQI Report — {$teacher->name} — {$subject->course_code}",
+            'ai_content'      => $aiContent,
+            'statistics'      => $analytics->toArray(),
+            'generated_at'    => now()->format('F d, Y h:i A'),
+            // Clean scores for the PDF table — no underscore meta keys
+            'category_scores' => $rawCategoryScores,
+            'weighted_meta'   => $weightedMeta,
+            // Pass admin-configured thresholds so Python uses the same values
+            'thresholds' => [
+                'excellent' => (float) setting('survey.excellent_threshold', 90),
+                'very_good' => (float) setting('survey.very_good_threshold', 80),
+                'good'      => (float) setting('survey.good_threshold',      70),
+                'fair'      => (float) setting('survey.fair_threshold',      60),
+            ],
         ]);
 
         try {

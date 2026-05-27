@@ -46,103 +46,52 @@ class UserSeeder extends Seeder
 
         /*
         |--------------------------------------------------------------------------
-        | Create Sample Teacher (2)
+        | Create Faculty Users (5)
         |--------------------------------------------------------------------------
         */
+        for ($i = 1; $i <= 5; $i++) {
+            // Generates a random 8-digit number formatted like 20101786
+            $facultyId = fake()->numerify('########'); 
+            $facultyName = fake()->name();
+            // Generates a clean, lowercase email based on the name
+            $facultyEmail = strtolower(str_replace(' ', '', $facultyName)) . '@example.com';
+
+            $faculty = User::create([
+                'user_id_number'       => $facultyId,
+                'name'                 => $facultyName,
+                'email'                => $facultyEmail,
+                'password'             => Hash::make('password'),
+                'email_verified_at'    => now(),
+                'must_change_password' => false,
+            ]);
+            $faculty->roles()->attach($teacherRole);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create Student Users (15)
+        |--------------------------------------------------------------------------
+        */
+        for ($i = 1; $i <= 15; $i++) {
+            // Generates a random 8-digit number formatted like 20101786
+            $studentId = fake()->numerify('########');
+            $studentName = fake()->name();
+            // Generates a clean, lowercase email based on the name
+            $studentEmail = strtolower(str_replace(' ', '', $studentName)) . '@example.com';
+
+            $student = User::create([
+                'user_id_number'       => $studentId,
+                'name'                 => $studentName,
+                'email'                => $studentEmail,
+                'password'             => Hash::make('password'),
+                'email_verified_at'    => now(),
+                'must_change_password' => false,
+            ]);
+            $student->roles()->attach($studentRole);
+        }
+
         
-        $teachersample = User::create([
-            'user_id_number' => 'TEACHER001',
-            'name' => 'Teacher A',
-            'email' => 'teacher@example.com',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-            'must_change_password' => false,
-        ]);
-        $teachersample->roles()->attach($teacherRole);
 
-        $teachersample2 = User::create([
-            'user_id_number' => 'TEACHER002',
-            'name' => 'Teacher B',
-            'email' => 'teacherb@example.com',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-            'must_change_password' => false,
-        ]);
-        $teachersample2->roles()->attach($teacherRole);
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Create Sample Student (2)
-        |--------------------------------------------------------------------------
-        */
-        $studentsample = User::create([
-            'user_id_number' => '20230001',
-            'name' => 'Student A',
-            'email' => 'student@example.com',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-            'must_change_password' => false,
-        ]);
-        $studentsample->roles()->attach($studentRole);
-
-        $studentsample2 = User::create([
-            'user_id_number' => '20230002',
-            'name' => 'Student B',
-            'email' => 'studentb@example.com',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-            'must_change_password' => false,
-        ]);
-        $studentsample2->roles()->attach($studentRole);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Create Unverified User (2)
-        |--------------------------------------------------------------------------
-        */
-
-        $unverified = User::create([
-            'user_id_number' => '12345678',
-            'name' => 'Unverified Teacher',
-            'email' => 'unverified_student@example.com',
-            'password' => Hash::make('password'),
-            'must_change_password' => true,
-        ]);
-        $unverified->roles()->attach($teacherRole);
-
-        $unverified1 = User::create([
-            'user_id_number' => '12345679',
-            'name' => 'Unverified Student',
-            'email' => 'unverified_faculty@example.com',
-            'password' => Hash::make('password'),
-            'must_change_password' => true,
-        ]);
-        $unverified1->roles()->attach($studentRole);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Create Not Enrolled User (2)
-        |--------------------------------------------------------------------------
-        */
-        $notenrolled = User::create([
-            'user_id_number' => '24681012',
-            'name' => 'Not_Assigned Faculty',
-            'email' => 'notassigned_faculty@example.com',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-            'must_change_password' => false,
-        ]);
-        $notenrolled->roles()->attach($teacherRole);
-
-        $notenrolled1 = User::create([
-            'user_id_number' => '24681013',
-            'name' => 'Not_Enrolled Student',
-            'email' => 'notenrolled_student@example.com',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-            'must_change_password' => false,
-        ]);
-        $notenrolled1->roles()->attach($studentRole);
+        
     }
 }

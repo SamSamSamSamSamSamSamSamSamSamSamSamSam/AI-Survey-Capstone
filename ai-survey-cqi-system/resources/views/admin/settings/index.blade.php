@@ -33,7 +33,7 @@
         $tabs = [
             'app'         => ['icon' => 'bi-building',           'label' => 'Application Identity'],
             'ai'          => ['icon' => 'bi-robot',              'label' => 'AI & NLP'],
-            // 'survey'      => ['icon' => 'bi-clipboard-check',    'label' => 'Survey & Academic'],
+            'survey'      => ['icon' => 'bi-clipboard-check',    'label' => 'Survey & Academic'],
             'locale'      => ['icon' => 'bi-globe',              'label' => 'Localization'],
             'mail'        => ['icon' => 'bi-envelope',           'label' => 'Mail & Notifications'],
             'security'    => ['icon' => 'bi-shield-lock',        'label' => 'Security'],

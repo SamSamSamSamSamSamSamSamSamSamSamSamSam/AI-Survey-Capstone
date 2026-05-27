@@ -168,6 +168,44 @@ class CategoryWeightService
     }
 
     // -------------------------------------------------------------------------
+    // Interpretation — replaces every hard-coded match(true) in the codebase
+    // -------------------------------------------------------------------------
+
+    /**
+     * Interpret an achievement percentage using admin-configurable thresholds.
+     *
+     * Thresholds are stored in the `settings` table under the `survey` group:
+     *   survey.excellent_threshold  (default 90)
+     *   survey.very_good_threshold  (default 80)
+     *   survey.good_threshold       (default 70)
+     *   survey.fair_threshold       (default 60)
+     *
+     * Returns an array with:
+     *   label   — human-readable string  e.g. "Very Good"
+     *   color   — foreground hex         e.g. "#1d4ed8"
+     *   bg      — background hex         e.g. "#dbeafe"
+     *   cls     — CSS modifier string    "high" | "mid" | "low"
+     *
+     * @param  float $pct  Achievement as a percentage (0–100)
+     * @return array{label: string, color: string, bg: string, cls: string}
+     */
+    public function interpret(float $pct): array
+    {
+        $excellent = (float) setting('survey.excellent_threshold', 90);
+        $veryGood  = (float) setting('survey.very_good_threshold', 80);
+        $good      = (float) setting('survey.good_threshold',      70);
+        $fair      = (float) setting('survey.fair_threshold',      60);
+
+        return match (true) {
+            $pct >= $excellent => ['label' => 'Excellent',          'color' => '#065f46', 'bg' => '#d1fae5', 'cls' => 'high'],
+            $pct >= $veryGood  => ['label' => 'Very Good',          'color' => '#1d4ed8', 'bg' => '#dbeafe', 'cls' => 'high'],
+            $pct >= $good      => ['label' => 'Good',               'color' => '#1e3a5f', 'bg' => '#e0f2fe', 'cls' => 'mid'],
+            $pct >= $fair      => ['label' => 'Fair',               'color' => '#92400e', 'bg' => '#fef3c7', 'cls' => 'mid'],
+            default            => ['label' => 'Needs Improvement',  'color' => '#b91c1c', 'bg' => '#fee2e2', 'cls' => 'low'],
+        };
+    }
+
+    // -------------------------------------------------------------------------
     // Private helpers — handle both Eloquent models and stdClass/arrays
     // -------------------------------------------------------------------------
 

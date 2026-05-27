@@ -12,6 +12,9 @@
 --}}
 
 @php
+    /** @var \App\Services\CategoryWeightService $weightSvc */
+    $weightSvc = app(\App\Services\CategoryWeightService::class);
+
     $scores           = $analytic->category_scores ?? [];
     $weights          = $scores['_weights']          ?? [];
     $weightedScores   = $scores['_weighted_scores']  ?? [];
@@ -96,13 +99,9 @@
                         $weight      = (float) ($weights[$category]        ?? 0);
                         $weighted    = (float) ($weightedScores[$category] ?? 0);
                         $achievement = (float) ($achievements[$category]   ?? ($mean / $scaleMax * 100));
-                        $interp      = match(true) {
-                            $achievement >= 90 => ['Excellent',    '#065f46', '#d1fae5'],
-                            $achievement >= 80 => ['Very Good',    '#1d4ed8', '#dbeafe'],
-                            $achievement >= 70 => ['Good',         '#1e3a5f', '#e0f2fe'],
-                            $achievement >= 60 => ['Fair',         '#92400e', '#fef3c7'],
-                            default             => ['Needs Improvement',  '#b91c1c', '#fee2e2'],
-                        };
+                        $interp      = $weightSvc->interpret($achievement);
+                        // blade-friendly aliases matching the old array shape: [0]=label,[1]=color,[2]=bg
+                        $interp      = [$interp['label'], $interp['color'], $interp['bg']];
                     @endphp
                     <tr style="border-bottom:0.5px solid #f3f4f6;">
                         <td style="padding:.65rem 1rem;font-weight:500;color:#111;">
@@ -162,13 +161,8 @@
                         <td class="text-center">
                             @php
                                 $ov = (float) $overallWeighted;
-                                $ovInterp = match(true) {
-                                    $ov >= 90 => ['Excellent',  '#065f46', '#d1fae5'],
-                                    $ov >= 80 => ['Very Good',  '#1d4ed8', '#dbeafe'],
-                                    $ov >= 70 => ['Good',       '#1e3a5f', '#e0f2fe'],
-                                    $ov >= 60 => ['Fair',       '#92400e', '#fef3c7'],
-                                    default    => ['Needs Improvement','#b91c1c', '#fee2e2'],
-                                };
+                                $ovInterpRaw = $weightSvc->interpret($ov);
+                                $ovInterp = [$ovInterpRaw['label'], $ovInterpRaw['color'], $ovInterpRaw['bg']];
                             @endphp
                             <span class="badge"
                                   style="background:{{ $ovInterp[2] }};color:{{ $ovInterp[1] }};
