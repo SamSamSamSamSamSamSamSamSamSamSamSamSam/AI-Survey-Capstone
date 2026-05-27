@@ -452,7 +452,7 @@ class SurveyEvaluationSimulationSeeder extends Seeder
         0 => 'The erratic and disorganized lecture delivery made it almost impossible to follow along.',
         1 => 'The theoretical slide monologues were ineffective; we needed concrete examples.',
         2 => 'Not at all. The exams contained complex edge cases that were never once mentioned.',
-        3 => 'Honestly, nothing stands out as a positive aspect of this course format.',
+        3 => 'Honestly, nothing stands out of this course format. its very bad',
         4 => 'The entire curriculum structure and pacing model need an immediate overhaul.',
         5 => 'Incredibly frustrating and stressful. I had to self-teach nearly everything.',
         6 => 'No. Avoid this section unless you are already an expert in the subject.',
