@@ -78,13 +78,10 @@ class FacultyAnalytics extends Model
     {
         $pct = $this->avg_rating ? ($this->avg_rating / 5) * 100 : 0;
 
-        return match (true) {
-            $pct >= 90 => 'Excellent',
-            $pct >= 80 => 'Very Good',
-            $pct >= 70 => 'Good',
-            $pct >= 60 => 'Fair',
-            default    => 'Needs Improvement',
-        };
+        /** @var \App\Services\CategoryWeightService $svc */
+        $svc = app(\App\Services\CategoryWeightService::class);
+
+        return $svc->interpret($pct)['label'];
     }
 
     public function getPassesThresholdAttribute(): bool

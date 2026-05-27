@@ -158,6 +158,20 @@
                 @endforeach
             </select>
 
+        @elseif ($s->type === 'number')
+            {{-- Decimal number — used for percentage thresholds (0–100) --}}
+            <div class="d-flex align-items-center gap-2" style="max-width:200px;">
+                <input type="number"
+                       id="setting_{{ $inputName }}"
+                       name="{{ $inputName }}"
+                       value="{{ $s->value }}"
+                       class="form-control setting-input--short"
+                       min="0"
+                       max="100"
+                       step="1">
+                <span class="text-muted" style="font-size:.875rem;">%</span>
+            </div>
+
         @elseif ($s->type === 'integer')
             <input type="number"
                    id="setting_{{ $inputName }}"

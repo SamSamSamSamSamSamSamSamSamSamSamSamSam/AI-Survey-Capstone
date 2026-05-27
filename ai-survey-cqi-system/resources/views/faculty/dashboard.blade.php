@@ -242,30 +242,24 @@
                     <p class="text-muted-sm">No category data yet.</p>
                 @else
                     <div class="category-score-list">
+                        @php $weightSvc = app(\App\Services\CategoryWeightService::class); @endphp
                         @foreach ($avgCategoryScores as $cat => $score)
                         @php
-                            $pct   = min(100, round(($score / 5) * 100));
-                            $cls   = $pct >= 80 ? 'high' : ($pct >= 60 ? 'mid' : 'low');
-                            $interp = match(true) {
-                                $pct >= 90 => 'Excellent',
-                                $pct >= 80 => 'Very Good',
-                                $pct >= 70 => 'Good',
-                                $pct >= 60 => 'Fair',
-                                default    => 'Needs Improvement',
-                            };
+                            $pct    = min(100, round(($score / 5) * 100));
+                            $interp = $weightSvc->interpret($pct);
                         @endphp
                         <div class="category-score-row">
                             <div class="category-score-row__header">
                                 <span class="category-score-row__name">{{ $cat }}</span>
                                 <div class="d-flex align-items-center gap-2">
-                                    <span class="category-score-row__interp category-score-row__interp--{{ $cls }}">
-                                        {{ $interp }}
+                                    <span class="category-score-row__interp category-score-row__interp--{{ $interp['cls'] }}">
+                                        {{ $interp['label'] }}
                                     </span>
                                     <span class="category-score-row__val">{{ number_format($score, 2) }}</span>
                                 </div>
                             </div>
                             <div class="category-score-row__track">
-                                <div class="category-score-row__fill category-score-row__fill--{{ $cls }}"
+                                <div class="category-score-row__fill category-score-row__fill--{{ $interp['cls'] }}"
                                      style="width: 0%"
                                      data-width="{{ $pct }}%">
                                 </div>
