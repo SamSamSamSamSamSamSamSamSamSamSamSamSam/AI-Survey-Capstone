@@ -109,32 +109,48 @@ def sub_section_header(title, styles):
     return t
 
 
-def interpret_score(score, scale_max=5):
-    # Convert score to float to handle cases where it arrives as a string
+def get_thresholds(data: dict) -> dict:
+    """
+    Pull admin-configured thresholds from the payload.
+    Falls back to the original defaults if not present.
+    Values are percentages (0-100); divide by 100 for ratio comparison.
+    """
+    t = data.get('thresholds', {})
+    return {
+        'excellent': float(t.get('excellent', 90)) / 100,
+        'very_good': float(t.get('very_good', 80)) / 100,
+        'good':      float(t.get('good',      70)) / 100,
+        'fair':      float(t.get('fair',       60)) / 100,
+    }
+
+
+def interpret_score(score, scale_max=5, thresholds=None):
+    if thresholds is None:
+        thresholds = {'excellent': 0.90, 'very_good': 0.80, 'good': 0.70, 'fair': 0.60}
     try:
         numeric_score = float(score)
     except (ValueError, TypeError):
         numeric_score = 0.0
 
-    # Use the converted numeric_score variable for division
     pct = numeric_score / scale_max if scale_max else 0
-    
-    if pct >= 0.90: return 'Excellent'
-    if pct >= 0.80: return 'Very Good'
-    if pct >= 0.70: return 'Good'
-    if pct >= 0.60: return 'Fair'
+
+    if pct >= thresholds['excellent']: return 'Excellent'
+    if pct >= thresholds['very_good']: return 'Very Good'
+    if pct >= thresholds['good']:      return 'Good'
+    if pct >= thresholds['fair']:      return 'Fair'
     return 'Needs Improvement'
 
 
-def score_style(score, scale_max, styles):
-    # Convert score to float to handle cases where it arrives as a string
+def score_style(score, scale_max, styles, thresholds=None):
+    if thresholds is None:
+        thresholds = {'excellent': 0.90, 'very_good': 0.80, 'good': 0.70, 'fair': 0.60}
     try:
         numeric_score = float(score)
     except (ValueError, TypeError):
         numeric_score = 0.0
 
     pct = numeric_score / scale_max if scale_max else 0
-    return styles['score_good'] if pct >= 0.70 else styles['score_fair']
+    return styles['score_good'] if pct >= thresholds['good'] else styles['score_fair']
 
 
 def build_pdf(data: dict, output_path: str):
@@ -147,6 +163,7 @@ def build_pdf(data: dict, output_path: str):
     )
 
     styles = build_styles()
+    thresholds_from_payload = get_thresholds(data)
     story  = []
     ai     = data.get('ai_content', {})
     stats  = data.get('statistics', {})
@@ -214,8 +231,11 @@ def build_pdf(data: dict, output_path: str):
 
     category_scores = data.get('category_scores', {})
 
+    # Safety net: strip any underscore meta keys that may still be present
+    category_scores = {k: v for k, v in category_scores.items() if not str(k).startswith('_')}
+
     # Extract the hidden stats we injected in the PHP Job
-    overall_stats = category_scores.pop('_overall_stats', {})
+    overall_stats = data.get('weighted_meta', {}).get('overall_stats', {})
 
     if category_scores:
         hdr = [
@@ -230,11 +250,11 @@ def build_pdf(data: dict, output_path: str):
             except (ValueError, TypeError):
                 numeric_score = 0.0
 
-            interp = interpret_score(numeric_score, scale_max)
+            interp = interpret_score(numeric_score, scale_max, thresholds_from_payload)
             rows.append([
                 Paragraph(cat, styles['table_cell']),
-                Paragraph(f"{numeric_score:.2f} / {scale_max}", score_style(numeric_score, scale_max, styles)),
-                Paragraph(interp, score_style(numeric_score, scale_max, styles)),
+                Paragraph(f"{numeric_score:.2f} / {scale_max}", score_style(numeric_score, scale_max, styles, thresholds_from_payload)),
+                Paragraph(interp, score_style(numeric_score, scale_max, styles, thresholds_from_payload)),
             ])
 
         # Overall row
@@ -246,8 +266,8 @@ def build_pdf(data: dict, output_path: str):
 
         rows.append([
             Paragraph("<b>Overall Mean Score</b>", styles['label_bold']),
-            Paragraph(f"<b>{numeric_avg:.2f} / {scale_max}</b>", score_style(numeric_avg, scale_max, styles)),
-            Paragraph(f"<b>{interpret_score(numeric_avg, scale_max)}</b>", score_style(numeric_avg, scale_max, styles)),
+            Paragraph(f"<b>{numeric_avg:.2f} / {scale_max}</b>", score_style(numeric_avg, scale_max, styles, thresholds_from_payload)),
+            Paragraph(f"<b>{interpret_score(numeric_avg, scale_max, thresholds_from_payload)}</b>", score_style(numeric_avg, scale_max, styles, thresholds_from_payload)),
         ])
 
         cw2 = [(PAGE_W - 2 * MARGIN) * r for r in [0.50, 0.25, 0.25]]
@@ -267,7 +287,69 @@ def build_pdf(data: dict, output_path: str):
         story.append(cat_t)
         story.append(Spacer(1, 0.4 * cm))
 
-    # ── Descriptive Statistics Section (NEW) ────────────────────────────────
+    # ── Weighted Achievement Breakdown (only if weights were configured) ─────
+    weighted_meta = data.get('weighted_meta', {})
+    weights       = weighted_meta.get('weights', {})
+    achievements  = weighted_meta.get('achievements', {})
+    w_scores      = weighted_meta.get('weighted_scores', {})
+    overall_ws    = weighted_meta.get('overall_weighted_score')
+
+    if weights and overall_ws is not None:
+        story.append(sub_section_header("Weighted Category Achievement", styles))
+        story.append(Spacer(1, 0.2 * cm))
+
+        w_hdr = [
+            Paragraph("Category",     styles['table_header']),
+            Paragraph("Weight",       styles['table_header']),
+            Paragraph("Achievement",  styles['table_header']),
+            Paragraph("Contribution", styles['table_header']),
+        ]
+        w_rows = [w_hdr]
+        for cat, weight in weights.items():
+            achievement  = float(achievements.get(cat, 0))
+            contribution = float(w_scores.get(cat, 0))
+            interp       = interpret_score(achievement, 100, thresholds_from_payload)
+            w_rows.append([
+                Paragraph(cat, styles['table_cell']),
+                Paragraph(f"{float(weight):.2f}%", styles['table_cell']),
+                Paragraph(f"{achievement:.1f}%  ({interp})",
+                          score_style(achievement, 100, styles, thresholds_from_payload)),
+                Paragraph(f"{contribution:.2f} pts",
+                          score_style(achievement, 100, styles, thresholds_from_payload)),
+            ])
+
+        try:
+            ows_float = float(overall_ws)
+        except (ValueError, TypeError):
+            ows_float = 0.0
+
+        w_rows.append([
+            Paragraph("<b>Overall Weighted Score</b>", styles['label_bold']),
+            Paragraph("<b>100%</b>", styles['label_bold']),
+            Paragraph("", styles['table_cell']),
+            Paragraph(f"<b>{ows_float:.2f} / 100</b>",
+                      score_style(ows_float, 100, styles, thresholds_from_payload)),
+        ])
+
+        cw_w = [(PAGE_W - 2 * MARGIN) * r for r in [0.40, 0.15, 0.25, 0.20]]
+        w_t = Table(w_rows, colWidths=cw_w)
+        w_t.setStyle(TableStyle([
+            ('BACKGROUND',    (0, 0), (-1, 0), OLIVE_MID),
+            ('BACKGROUND',    (0, -1), (-1, -1), OLIVE_PALE),
+            ('GRID',          (0, 0), (-1, -1), 0.5, BORDER_GRAY),
+            ('ROWBACKGROUNDS',(0, 1), (-1, -2), [WHITE, CREAM]),
+            ('TOPPADDING',    (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('LEFTPADDING',   (0, 0), (-1, -1), 8),
+            ('RIGHTPADDING',  (0, 0), (-1, -1), 8),
+            ('VALIGN',        (0, 0), (-1, -1), 'MIDDLE'),
+            ('LINEBELOW',     (0, -2), (-1, -2), 1.5, OLIVE_DARK),
+        ]))
+        story.append(w_t)
+        story.append(Spacer(1, 0.4 * cm))
+
+    # ── Descriptive Statistics Section ──────────────────────────────────────
+    overall_stats = weighted_meta.get('overall_stats', {})
     if overall_stats:
         story.append(sub_section_header("Descriptive Statistics", styles))
         stats_rows = [
